@@ -1,0 +1,11 @@
+{
+  "type": "webpage",
+  "name": "Project Management Page",
+  "description": "A connected page used to manage project",
+  "url": "projects",
+  "render": {
+    "showInNavBar": true,
+    "type": "page"
+  },
+  "genTypes": false
+}
