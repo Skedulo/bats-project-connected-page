@@ -22,6 +22,7 @@ export interface ProjectDetailInterface extends ProjectListItemInterface {
   applyRegionForAllJob: boolean
   location: string
   applyLocationForAllJob: boolean
+  isTemplate: boolean
 }
 
 export interface ListResponseInterface<T> {

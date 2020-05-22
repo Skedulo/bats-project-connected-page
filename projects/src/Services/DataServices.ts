@@ -4,21 +4,24 @@ import {
   ProjectDetailInterface,
   ListResponseInterface,
   LookupOptionInterface,
-  ContactOptionInterface
+  ContactOptionInterface,
 } from '../commons/types'
 
 import mockListProjects from './mock/listProjects.json'
 
 export const fetchListProjects = async (filterObj: any): Promise<ListResponseInterface<ProjectListItemInterface>> => {
-  console.log('mockListProjects: ', mockListProjects)
-
   return mockListProjects.data
 }
 
 export const fetchProjectById = async (projectId: string): Promise<ProjectDetailInterface> => {
-  console.log('projectId: ', projectId)
-
-  return mockListProjects.data.results[0]
+  return {
+    ...mockListProjects.data.results[0],
+    accountId: '0013L000002aIFeQAM',
+    contactId: '0033L0000023k2eQAA',
+    regionId: 'a0M3L000000EEk4UAG',
+    applyRegionForAllJob: true,
+    isTemplate: true
+  }
 }
 
 export const updateProject = async (updateInput: ProjectDetailInterface): Promise<ProjectDetailInterface> => {
@@ -44,7 +47,7 @@ export const fetchAccounts = async (searchString: string): Promise<LookupOptionI
       }
     `,
     variables: {
-      filter: `Name LIKE '%${searchString}%'`,
+      filter: `Name LIKE '%${searchString}%' OR UID == '${searchString}'`,
     },
   })
 
@@ -66,7 +69,7 @@ export const fetchContacts = async (searchString: string): Promise<LookupOptionI
       }
     `,
     variables: {
-      filter: `FullName LIKE '%${searchString}%'`,
+      filter: `FullName LIKE '%${searchString}%' OR UID == '${searchString}'`,
     },
   })
 
@@ -88,7 +91,7 @@ export const fetchRegions = async (searchString: string): Promise<LookupOptionIn
       }
     `,
     variables: {
-      filter: `Name LIKE '%${searchString}%'`,
+      filter: `Name LIKE '%${searchString}%' OR UID == '${searchString}'`,
     },
   })
 

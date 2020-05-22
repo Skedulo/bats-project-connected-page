@@ -9,13 +9,14 @@ interface WrappedFormInputProps {
   value: string,
   error?: string,
   type?: string,
-  isReadonly: boolean,
+  isReadOnly: boolean,
   isRequired: boolean,
-  rows?: number
+  rows?: number,
+  disabled?: boolean
 }
 
 const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
-  const { label, name, value, isRequired, isReadonly, error, type, size, rows = 10 } = props
+  const { label, name, value, isRequired, isReadOnly, error, type, size, rows = 10, disabled } = props
 
   const labelClasses = React.useMemo(() => classNames('label', {
     required: isRequired,
@@ -33,7 +34,7 @@ const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
         className={wrapperClasses}
         name={name}
         readOnlyValue={value}
-        isReadOnly={isReadonly}
+        isReadOnly={isReadOnly}
         validation={{ isValid: !error, error }}
       >
         {
@@ -44,6 +45,7 @@ const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
               name={name}
               defaultValue={value}
               size={size}
+              disabled={disabled}
             />
           )
         }

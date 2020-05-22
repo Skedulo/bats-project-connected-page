@@ -11,6 +11,7 @@ interface LookupInputInterface {
   className?: string
   onSelect: (item: OptionInterface) => void
   onSearchKeyword: (keyword: string) => Promise<OptionInterface[]>,
+  defaultSelected?: OptionInterface
   placeholderText?: string
 }
 
@@ -19,6 +20,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
   onSelect,
   onSearchKeyword,
   placeholderText,
+  defaultSelected
 }) => {
   let searchTimeout: any = null
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -33,9 +35,13 @@ const LookupInput: React.FC<LookupInputInterface> = ({
     const res = await onSearchKeyword(keyword)
     setOptions(res || [])
     setLoadingOptions(false)
+    return res
   }
 
   React.useEffect(() => {
+    if (defaultSelected && defaultSelected.UID && defaultSelected.Name) {
+      setSelectedOption(defaultSelected)
+    }
     searchOptions('')
   }, [])
 
@@ -118,7 +124,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
           className="cx-flex cx-items-center cx-justify-between cx-border-neutral-450 cx-border cx-p-2 cx-rounded-sm"
         >
           <h2>{selectedOption.Name}</h2>
-          <Icon name="close" size={14} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
+          <Icon name="minus" size={14} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
         </div>
       )}
       <Menu hidden={!openLookup} className="cx-absolute cx-z-50 cx-w-full">

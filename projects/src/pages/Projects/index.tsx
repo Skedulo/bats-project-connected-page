@@ -118,7 +118,6 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   const getProjectsList = useCallback(async () => {
     setIsLoading(true)
     const res = await fetchListProjects({ ...filterParams, searchText })
-    console.log('res: ', res)
     setProjects(res)
     setIsLoading(false)
   }, [])
@@ -153,6 +152,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     console.log('saveProject: ', data)
   }, [])
 
+  // TODO: made top url sync with cp url
   const onViewProject = useCallback((projectId: string) => {
     // window.top.window.location.href = `${PROJECT_DETAIL_PATH}${projectId}`
     history.push(projectDetailPath(projectId))

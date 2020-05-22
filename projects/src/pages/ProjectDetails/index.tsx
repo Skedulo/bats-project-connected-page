@@ -23,7 +23,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
     startGlobalLoading()
     const res = await fetchProjectById(projectId)
     console.log('res----project: ', res);
-    setProject(res)
+    setProject({ ...res})
     endGlobalLoading()
   }, [])
 
@@ -38,31 +38,30 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
       getProjectById(params.projectId)
     }
   }, [params.projectId])
-  console.log('project: ', project);
 
   if (!project) {
     return <LoadingTrigger />
   }
 
   return (
-    <div className="page-view">
-      <div className="crud-full-page">
-        <div className="flex flex--vertical">
-          <div className="section-header crud-full-page__header cx-pb-0">
-            <Link to="/" className="cx-flex">
-              <Icon name="chevronLeft" className="breadcrumb__icon" />
-              <span className="breadcrumb__link capitalize">Projects</span>
-            </Link>
-            <div className="cx-flex cx-justify-between cx-mb-6">
-              <h1 className="cx-text-xl cx-font-semibold" data-sk-name="crud-details-page-title">
-                {project.projectName}
-              </h1>
-              {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
-                <Icon name="trash" className="cx-text-neutral-500" />
-              </button> */}
-            </div>
-            <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
+    <div className="crud-full-page">
+      <div className="flex flex--vertical">
+        <div className="section-header crud-full-page__header cx-pb-0">
+          <Link to="/" className="cx-flex">
+            <Icon name="chevronLeft" className="breadcrumb__icon" />
+            <span className="breadcrumb__link capitalize">Projects</span>
+          </Link>
+          <div className="cx-flex cx-justify-between cx-mb-6">
+            <h1 className="cx-text-xl cx-font-semibold" data-sk-name="crud-details-page-title">
+              {project.projectName}
+            </h1>
+            {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
+              <Icon name="trash" className="cx-text-neutral-500" />
+            </button> */}
           </div>
+          <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
+        </div>
+        <div className="scroll">
           {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
           {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId} />}
         </div>
