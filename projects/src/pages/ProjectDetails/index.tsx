@@ -63,7 +63,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
         </div>
         <div className="scroll">
           {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
-          {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId} />}
+          {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId || ''} />}
         </div>
       </div>
     </div>

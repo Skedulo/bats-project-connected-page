@@ -1,15 +1,15 @@
 import * as React from 'react'
-import { isDate, isBefore, isAfter } from 'date-fns'
+import { isDate, isAfter } from 'date-fns'
 import { SkedFormChildren, Button, FormElementWrapper, Datepicker, FormInputElement } from '@skedulo/sked-ui'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
 import { ProjectDetailInterface, LookupOptionInterface } from '../../../commons/types'
 import LookupInput from '../../../commons/components/LookupInput'
-import { fetchAccounts, fetchContacts, fetchRegions } from '../../../Services/DataServices'
+import { fetchAccounts, fetchContacts, fetchRegions, fetchLocations, fetchTemplates } from '../../../Services/DataServices'
 import { DATE_FORMAT } from '../../constants'
 
 interface ProjectFormChildrenProps {
   formParams: SkedFormChildren<ProjectDetailInterface>
-  onCancel: () => void
+  onCancel?: () => void
   project?: ProjectDetailInterface
 }
 
@@ -64,15 +64,15 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           <FormElementWrapper
             name="templateId"
             validation={{ isValid: submitted ? !errors.templateId : true, error: submitted ? errors.templateId : '' }}
-            readOnlyValue={fields.regionId}
-            isReadOnly={false}
+            readOnlyValue={project?.template?.name || ''}
+            isReadOnly={isFormReadonly}
           >
             <LookupInput
               className="form-element__outline"
               onSelect={onSelectLookupField('templateId')}
-              onSearchKeyword={fetchRegions}
+              onSearchKeyword={fetchTemplates}
               placeholderText="Search template..."
-              defaultSelected={fields.regionId}
+              defaultSelected={project?.template ? { UID: project.template.id, Name: project.template.name } : null}
             />
           </FormElementWrapper>
         </div>
@@ -119,7 +119,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 selected={startDate}
                 onChange={onSelectDate('startDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={project?.id && project?.isTemplate}
+                disabled={!!(project?.id && project?.isTemplate)}
               />
             </FormElementWrapper>
           </div>
@@ -138,7 +138,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 selected={endDate}
                 onChange={onSelectDate('endDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={project?.id && project?.isTemplate}
+                disabled={!!(project?.id && project?.isTemplate)}
               />
             </FormElementWrapper>
           </div>
@@ -149,15 +149,15 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             <FormElementWrapper
               name="accountId"
               validation={{ isValid: submitted ? !errors.accountId : true, error: errors.accountId }}
-              readOnlyValue={fields.regionId}
-              isReadOnly={false}
+              readOnlyValue={project?.account?.name || ''}
+              isReadOnly={isFormReadonly}
             >
               <LookupInput
                 className="form-element__outline"
                 onSelect={onSelectLookupField('accountId')}
                 onSearchKeyword={fetchAccounts}
                 placeholderText="Search accounts..."
-                defaultSelected={fields.accountId}
+                defaultSelected={project?.account ? { UID: project.account.id, Name: project.account.name } : null}
               />
             </FormElementWrapper>
           </div>
@@ -181,15 +181,15 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             <FormElementWrapper
               name="contactId"
               validation={{ isValid: submitted ? !errors.contactId : true, error: errors.contactId }}
-              // readOnlyValue={fields.contactId}
-              isReadOnly={false}
+              readOnlyValue={project?.contact?.name || ''}
+              isReadOnly={isFormReadonly}
             >
               <LookupInput
                 className="form-element__outline"
                 onSelect={onSelectLookupField('contactId')}
                 onSearchKeyword={fetchContacts}
                 placeholderText="Search contacts..."
-                defaultSelected={fields.contactId}
+                defaultSelected={project?.contact ? { UID: project.contact.id, Name: project.contact.name } : null}
               />
             </FormElementWrapper>
           </div>
@@ -198,7 +198,6 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               name="applyContactForAllJob"
               type="checkbox"
               isReadOnly={false}
-              // disabled={isFormReadonly}
               label="Apply to all jobs"
               value={fields.applyContactForAllJob}
               error={submitted ? errors.applyContactForAllJob : ''}
@@ -212,15 +211,15 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             <FormElementWrapper
               name="regionId"
               validation={{ isValid: submitted ? !errors.regionId : true, error: errors.regionId }}
-              readOnlyValue={fields.regionId}
-              isReadOnly={false}
+              readOnlyValue={project?.region?.name || ''}
+              isReadOnly={isFormReadonly}
             >
               <LookupInput
                 className="form-element__outline"
                 onSelect={onSelectLookupField('regionId')}
                 onSearchKeyword={fetchRegions}
                 placeholderText="Search regions..."
-                defaultSelected={fields.regionId}
+                defaultSelected={project?.region ? { UID: project.region.id, Name: project.region.name } : null}
               />
             </FormElementWrapper>
           </div>
@@ -238,18 +237,25 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
         </div>
         <div className="cx-flex">
           <div className="cx-mb-4 cx-w-2/3">
-            <WrappedFormInput
-              name="location"
+            <span className="span-label">Location</span>
+            <FormElementWrapper
+              name="locationId"
+              validation={{ isValid: submitted ? !errors.locationId : true, error: errors.locationId }}
+              readOnlyValue={project?.location?.name || ''}
               isReadOnly={isFormReadonly}
-              label="Location"
-              value={fields.location}
-              error={submitted ? errors.location : ''}
-              isRequired={false}
-            />
+            >
+              <LookupInput
+                className="form-element__outline"
+                onSelect={onSelectLookupField('locationId')}
+                onSearchKeyword={fetchLocations}
+                placeholderText="Search locations..."
+                defaultSelected={project?.location ? { UID: project.location.id, Name: project.location.name } : null}
+              />
+            </FormElementWrapper>
           </div>
           <div className="cx-mb-4 cx-w-1/3 cx-text-center">
             <WrappedFormInput
-              name="applyAccountForAllJob"
+              name="applyLocationForAllJob"
               type="checkbox"
               isReadOnly={false}
               label="Apply to all jobs"
@@ -259,6 +265,14 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             />
           </div>
         </div>
+        <WrappedFormInput
+          name="address"
+          isReadOnly={isFormReadonly}
+          label="Address"
+          value={fields.address}
+          error={submitted ? errors.address : ''}
+          isRequired={false}
+        />
       </div>
       <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
         <Button buttonType="secondary" onClick={handleCancel}>

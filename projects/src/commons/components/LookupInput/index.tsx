@@ -11,7 +11,7 @@ interface LookupInputInterface {
   className?: string
   onSelect: (item: OptionInterface) => void
   onSearchKeyword: (keyword: string) => Promise<OptionInterface[]>,
-  defaultSelected?: OptionInterface
+  defaultSelected?: OptionInterface | null
   placeholderText?: string
 }
 
@@ -124,7 +124,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
           className="cx-flex cx-items-center cx-justify-between cx-border-neutral-450 cx-border cx-p-2 cx-rounded-sm"
         >
           <h2>{selectedOption.Name}</h2>
-          <Icon name="minus" size={14} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
+          <Icon name="minus" size={18} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
         </div>
       )}
       <Menu hidden={!openLookup} className="cx-absolute cx-z-50 cx-w-full">

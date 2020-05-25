@@ -1,0 +1,12 @@
+{
+  "success":true,
+  "message":"",
+  "errorMessage":"",
+  "devMessage":null,
+  "data":{
+    "user": {"id": "", "name": ""},
+    "jobStatus": [],
+    "projectStatus": ["In Progress", "Template"]
+  },
+  "code": 200
+}

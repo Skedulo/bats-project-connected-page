@@ -16,6 +16,7 @@ const ProjectFormConfig = {
   regionId: { isRequired: 'Region is required' },
   applyRegionForAllJob: {},
   location: {},
+  address: {},
   applyLocationForAllJob: {},
   startDate: { isRequired: 'Start date is required' },
   endDate: { isRequired: 'End date is required' },
@@ -54,7 +55,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }
         <ProjectFormChildren
           formParams={formParams}
           onCancel={onCancel}
-          project={project || {}}
+          project={project}
         />
       )}
     </SkedFormValidation>
