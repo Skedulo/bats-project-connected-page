@@ -9,7 +9,7 @@ interface DetailTabModalProp {
 
 const DetailTab: React.FC<DetailTabModalProp> = ({ project, onSubmit }) => {
   return (
-    <div className="cx-p-8">
+    <div className="cx-p-8 detail-tab">
       <ProjectForm project={project} onSubmit={onSubmit} />
     </div>
   )

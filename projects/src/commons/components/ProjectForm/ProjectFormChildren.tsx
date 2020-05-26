@@ -94,6 +94,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           error={submitted ? errors.projectDescription : ''}
           isRequired={false}
         />
+        <div className="cx-mb-4 ">
         <span className="span-label">Is Template</span>
         <FormElementWrapper
           className="cx-mb-4"
@@ -103,8 +104,9 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
         >
           <FormInputElement type="checkbox" name="isTemplate" checked={!!fields.isTemplate} />
         </FormElementWrapper>
+        </div>
         <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-1/3">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">Start date</span>
             <FormElementWrapper
               name="startDate"
@@ -123,7 +125,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-1/3">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">End date</span>
             <FormElementWrapper
               name="endDate"
@@ -143,8 +145,8 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             </FormElementWrapper>
           </div>
         </div>
-        <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-2/3">
+        <div className="cx-flex ">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">Account</span>
             <FormElementWrapper
               name="accountId"
@@ -161,7 +163,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-1/3 cx-text-center">
+          <div className="cx-mb-4 cx-w-2/4 ">
             <WrappedFormInput
               name="applyAccountForAllJob"
               type="checkbox"
@@ -175,8 +177,8 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             />
           </div>
         </div>
-        <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-2/3">
+        <div className="cx-flex ">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">Contact</span>
             <FormElementWrapper
               name="contactId"
@@ -193,7 +195,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-1/3 cx-text-center">
+          <div className="cx-mb-4 cx-w-2/4 ">
             <WrappedFormInput
               name="applyContactForAllJob"
               type="checkbox"
@@ -205,8 +207,8 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             />
           </div>
         </div>
-        <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-2/3">
+        <div className="cx-flex ">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">Region</span>
             <FormElementWrapper
               name="regionId"
@@ -223,7 +225,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-1/3 cx-text-center">
+          <div className="cx-mb-4 cx-w-2/4 ">
             <WrappedFormInput
               name="applyRegionForAllJob"
               type="checkbox"
@@ -236,7 +238,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           </div>
         </div>
         <div className="cx-flex">
-          <div className="cx-mb-4 cx-w-2/3">
+          <div className="cx-mb-4 cx-w-2/4">
             <span className="span-label">Location</span>
             <FormElementWrapper
               name="locationId"
@@ -253,7 +255,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-1/3 cx-text-center">
+          <div className="cx-mb-4 cx-w-2/4">
             <WrappedFormInput
               name="applyLocationForAllJob"
               type="checkbox"
