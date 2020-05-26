@@ -8,7 +8,7 @@ import * as routes from './pages/routes'
 
 interface AppContextInterface {
   config: {
-    projectStatus?: string[]
+    projectStatuses?: { id: string, name: string }[]
   }
 }
 

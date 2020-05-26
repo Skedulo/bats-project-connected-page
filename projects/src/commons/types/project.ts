@@ -10,40 +10,41 @@ export interface ProjectListItemInterface {
   startDate: string
   projectName: string
   projectDescription: string
-  projectStatus: string
+  projectStatus?: string
   endDate: string
 }
 
 export interface ProjectDetailInterface extends ProjectListItemInterface {
-  templateId: string
-  accountId: string
   applyAccountForAllJob: boolean
-  contactId: string
   applyContactForAllJob: boolean
-  regionId: string
   applyRegionForAllJob: boolean
   applyLocationForAllJob: boolean
   isTemplate: boolean
-  template: {
+  templateId?: string
+  accountId?: string
+  contactId?: string
+  regionId?: string
+  template?: {
     id: string
     name: string
   }
-  account: {
+  account?: {
     id: string
     name: string
   }
-  contact: {
+  contact?: {
     id: string
     name: string
   }
-  region: {
+  region?: {
     id: string
     name: string
   }
-  location: {
+  location?: {
     id: string
     name: string
   }
+  address: string
 }
 
 export interface ListResponseInterface<T> {
@@ -79,4 +80,18 @@ export interface SavedFilterSetInterface {
   id: string
   name: string
   filterSet: any
+}
+
+export interface FilterParamsInterface {
+  projectStatus?: string
+  searchText?: string
+  startDate?: string
+  endDate?: string
+  pageNumber?: number
+  pageSize?: number
+  sortType?: string
+  sortBy?: string
+  managerIds?: string
+  accountIds?: string
+  locationIds?: string
 }

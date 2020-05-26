@@ -7,11 +7,10 @@ import {
   LookupOptionInterface,
   ContactOptionInterface,
   SalesforceResponseInterface,
+  FilterParamsInterface,
 } from '../commons/types'
 
-import mockListProjects from './mock/listProjects.json'
-import mockConfig from './mock/config.json'
-import { LOCAL_STORAGE_KEY } from '../commons/constants';
+import { LOCAL_STORAGE_KEY, DEFAULT_FILTER } from '../commons/constants'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -28,35 +27,46 @@ const salesforceApi = axios.create({
 })
 
 export const fetchConfig = async (): Promise<ListResponseInterface<ProjectListItemInterface>> => {
-  console.log('credentials: ', credentials);
-  return mockConfig.data
+  const res = await salesforceApi.get('/services/apexrest/sked/config')
+  return res.data.data
 }
 
-export const fetchListProjects = async (filterObj: any): Promise<ListResponseInterface<ProjectListItemInterface>> => {
-  const res = await new Promise<ListResponseInterface<ProjectListItemInterface>>((resolve, reject) => {
-    setTimeout(() => resolve(mockListProjects.data), 1000)
-  })
-
-  return res
+export const fetchListProjects = async (
+  filterObj: FilterParamsInterface
+): Promise<ListResponseInterface<ProjectListItemInterface>> => {
+  const res = await salesforceApi.get('/services/apexrest/sked/project', { params: { ...filterObj } })
+  return res.data.data
 }
 
 export const fetchProjectById = async (projectId: string): Promise<ProjectDetailInterface> => {
   return {
-    ...mockListProjects.data.results[0],
-    accountId: '0013L000002aIFeQAM',
-    contactId: '0033L0000023k2eQAA',
-    regionId: 'a0M3L000000EEk4UAG',
-    applyRegionForAllJob: true,
-    isTemplate: true,
-    account: {
-      id: '0013L000002aIFeQAM',
-      name: 'Account'
-    }
+    account: { name: 'sked test account', id: '0013L000002aIFeQAM' },
+    address: '123',
+    applyAccountForAllJob: false,
+    applyContactForAllJob: false,
+    applyLocationForAllJob: false,
+    applyRegionForAllJob: false,
+    contact: { name: 'sked test contact', id: '0033L0000023k2eQAA' },
+    endDate: '2020-05-31',
+    id: 'a103L0000008Yi4QAE',
+    isTemplate: false,
+    location: { name: 'Sked Location', id: 'a0I3L0000005Bq2UAE' },
+    name: 'Sked test',
+    projectDescription: 'linh test',
+    projectName: 'Sked test',
+    region: { name: 'Thames Valley', id: 'a0M3L000000EEk4UAG' },
+    startDate: '2020-05-28',
   }
 }
 
-export const createProject = async (createInput: ProjectDetailInterface): Promise<ProjectDetailInterface> => {
-  return salesforceApi.post('/sked/project', createInput)
+export const createProject = async (
+  createInput: ProjectDetailInterface
+): Promise<ListResponseInterface<ProjectListItemInterface>> => {
+  const response: {
+    data: SalesforceResponseInterface
+  } = await salesforceApi.post('/services/apexrest/sked/project', createInput)
+
+  return fetchListProjects(DEFAULT_FILTER)
 }
 
 export const updateProject = async (updateInput: ProjectDetailInterface): Promise<ProjectDetailInterface> => {
@@ -69,11 +79,14 @@ export const deleteProject = async (UID: string) => {
 
 export const fetchTemplates = async (searchString: string): Promise<LookupOptionInterface[]> => {
   const params = searchString ? { name: searchString } : {}
-  const response: { data: SalesforceResponseInterface } = await salesforceApi.get('/services/apexrest/sked/projectTemplate', {
-    params
-  })
+  const response: { data: SalesforceResponseInterface } = await salesforceApi.get(
+    '/services/apexrest/sked/projectTemplate',
+    {
+      params,
+    }
+  )
   if (response.data.success) {
-    return response.data.data
+    return response.data.data.map((item: ProjectDetailInterface) => ({ UID: item.id, Name: item.projectName }))
   }
   return []
 }

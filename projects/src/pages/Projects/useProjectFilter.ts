@@ -2,17 +2,18 @@ import * as React from 'react'
 import { AppContext } from '../../App'
 import { cloneDeep } from 'lodash'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
-import { fetchRegions, fetchAccounts, fetchContacts, getFilterSets, setFilterSets } from '../../Services/DataServices'
+import { fetchRegions, fetchAccounts, fetchContacts, getFilterSets, setFilterSets, fetchLocations } from '../../Services/DataServices'
 import { SavedFilterSetInterface } from '../../commons/types'
 
 export const useProjectFilter = () => {
   const appContext = React.useContext(AppContext)
-  const { projectStatus = [] } = appContext?.config || {}
+  const { projectStatuses = [] } = appContext?.config || {}
+
   const defaultFilterBar: IFilter<{ id: string; name: string;  }>[] = [
     {
       id: 'projectStatus',
       name: 'Status',
-      items: projectStatus.map((item: string) => ({ id: item, name: item })),
+      items: projectStatuses,
       selectedIds: [],
       inputType: 'checkbox',
     },
@@ -28,7 +29,7 @@ export const useProjectFilter = () => {
       }
     },
     {
-      id: 'contactIds',
+      id: 'contactId',
       name: 'Contact',
       items: [],
       selectedIds: [],
@@ -49,6 +50,17 @@ export const useProjectFilter = () => {
         return res.map(item => ({ id: item.UID, name: item.Name }))
       }
     },
+    {
+      id: 'locationIds',
+      name: 'Location',
+      items: [],
+      selectedIds: [],
+      inputType: 'checkbox',
+      useFetch: async (searchTerm: string) => {
+        const res = await fetchLocations(searchTerm)
+        return res.map(item => ({ id: item.UID, name: item.Name }))
+      }
+    }
   ]
   const filterBar = defaultFilterBar
   // const [filterBar, setFilterBar] = React.useState(defaultFilterBar)

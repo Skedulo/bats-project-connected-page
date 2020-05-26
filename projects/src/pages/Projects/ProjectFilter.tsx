@@ -149,6 +149,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
                   <Menu>
                     {savedFilterSets.map(item => (
                       <MenuItem key={item.id}>
+                        {/* tslint:disable-next-line: jsx-no-lambda */}
                         <div onClick={() => onSelectSavedFilter(item)}>{item.name}</div>
                       </MenuItem>
                     ))}

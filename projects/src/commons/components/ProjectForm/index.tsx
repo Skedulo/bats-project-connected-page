@@ -15,7 +15,7 @@ const ProjectFormConfig = {
   applyContactForAllJob: {},
   regionId: { isRequired: 'Region is required' },
   applyRegionForAllJob: {},
-  location: {},
+  locationId: { isRequired: 'Location is required' },
   address: {},
   applyLocationForAllJob: {},
   startDate: { isRequired: 'Start date is required' },
@@ -35,10 +35,15 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }
       const submitData = {
         ...project,
         ...form.fields,
+        isTemplate: !!form.fields.isTemplate,
+        applyAccountForAllJob: !!form.fields.applyAccountForAllJob,
+        applyContactForAllJob: !!form.fields.applyContactForAllJob,
+        applyRegionForAllJob: !!form.fields.applyRegionForAllJob,
+        applyLocationForAllJob: !!form.fields.applyLocationForAllJob,
         startDate: isDate(form.fields.startDate) ? format(form.fields.startDate, DATE_FORMAT) : form.fields.startDate,
         endDate: isDate(form.fields.endDate) ? format(form.fields.endDate, DATE_FORMAT) : form.fields.endDate,
       }
-      console.log('submitData-------: ', submitData);
+
       onSubmit(submitData)
     },
     [project]

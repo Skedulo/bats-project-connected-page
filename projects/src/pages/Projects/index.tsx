@@ -8,23 +8,15 @@ import {
   Pagination,
   ActionMenu,
   Button,
-  FilterBar,
   ConfirmationModal,
   Icon,
-  PopOut,
-  Datepicker,
-  IconButton,
-  Menu,
-  MenuItem,
 } from '@skedulo/sked-ui'
 import { ProjectListItemInterface, ListResponseInterface, ProjectDetailInterface } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST, DATE_FORMAT } from '../../commons/constants'
+import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
 import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
 import CreateProjectModal from './CreateProjectModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
 import { projectDetailPath } from '../routes'
-import { useProjectFilter } from './useProjectFilter'
-import { format, add } from 'date-fns'
 import ProjectFilter from './ProjectFilter'
 
 interface ProjectsListProps {
@@ -40,9 +32,10 @@ interface FilterParamsInterface {
   pageSize?: number
   sortType?: string
   sortBy?: string
-  managerIds?: string
   accountIds?: string
   locationIds?: string
+  contactIds?: string
+  regionIds?: string
 }
 
 export const projectsTableColumns = (
@@ -64,7 +57,7 @@ export const projectsTableColumns = (
       Header: 'Status',
       accessor: 'projectStatus',
       Cell: ({ cell }) => {
-        return <Lozenge label={cell.value} color="neutral" size="small" solid={false} border={false} icon={null} />
+        return <Lozenge label={cell.value} color="neutral" size="small" solid={false} border={false} />
       },
     },
     {
@@ -85,11 +78,11 @@ export const projectsTableColumns = (
               menuItems={[
                 {
                   label: 'View/Edit',
-                  onClick: () => onViewProject(cell.value),
+                  onClick: () => onViewProject(cell?.value),
                 },
                 {
                   label: 'Delete',
-                  onClick: () => onDeleteProject(cell.value),
+                  onClick: () => onDeleteProject(cell?.value),
                 },
               ]}
             />
@@ -102,7 +95,6 @@ export const projectsTableColumns = (
 
 const ProjectsList: React.FC<ProjectsListProps> = () => {
   const history = useHistory()
-  const [searchText, setSearchText] = useState<string>('')
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
   const [confirmDeleteId, setOpenConfirmDeleteId] = useState<string | null>(null)
@@ -111,12 +103,12 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
 
   const getProjectsList = useCallback(async () => {
     setIsLoading(true)
-    const res = await fetchListProjects({ ...filterParams, searchText })
+    const res = await fetchListProjects({ ...filterParams })
     setProjects(res)
     setIsLoading(false)
-  }, [filterParams, searchText])
+  }, [filterParams])
 
-  const debounceGetProjectList = useMemo(() => debounce(700, getProjectsList), [getProjectsList])
+  const debounceGetProjectList = useMemo(() => debounce(1000, getProjectsList), [getProjectsList])
 
   const onRowSelect = useCallback((selectedRowIds: string[]) => {
     // console.log('selectedRowIds: ', selectedRowIds)
@@ -127,16 +119,16 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   }, [])
 
   const onSearchTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value)
+    onFilterChange({ searchText: e.target.value })
+    // setSearchText(e.target.value)
   }, [])
 
   const onSearchTextClear = useCallback(() => {
-    setSearchText('')
+    onFilterChange({ searchText: '' })
   }, [])
 
   const onResetFilter = useCallback(() => {
     setFilterParams(DEFAULT_FILTER)
-    setSearchText('')
   }, [])
 
   const onFilterChange = useCallback((params: FilterParamsInterface) => {
@@ -156,7 +148,12 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   }, [])
 
   const onSaveProject = useCallback(async (data: ProjectDetailInterface) => {
+    setIsLoading(true)
     const res = await createProject(data)
+    setProjects(res)
+    setFilterParams(DEFAULT_FILTER)
+    setOpenCreateModal(false)
+    setIsLoading(false)
   }, [])
 
   // TODO: made top url sync with cp url
@@ -183,13 +180,19 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     getRowId: (row: ProjectListItemInterface) => row.id,
     rowSelectControl: 'allRows',
     onRowSelect,
+    onSortBy: props => {
+      if (props?.id) {
+        onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
+      }
+    },
+    sortByControl: 'controlled'
   }), [projects.results, projectsTableColumns])
 
   useEffect(() => {
     if (!isLoading) {
       debounceGetProjectList()
     }
-  }, [searchText, filterParams])
+  }, [filterParams])
 
   return (
     <div className="page-view">
@@ -204,10 +207,10 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
                 type="text"
                 data-sk-name="generic-filter-bar"
                 placeholder="Search accounts"
-                value={searchText || ''}
+                value={filterParams.searchText || ''}
                 onChange={onSearchTextChange}
               />
-              {searchText && (
+              {filterParams.searchText && (
                 <Icon className="cx-pr-2" size={18} color="#4A556A" onClick={onSearchTextClear} name="close" />
               )}
             </div>
@@ -221,12 +224,14 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
       </div>
       <ProjectFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
       <DynamicTable {...projectsTableConfig} />
-      <Pagination
-        itemsTotal={projects.totalItems}
-        itemsPerPage={filterParams.pageSize || 0}
-        currentPage={filterParams.pageNumber || 1}
-        onPageChange={onPageChange}
-      />
+      {projects.totalItems > 0 && (
+        <Pagination
+          itemsTotal={projects.totalItems}
+          itemsPerPage={filterParams.pageSize || 0}
+          currentPage={filterParams.pageNumber || 1}
+          onPageChange={onPageChange}
+        />
+      )}
       {openCreateModal && <CreateProjectModal onClose={toggleCreateModal} onSubmit={onSaveProject} />}
       {!!confirmDeleteId && (
         <ConfirmationModal onCancel={closeConfirmDelete} onConfirm={onDeleteProject} confirmButtonText="Ok">

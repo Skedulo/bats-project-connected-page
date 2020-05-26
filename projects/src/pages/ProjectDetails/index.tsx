@@ -22,7 +22,6 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
   const getProjectById = useCallback(async (projectId: string) => {
     startGlobalLoading()
     const res = await fetchProjectById(projectId)
-    console.log('res----project: ', res);
     setProject({ ...res})
     endGlobalLoading()
   }, [])
