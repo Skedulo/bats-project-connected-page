@@ -6,7 +6,7 @@ import ProjectFormChildren from './ProjectFormChildren'
 import { DATE_FORMAT } from '../../constants'
 
 const ProjectFormConfig = {
-  templateId: { isRequired: 'Template is required' },
+  //templateId: { isRequired: 'Template is required' },
   projectName: { isRequired: 'Name is required' },
   projectDescription: {},
   accountId: { isRequired: 'Account is required' },

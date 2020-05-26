@@ -1,7 +1,7 @@
 import React, { useEffect, useState, memo, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { ProjectDetailInterface, RouterParamsInterface } from '../../commons/types'
-import { fetchProjectById } from '../../Services/DataServices'
+import { fetchProjectById, updateProject } from '../../Services/DataServices'
 import { useGlobalLoading, LoadingTrigger } from '../../commons/components/GlobalLoading'
 import { Icon, Tabs } from '@skedulo/sked-ui'
 import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES } from '../../commons/constants'
@@ -28,8 +28,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
 
   const onChangeTab = useCallback((tab: string) => setActiveTab(tab), [])
 
-  const onSaveProject = useCallback((data: any) => {
-    console.log('savedata: ', data);
+  const onSaveProject = useCallback(async (data: any) => {
+    startGlobalLoading()
+    const res = await updateProject(data)
+    endGlobalLoading()
   }, [])
 
   useEffect(() => {
