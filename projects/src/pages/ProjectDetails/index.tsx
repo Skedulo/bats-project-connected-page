@@ -17,7 +17,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
   // const [confirmDelete, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
-  const [project, setProject] = useState<ProjectDetailInterface>(null)
+  const [project, setProject] = useState<ProjectDetailInterface | null>(null)
 
   const getProjectById = useCallback(async (projectId: string) => {
     startGlobalLoading()

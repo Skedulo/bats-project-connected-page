@@ -6,20 +6,25 @@ import ProjectFormChildren from './ProjectFormChildren'
 import { DATE_FORMAT } from '../../constants'
 
 const ProjectFormConfig = {
+  templateId: {},
   //templateId: { isRequired: 'Template is required' },
   projectName: { isRequired: 'Name is required' },
   projectDescription: {},
-  accountId: { isRequired: 'Account is required' },
+  accountId: {},
+  // accountId: { isRequired: 'Account is required' },
   applyAccountForAllJob: {},
-  contactId: { isRequired: 'Contact is required' },
+  contactId: { },
   applyContactForAllJob: {},
   regionId: { isRequired: 'Region is required' },
   applyRegionForAllJob: {},
-  locationId: { isRequired: 'Location is required' },
-  address: {},
+  locationId: {},
+  // locationId: { isRequired: 'Location is required' },
+  // address: {},
   applyLocationForAllJob: {},
-  startDate: { isRequired: 'Start date is required' },
-  endDate: { isRequired: 'End date is required' },
+  startDate: {},
+  // startDate: { isRequired: 'Start date is required' },
+  // endDate: { isRequired: 'End date is required' },
+  endDate: {},
   isTemplate: {},
 }
 

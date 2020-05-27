@@ -2,14 +2,14 @@ import * as React from 'react'
 import { AppContext } from '../../App'
 import { cloneDeep } from 'lodash'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
-import { fetchRegions, fetchAccounts, fetchContacts, getFilterSets, setFilterSets, fetchLocations } from '../../Services/DataServices'
+import { fetchRegions, fetchAccounts, fetchContacts, getLocalFilterSets, setLocalFilterSets, fetchLocations } from '../../Services/DataServices'
 import { SavedFilterSetInterface } from '../../commons/types'
 
 export const useProjectFilter = () => {
   const appContext = React.useContext(AppContext)
-  const { projectStatuses = [] } = appContext?.config || {}
+  const { projectStatuses = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
 
-  const defaultFilterBar: IFilter<{ id: string; name: string;  }>[] = [
+  const defaultFilterBar: IFilter<{ id: string; name: string; }>[] = React.useMemo(() => ([
     {
       id: 'projectStatus',
       name: 'Status',
@@ -29,7 +29,7 @@ export const useProjectFilter = () => {
       }
     },
     {
-      id: 'contactId',
+      id: 'contactIds',
       name: 'Contact',
       items: [],
       selectedIds: [],
@@ -61,36 +61,34 @@ export const useProjectFilter = () => {
         return res.map(item => ({ id: item.UID, name: item.Name }))
       }
     }
-  ]
-  const filterBar = defaultFilterBar
-  // const [filterBar, setFilterBar] = React.useState(defaultFilterBar)
+  ]), [projectStatuses])
+  const [filterBar, setFilterBar] = React.useState<IFilter<{ id: string; name: string; }>[]>([])
   const [appliedFilter, setAppliedFilter] = React.useState<any>([])
-  const [savedFilterSets, setSavedFilterSets] = React.useState<SavedFilterSetInterface[]>([])
+  const [savedFilterSets, setSavedFilterSets] = React.useState<SavedFilterSetInterface[]>(getLocalFilterSets())
 
-  const saveFilterSets = React.useCallback((name: string, filterSet: any) => {
-    setFilterSets([...savedFilterSets, { name, filterSet, id: new Date().valueOf() }])
-  }, [setSavedFilterSets])
+  const saveFilterSets = React.useCallback((newFilterSet: any) => {
+    setLocalFilterSets([...savedFilterSets, newFilterSet])
+    setSavedFilterSets(getLocalFilterSets())
+  }, [])
 
-  React.useEffect(() => {
-    setSavedFilterSets(getFilterSets())
+  const deleteFilterSet = React.useCallback((id: string) => {
+    setLocalFilterSets(savedFilterSets.filter(item => item.id !== id))
+    setSavedFilterSets(getLocalFilterSets())
   }, [])
 
   React.useEffect(() => {
-    const newFilters = cloneDeep(defaultFilterBar)
-    appliedFilter.forEach(item => {
-      const matchIndex = newFilters.findIndex(newItem => item.id === newItem.id)
-      if (matchIndex !== -1) {
-        newFilters[matchIndex] = {...newFilters[matchIndex], selectedIds: item.selectedItems.map(i => i.id)}
-        // setFilterBar(newFilters)
-      }
-    })
-  }, [appliedFilter])
+    if (projectStatuses.length) {
+      setFilterBar(defaultFilterBar)
+    }
+  }, [projectStatuses])
 
   return React.useMemo(() => ({
     filterBar,
+    setFilterBar,
     appliedFilter,
     setAppliedFilter,
     savedFilterSets,
-    saveFilterSets
+    saveFilterSets,
+    deleteFilterSet
   }), [appliedFilter, savedFilterSets, filterBar])
 }

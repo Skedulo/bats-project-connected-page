@@ -11,31 +11,16 @@ import {
   ConfirmationModal,
   Icon,
 } from '@skedulo/sked-ui'
-import { ProjectListItemInterface, ListResponseInterface, ProjectDetailInterface } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
-import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
+import ProjectFilter from './ProjectFilter'
 import CreateProjectModal from './CreateProjectModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
+import { ProjectListItemInterface, ListResponseInterface, ProjectDetailInterface, FilterParamsInterface } from '../../commons/types'
+import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
+import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
 import { projectDetailPath } from '../routes'
-import ProjectFilter from './ProjectFilter'
 
 interface ProjectsListProps {
   children?: any
-}
-
-interface FilterParamsInterface {
-  projectStatus?: string
-  searchText?: string
-  startDate?: string
-  endDate?: string
-  pageNumber?: number
-  pageSize?: number
-  sortType?: string
-  sortBy?: string
-  accountIds?: string
-  locationIds?: string
-  contactIds?: string
-  regionIds?: string
 }
 
 export const projectsTableColumns = (
@@ -56,7 +41,7 @@ export const projectsTableColumns = (
     {
       Header: 'Status',
       accessor: 'projectStatus',
-      Cell: ({ cell }) => {
+      Cell: ({ cell }: { cell: { value: string }}) => {
         return <Lozenge label={cell.value} color="neutral" size="small" solid={false} border={false} />
       },
     },
@@ -71,18 +56,19 @@ export const projectsTableColumns = (
     {
       Header: '',
       accessor: 'id',
-      Cell: ({ cell }) => {
+      disableSortBy: true,
+      Cell: ({ cell }: { cell: { value: string }}) => {
         return (
           <div className="cx-text-right">
             <ActionMenu
               menuItems={[
                 {
                   label: 'View/Edit',
-                  onClick: () => onViewProject(cell?.value),
+                  onClick: () => onViewProject(cell.value),
                 },
                 {
                   label: 'Delete',
-                  onClick: () => onDeleteProject(cell?.value),
+                  onClick: () => onDeleteProject(cell.value),
                 },
               ]}
             />
@@ -102,13 +88,18 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   const [projects, setProjects] = useState<ListResponseInterface<ProjectListItemInterface>>(DEFAULT_PROJECTS_LIST)
 
   const getProjectsList = useCallback(async () => {
-    setIsLoading(true)
-    const res = await fetchListProjects({ ...filterParams })
-    setProjects(res)
-    setIsLoading(false)
+    try {
+      setIsLoading(true)
+      const res = await fetchListProjects({ ...filterParams })
+      setProjects(res)
+    } catch (error) {
+      console.log('error: ', error)
+    } finally {
+      setIsLoading(false)
+    }
   }, [filterParams])
 
-  const debounceGetProjectList = useMemo(() => debounce(1000, getProjectsList), [getProjectsList])
+  const debounceGetProjectList = useMemo(() => debounce(700, getProjectsList), [getProjectsList])
 
   const onRowSelect = useCallback((selectedRowIds: string[]) => {
     // console.log('selectedRowIds: ', selectedRowIds)
@@ -120,7 +111,6 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
 
   const onSearchTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     onFilterChange({ searchText: e.target.value })
-    // setSearchText(e.target.value)
   }, [])
 
   const onSearchTextClear = useCallback(() => {
@@ -148,17 +138,23 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   }, [])
 
   const onSaveProject = useCallback(async (data: ProjectDetailInterface) => {
-    setIsLoading(true)
-    const res = await createProject(data)
-    setProjects(res)
-    setFilterParams(DEFAULT_FILTER)
-    setOpenCreateModal(false)
-    setIsLoading(false)
+    try {
+      setIsLoading(true)
+      const res = await createProject(data)
+      setProjects(res)
+      setFilterParams(DEFAULT_FILTER)
+    } catch (error) {
+      console.log('error: ', error)
+    } finally {
+      setOpenCreateModal(false)
+      setIsLoading(false)
+    }
   }, [])
 
   // TODO: made top url sync with cp url
   const onViewProject = useCallback((projectId: string) => {
     // window.top.window.location.href = `${PROJECT_DETAIL_PATH}${projectId}`
+    console.log('history: ', history);
     history.push(projectDetailPath(projectId))
   }, [])
 
@@ -166,11 +162,16 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     if (!confirmDeleteId) {
       return
     }
-    setIsLoading(true)
-    await deleteProject(confirmDeleteId)
-    setIsLoading(false)
-    closeConfirmDelete()
-    getProjectsList()
+    try {
+      setIsLoading(true)
+      await deleteProject(confirmDeleteId)
+      await getProjectsList()
+    } catch (error) {
+      console.log('error: ', error)
+    } finally {
+      setIsLoading(false)
+      closeConfirmDelete()
+    }
   }, [confirmDeleteId])
 
   const projectsTableConfig: IDynamicTable<ProjectListItemInterface> = useMemo(() => ({
@@ -230,6 +231,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
           itemsPerPage={filterParams.pageSize || 0}
           currentPage={filterParams.pageNumber || 1}
           onPageChange={onPageChange}
+          className="cx-static"
         />
       )}
       {openCreateModal && <CreateProjectModal onClose={toggleCreateModal} onSubmit={onSaveProject} />}

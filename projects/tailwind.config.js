@@ -190,7 +190,7 @@ let colors = {
 
 module.exports = {
   prefix: 'cx-',
-  important: false,
+  important: true,
   separator: ':',
   theme: {
     screens: {

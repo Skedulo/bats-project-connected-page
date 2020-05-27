@@ -1,6 +1,6 @@
 {
   "type": "webpage",
-  "name": "Project Management Page",
+  "name": "Projects",
   "description": "A connected page used to manage project",
   "url": "projects",
   "render": {

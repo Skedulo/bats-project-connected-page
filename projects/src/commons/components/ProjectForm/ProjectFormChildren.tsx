@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { isDate, isAfter } from 'date-fns'
 import { SkedFormChildren, Button, FormElementWrapper, Datepicker, FormInputElement } from '@skedulo/sked-ui'
-import WrappedFormInput from '../../../commons/components/WrappedFormInput'
-import { ProjectDetailInterface, LookupOptionInterface } from '../../../commons/types'
 import LookupInput from '../../../commons/components/LookupInput'
+import WrappedFormInput from '../../../commons/components/WrappedFormInput'
 import { fetchAccounts, fetchContacts, fetchRegions, fetchLocations, fetchTemplates } from '../../../Services/DataServices'
+import { ProjectDetailInterface, LookupOptionInterface } from '../../../commons/types'
 import { DATE_FORMAT } from '../../constants'
 
 interface ProjectFormChildrenProps {
@@ -82,7 +82,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           label="Name"
           value={fields.projectName}
           error={submitted ? errors.projectName : ''}
-          isRequired={false}
+          isRequired={true}
         />
         <WrappedFormInput
           name="projectDescription"
@@ -125,7 +125,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <span className="span-label">End date</span>
             <FormElementWrapper
               name="endDate"
@@ -163,7 +163,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4 ">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyAccountForAllJob"
               type="checkbox"
@@ -195,7 +195,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4 ">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyContactForAllJob"
               type="checkbox"
@@ -225,7 +225,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4 ">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyRegionForAllJob"
               type="checkbox"
@@ -233,7 +233,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               label="Apply to all jobs"
               value={fields.applyRegionForAllJob}
               error={submitted ? errors.applyRegionForAllJob : ''}
-              isRequired={false}
+              isRequired={true}
             />
           </div>
         </div>
@@ -255,7 +255,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyLocationForAllJob"
               type="checkbox"
@@ -267,14 +267,14 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             />
           </div>
         </div>
-        <WrappedFormInput
+        {/* <WrappedFormInput
           name="address"
           isReadOnly={isFormReadonly}
           label="Address"
           value={fields.address}
           error={submitted ? errors.address : ''}
           isRequired={false}
-        />
+        /> */}
       </div>
       <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
         <Button buttonType="secondary" onClick={handleCancel}>

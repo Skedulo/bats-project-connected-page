@@ -55,7 +55,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
     if (openLookup) {
       setTimeout(() => {
         setOpenLookup(false)
-      }, 200)
+      }, 400)
     }
   }, [openLookup])
 

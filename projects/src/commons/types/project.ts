@@ -1,5 +1,3 @@
-import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces';
-
 export interface RouterParamsInterface {
   projectId?: string
 }
@@ -76,7 +74,7 @@ export interface SalesforceResponseInterface {
   code: number
 }
 
-export interface SavedFilterSetInterface {
+export interface SavedFilterSetInterface extends FilterParamsInterface {
   id: string
   name: string
   filterSet: any
@@ -91,7 +89,8 @@ export interface FilterParamsInterface {
   pageSize?: number
   sortType?: string
   sortBy?: string
-  managerIds?: string
   accountIds?: string
   locationIds?: string
+  contactIds?: string
+  regionIds?: string
 }

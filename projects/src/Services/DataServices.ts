@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { mapValues } from 'lodash/fp'
 import { Services, credentials } from './Services'
 import {
   ProjectListItemInterface,
@@ -39,46 +40,28 @@ export const fetchListProjects = async (
 }
 
 export const fetchProjectById = async (projectId: string): Promise<ProjectDetailInterface> => {
-  // return {
-  //   account: { name: 'sked test account', id: '0013L000002aIFeQAM' },
-  //   address: '123',
-  //   applyAccountForAllJob: false,
-  //   applyContactForAllJob: false,
-  //   applyLocationForAllJob: false,
-  //   applyRegionForAllJob: false,
-  //   contact: { name: 'sked test contact', id: '0033L0000023k2eQAA' },
-  //   endDate: '2020-05-31',
-  //   id: 'a103L0000008Yi4QAE',
-  //   isTemplate: false,
-  //   location: { name: 'Sked Location', id: 'a0I3L0000005Bq2UAE' },
-  //   name: 'Sked test',
-  //   projectDescription: 'linh test',
-  //   projectName: 'Sked test',
-  //   region: { name: 'Thames Valley', id: 'a0M3L000000EEk4UAG' },
-  //   startDate: '2020-05-28',
-  // }
-
-  const params = { projectId };
+  const params = { projectId }
   const response: { data: SalesforceResponseInterface } = await salesforceApi.get(
     '/services/apexrest/sked/project',
     {
       params,
     }
   )
-  const result = response.data.data;
-  result.contactId = result.contact?.id;
-  result.accountId = result.account?.id;
-  result.locationId = result.location?.id;
-  result.regionId = result.region?.id;
-  return result;
+  const result = response.data.data
+  result.contactId = result.contact?.id
+  result.accountId = result.account?.id
+  result.locationId = result.location?.id
+  result.regionId = result.region?.id
+  return result
 }
 
 export const updateProject = async (
   requestData: ProjectDetailInterface
 ): Promise<ProjectListItemInterface> => {
+  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
   const response: {
     data: SalesforceResponseInterface
-  } = await salesforceApi.post('/services/apexrest/sked/project', requestData)
+  } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
 
   return fetchProjectById(requestData.id)
 }
@@ -86,15 +69,23 @@ export const updateProject = async (
 export const createProject = async (
   createInput: ProjectDetailInterface
 ): Promise<ListResponseInterface<ProjectListItemInterface>> => {
+  const formattedPayload = mapValues(value => value === '' ? null : value, createInput)
+
   const response: {
     data: SalesforceResponseInterface
-  } = await salesforceApi.post('/services/apexrest/sked/project', createInput)
+  } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
 
   return fetchListProjects(DEFAULT_FILTER)
 }
 
-export const deleteProject = async (UID: string) => {
-  console.log('delete uid: ', UID)
+export const deleteProject = async (uids: string) => {
+  const response: {
+    data: SalesforceResponseInterface
+  } = await salesforceApi.delete('/services/apexrest/sked/project', {
+    params: { ids: uids }
+  })
+
+  return response.data
 }
 
 export const fetchTemplates = async (searchString: string): Promise<LookupOptionInterface[]> => {
@@ -199,11 +190,11 @@ export const fetchLocations = async (searchString: string): Promise<LookupOption
   return response.locations
 }
 
-export const setFilterSets = (filterSet: any) => {
+export const setLocalFilterSets = (filterSet: any) => {
   return window.localStorage.setItem(LOCAL_STORAGE_KEY.PROJECT_FILTER_SET, JSON.stringify(filterSet))
 }
 
-export const getFilterSets = () => {
+export const getLocalFilterSets = () => {
   const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY.PROJECT_FILTER_SET)
   return stored ? JSON.parse(stored) : []
 }

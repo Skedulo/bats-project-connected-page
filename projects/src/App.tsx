@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { HashRouter, Route, Switch } from 'react-router-dom'
+import { HashRouter, Route, Switch, useHistory } from 'react-router-dom'
+import { createBrowserHistory, createHashHistory } from 'history'
 import ListProjectsPage from './pages/Projects'
 import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'
