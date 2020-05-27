@@ -2,6 +2,23 @@ export interface RouterParamsInterface {
   projectId?: string
 }
 
+export interface ObjPermissionInterface {
+  allowCreate: boolean
+  allowDelete: boolean
+  allowRead: boolean
+  allowUpdate: boolean
+}
+
+export interface AppContextInterface {
+  config: {
+    projectStatuses?: { id: string, name: string }[],
+    objPermissions?: {
+      Project: ObjPermissionInterface
+      ProjectJobTemplate: ObjPermissionInterface
+    }
+  }
+}
+
 export interface ProjectListItemInterface {
   name: string
   id: string

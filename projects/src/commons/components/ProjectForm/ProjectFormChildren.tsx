@@ -14,6 +14,7 @@ interface ProjectFormChildrenProps {
 }
 
 const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, onCancel, project }) => {
+  const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
 
   const startDate = React.useMemo(() => {
@@ -59,7 +60,8 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
   return (
     <>
       <div className="vertical-panel">
-        <div className="cx-mb-4">
+        {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Information</h1>}
+        <div className="cx-mb-4 click-to-edit-custom">
           <span className="span-label">Template</span>
           <FormElementWrapper
             name="templateId"
@@ -78,6 +80,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
         </div>
         <WrappedFormInput
           name="projectName"
+          className="click-to-edit-custom"
           isReadOnly={isFormReadonly}
           label="Name"
           value={fields.projectName}
@@ -86,6 +89,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
         />
         <WrappedFormInput
           name="projectDescription"
+          className="click-to-edit-custom"
           type="textarea"
           rows={3}
           isReadOnly={isFormReadonly}
@@ -95,18 +99,28 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           isRequired={false}
         />
         <div className="cx-mb-4 ">
-        <span className="span-label">Is Template</span>
-        <FormElementWrapper
-          className="cx-mb-4"
-          name="isTemplate"
-          readOnlyValue={fields.isTemplate ? 'True' : 'False'}
-          isReadOnly={false}
-        >
-          <FormInputElement type="checkbox" name="isTemplate" checked={!!fields.isTemplate} />
-        </FormElementWrapper>
+          {/* <span className="span-label">Is Template</span>
+          <FormElementWrapper
+            className="cx-mb-4"
+            name="isTemplate"
+            readOnlyValue={fields.isTemplate ? 'True' : 'False'}
+            isReadOnly={false}
+          >
+            <FormInputElement type="checkbox" name="isTemplate" checked={!!fields.isTemplate} />
+          </FormElementWrapper> */}
+          <WrappedFormInput
+            name="isTemplate"
+            className="click-to-edit-custom"
+            type="checkbox"
+            isReadOnly={false}
+            disabled={isFormReadonly}
+            label="Is Template"
+            value={fields.isTemplate}
+            isRequired={false}
+          />
         </div>
         <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
             <span className="span-label">Start date</span>
             <FormElementWrapper
               name="startDate"
@@ -121,11 +135,11 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 selected={startDate}
                 onChange={onSelectDate('startDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={!!(project?.id && project?.isTemplate)}
+                disabled={!!(isUpdate && fields.isTemplate)}
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
+          <div className="cx-mb-4 cx-w-2/4 cx-ml-4 click-to-edit-custom">
             <span className="span-label">End date</span>
             <FormElementWrapper
               name="endDate"
@@ -140,13 +154,14 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 selected={endDate}
                 onChange={onSelectDate('endDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={!!(project?.id && project?.isTemplate)}
+                disabled={!!(isUpdate && fields.isTemplate)}
               />
             </FormElementWrapper>
           </div>
         </div>
+        {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
             <span className="span-label">Account</span>
             <FormElementWrapper
               name="accountId"
@@ -166,10 +181,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyAccountForAllJob"
+              className="click-to-edit-custom"
               type="checkbox"
-              // isReadOnly={false}
-              // disabled={isFormReadonly}
               isReadOnly={false}
+              disabled={isFormReadonly}
               label="Apply to all jobs"
               value={fields.applyAccountForAllJob}
               error={submitted ? errors.applyAccountForAllJob : ''}
@@ -178,7 +193,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           </div>
         </div>
         <div className="cx-flex ">
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
             <span className="span-label">Contact</span>
             <FormElementWrapper
               name="contactId"
@@ -198,8 +213,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyContactForAllJob"
+              className="click-to-edit-custom"
               type="checkbox"
               isReadOnly={false}
+              disabled={isFormReadonly}
               label="Apply to all jobs"
               value={fields.applyContactForAllJob}
               error={submitted ? errors.applyContactForAllJob : ''}
@@ -208,7 +225,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           </div>
         </div>
         <div className="cx-flex ">
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
             <span className="span-label">Region</span>
             <FormElementWrapper
               name="regionId"
@@ -228,8 +245,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
               name="applyRegionForAllJob"
+              className="click-to-edit-custom"
               type="checkbox"
               isReadOnly={false}
+              disabled={isFormReadonly}
               label="Apply to all jobs"
               value={fields.applyRegionForAllJob}
               error={submitted ? errors.applyRegionForAllJob : ''}
@@ -238,7 +257,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           </div>
         </div>
         <div className="cx-flex">
-          <div className="cx-mb-4 cx-w-2/4">
+          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
             <span className="span-label">Location</span>
             <FormElementWrapper
               name="locationId"
@@ -257,9 +276,11 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           </div>
           <div className="cx-mb-4 cx-w-2/4 cx-ml-4">
             <WrappedFormInput
+              className="click-to-edit-custom"
               name="applyLocationForAllJob"
               type="checkbox"
               isReadOnly={false}
+              disabled={isFormReadonly}
               label="Apply to all jobs"
               value={fields.applyLocationForAllJob}
               error={submitted ? errors.applyLocationForAllJob : ''}
@@ -276,14 +297,16 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           isRequired={false}
         /> */}
       </div>
-      <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
-        <Button buttonType="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button buttonType="primary" className="cx-ml-2" type="submit">
-          Save
-        </Button>
-      </div>
+      {!isFormReadonly && (
+        <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
+          <Button buttonType="secondary" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button buttonType="primary" className="cx-ml-2" type="submit">
+            Save
+          </Button>
+        </div>
+      )}
     </>
   )
 }

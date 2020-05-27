@@ -6,7 +6,7 @@ export const LOCAL_STORAGE_KEY = {
 
 export const DEFAULT_FILTER = {
   pageNumber: 1,
-  pageSize: 10
+  pageSize: 20
 }
 
 export const DEFAULT_PROJECTS_LIST = {

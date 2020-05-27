@@ -6,12 +6,7 @@ import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'
 import { fetchConfig } from './Services/DataServices'
 import * as routes from './pages/routes'
-
-interface AppContextInterface {
-  config: {
-    projectStatuses?: { id: string, name: string }[]
-  }
-}
+import { AppContextInterface } from './commons/types'
 
 export const AppContext = React.createContext<AppContextInterface>({
   config: {}

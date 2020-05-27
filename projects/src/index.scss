@@ -7,26 +7,26 @@ body {
 }
 
 .detail-tab{
-    .cx-mb-4, .label{
+  .click-to-edit-custom {
     display: flex;
-    flex:0 auto;
-    span{
+    flex: 0 auto;
+    span {
       width: 20%;
       max-width: 200px;
       min-width: 200px;
       padding-top: 5px;
     }
-    div{
+    div {
       width: 90%;
     }
   }
-  .cx-mb-4{
+  .cx-mb-4 {
     margin-bottom: 0px;
   }
-  .cx-absolute{
+  .cx-absolute {
     width: auto !important;;
   }
-  .sked-checkbox{
+  .sked-checkbox {
     margin-left: 10px;
   }
 }

@@ -116,7 +116,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
           inputRef={inputRef}
         />
         <div className="cx-absolute cx-inset-y-0 cx-right-0 cx-flex cx-items-center cx-p-2">
-          <Icon name="search" size={16} className="cx-text-neutral-500" />
+          <Icon name="search" size={18} className="cx-text-neutral-500" />
         </div>
       </div>
       {selectedOption && (
@@ -124,7 +124,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
           className="cx-flex cx-items-center cx-justify-between cx-border-neutral-450 cx-border cx-p-2 cx-rounded-sm"
         >
           <h2>{selectedOption.Name}</h2>
-          <Icon name="minus" size={18} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
+          <Icon name="close" size={20} className="cx-text-neutral-500 cx-inline-block" onClick={handleRemove} />
         </div>
       )}
       <Menu hidden={!openLookup} className="cx-absolute cx-z-50 cx-w-full">

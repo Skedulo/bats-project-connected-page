@@ -9,7 +9,12 @@ const ProjectFormConfig = {
   templateId: {},
   //templateId: { isRequired: 'Template is required' },
   projectName: { isRequired: 'Name is required' },
-  projectDescription: {},
+  projectDescription: {
+    isMaxLength: {
+      length: 255,
+      message: 'Max length is 255'
+    }
+  },
   accountId: {},
   // accountId: { isRequired: 'Account is required' },
   applyAccountForAllJob: {},

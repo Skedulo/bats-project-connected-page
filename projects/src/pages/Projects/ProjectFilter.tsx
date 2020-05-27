@@ -8,6 +8,8 @@ import { format, add } from 'date-fns'
 import { SavedFilterSetInterface } from '../../commons/types'
 import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
 
+const ALL_PROJECTS = 'All Projects'
+
 interface ProjectFilterProps {
   onFilterChange: (data: any) => void
   onResetFilter: () => void
@@ -33,7 +35,6 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
 
   const resetFilter = React.useCallback(() => {
     const newFilterBar = filterBar.map(filterItem => {
-      console.log('filterItem: ', filterItem);
       if (filterItem.selectedIds.length) {
         return {
           ...filterItem,
@@ -81,11 +82,10 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
         ? matchedItem.selectedItems.map((selected: any) => selected.id).join(',')
         : ''
     })
-
     setSelectedFilterSet(null)
     setAppliedFilter(params)
     onFilterChange({ ...selectedParams })
-  }, [])
+  }, [filterBar])
 
   // the end date filter text
   const filterEndDateTrigger = useCallback(() => {
@@ -125,7 +125,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
   const myFilterSetsTrigger = useCallback(() => {
     return (
       <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mr-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-        {selectedFilterSet ? selectedFilterSet?.name : 'All filters'}
+        {selectedFilterSet ? selectedFilterSet?.name : ALL_PROJECTS}
         <Icon name="chevronDown" size={18} />
       </div>
     )
@@ -164,6 +164,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
       delete filterObj.filterSet
       onFilterChange({ ...filterObj })
       setSelectedFilterSet(selectedItem)
+      setFilterSetName('')
     }
   }, [selectedFilterSet, filterBar])
 
@@ -200,7 +201,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
               {() => (
                 <Menu>
                   <MenuItem onClick={resetFilter}>
-                    All Projects
+                    {ALL_PROJECTS}
                   </MenuItem>
                   {savedFilterSets.map((item) => (
                     <MenuItem key={item.id} className="cx-p-0">
@@ -243,6 +244,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
                     <Button
                       buttonType="primary"
                       className="cx-ml-2"
+                      disabled={!filterSetName}
                       // tslint:disable-next-line: jsx-no-lambda
                       onClick={() => {
                         togglePopout()

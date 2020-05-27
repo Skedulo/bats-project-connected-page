@@ -52,13 +52,18 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
             <Icon name="chevronLeft" className="breadcrumb__icon" />
             <span className="breadcrumb__link capitalize">Projects</span>
           </Link>
-          <div className="cx-flex cx-justify-between cx-mb-6">
-            <h1 className="cx-text-xl cx-font-semibold" data-sk-name="crud-details-page-title">
-              {project.projectName}
-            </h1>
-            {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
-              <Icon name="trash" className="cx-text-neutral-500" />
-            </button> */}
+          <div>
+            <div className="cx-flex cx-justify-between cx-mb-4">
+              <h1 className="cx-text-xl cx-font-semibold" data-sk-name="crud-details-page-title">
+                {project.projectName}
+              </h1>
+              {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
+                <Icon name="trash" className="cx-text-neutral-500" />
+              </button> */}
+            </div>
+            <p className="cx-text-sm cx-text-neutral-700 cx-mb-4" data-sk-name="crud-details-page-title">
+              {project.projectDescription}
+            </p>
           </div>
           <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
         </div>

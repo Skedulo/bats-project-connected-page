@@ -12,19 +12,23 @@ interface WrappedFormInputProps {
   isReadOnly: boolean,
   isRequired: boolean,
   rows?: number,
-  disabled?: boolean
+  disabled?: boolean,
+  className?: string,
 }
 
 const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
-  const { label, name, value, isRequired, isReadOnly, error, type, size, rows = 10, disabled } = props
+  const { label, name, value, isRequired, isReadOnly, error, type, size, rows = 10, disabled, className } = props
 
-  const labelClasses = React.useMemo(() => classNames('label', {
+  const labelClasses = React.useMemo(() => classNames('label', className, {
     required: isRequired,
     valid: !error
   }), [isRequired, error])
 
   const wrapperClasses = React.useMemo(() => classNames({
     'cx-whitespace-pre-line': type === 'textarea'
+  }), [type])
+  const textareaClasses = React.useMemo(() => classNames('sked-input-textbox', {
+    '': type === 'textarea'
   }), [type])
 
   return (
@@ -38,10 +42,9 @@ const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
         validation={{ isValid: !error, error }}
       >
         {
-          type !== 'textarea' && (
+          (!type || type === 'text') && (
             <FormInputElement
-              id="input"
-              type={type || 'text'}
+              type={'text'}
               name={name}
               defaultValue={value}
               size={size}
@@ -50,10 +53,22 @@ const WrappedFormInput: React.FC<WrappedFormInputProps> = props => {
           )
         }
         {
+          type === 'checkbox' && (
+            <FormInputElement
+              type="checkbox"
+              name={name}
+              defaultValue={value}
+              size={size}
+              disabled={disabled}
+              checked={!!value}
+            />
+          )
+        }
+        {
           type === 'textarea' && (
             <textarea
               name={name}
-              className="sked-input-textbox"
+              className="sked-input-textbox sked-form-element__outline"
               rows={rows}
               defaultValue={value}
             />
