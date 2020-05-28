@@ -14,7 +14,8 @@ export type IFilterItem = FilterItem
 
 export interface IFilterBarProps<T extends IFilterItem> {
   /**
-   * An array of filter options. If a filter item is set to 'static' then it is permanently fixed and unable to be edited.
+   * An array of filter options.
+   * If a filter item is set to 'static' then it is permanently fixed and unable to be edited.
    */
   filters: IFilter<T>[]
   onFilter: (filters: IFilterBarState<T>['appliedFilters']) => void
@@ -22,6 +23,7 @@ export interface IFilterBarProps<T extends IFilterItem> {
    * Apply custom styles to the content of the filter list.
    */
   scrollableContentClasses?: string
+  forceUpdate?: boolean
 }
 
 interface IFilterBarState<T extends IFilterItem> {
@@ -37,26 +39,26 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     this.state = {
       appliedFilters: [],
       addedFilter: null,
-      editFilterId: null
+      editFilterId: null,
     }
   }
 
   async componentDidMount() {
     // add any filters that are already set.
     const appliedFilters = this.props.filters
-      .filter(filter => filter.isReadonly || filter.selectedIds.length)
-      .map(filter => {
+      .filter((filter) => filter.isReadonly || filter.selectedIds.length)
+      .map((filter) => {
         return {
           id: filter.id,
           name: filter.name,
           isReadonly: filter.isReadonly || false,
           removable: defaultTo(filter.removable, true),
-          selectedItems: filter.items.filter(item => filter.selectedIds.find(selectedId => selectedId === item.id))
+          selectedItems: filter.items.filter((item) => filter.selectedIds.find((selectedId) => selectedId === item.id)),
         }
       })
 
     this.setState({
-      appliedFilters
+      appliedFilters,
     })
   }
 
@@ -64,35 +66,57 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     if (!isEqual(prevProps.filters, this.props.filters) && prevProps.filters.length && this.props.filters.length) {
       // add any filters that are already set.
       const appliedFilters = this.props.filters
-        .filter(filter => filter.isReadonly || filter.selectedIds.length)
-        .map(filter => {
+        .filter((filter) => filter.isReadonly || filter.selectedIds.length)
+        .map((filter) => {
           return {
             id: filter.id,
             name: filter.name,
             isReadonly: filter.isReadonly || false,
             removable: defaultTo(filter.removable, true),
-            selectedItems: filter.items.filter(item => filter.selectedIds.find(selectedId => selectedId === item.id))
+            selectedItems: filter.items.filter((item) =>
+              filter.selectedIds.find((selectedId) => selectedId === item.id)
+            ),
           }
         })
 
       this.setState({
-        appliedFilters
+        appliedFilters,
+      })
+    }
+    if (!prevProps.forceUpdate && !!this.props.forceUpdate) {
+      const appliedFilters = this.props.filters
+        .filter((filter) => filter.isReadonly || filter.selectedIds.length)
+        .map((filter) => {
+          return {
+            id: filter.id,
+            name: filter.name,
+            isReadonly: filter.isReadonly || false,
+            removable: defaultTo(filter.removable, true),
+            selectedItems: filter.items.filter((item) =>
+              filter.selectedIds.find((selectedId) => selectedId === item.id)
+            ),
+          }
+        })
+
+      this.setState({
+        appliedFilters,
       })
     }
   }
 
   /**
-   * When we 'add' a filter, we add a pill item to the filter bar and then list the options for it. It is not yet 'applied' until we select options.
+   * When we 'add' a filter, we add a pill item to the filter bar and then list the options for it.
+   * It is not yet 'applied' until we select options.
    * If we click on the add button for a filter that is already added, we want to launch an edit mode for it.
    */
   addFilter = (hideAddFilterDropdownList: () => void, filterToAdd: IAddedFilter) => () => {
     // edit existing filter if applicable
-    if (this.state.appliedFilters.find(appliedFilter => appliedFilter.id === filterToAdd.id)) {
+    if (this.state.appliedFilters.find((appliedFilter) => appliedFilter.id === filterToAdd.id)) {
       this.editFilter(filterToAdd.id)
     } else {
       // add it otherwise
       this.setState({
-        addedFilter: filterToAdd
+        addedFilter: filterToAdd,
       })
     }
 
@@ -101,11 +125,11 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   }
 
   applyChangesToExistingFilter = (editFilterId: string, selectedItems: T[], existingFilters: IAppliedFilter<T>[]) => {
-    return existingFilters.map(existingFilter => {
+    return existingFilters.map((existingFilter) => {
       if (existingFilter.id === editFilterId) {
         return {
           ...existingFilter,
-          selectedItems
+          selectedItems,
         }
       }
 
@@ -121,8 +145,8 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
         id: filter.id,
         isReadonly: false,
         removable: defaultTo(filter.removable, true),
-        selectedItems
-      }
+        selectedItems,
+      },
     ]
   }
 
@@ -132,13 +156,16 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   applySelectedItemsToFilter = (filter: IFilter<T>, selectedFilterItems: T[]) => {
     const { appliedFilters, editFilterId } = this.state
 
-    const newlyAppliedFilters = editFilterId ? this.applyChangesToExistingFilter(editFilterId, selectedFilterItems, appliedFilters) : this.applyChangesToNewFilter(filter, selectedFilterItems, appliedFilters)
+    const newlyAppliedFilters = editFilterId
+      ? this.applyChangesToExistingFilter(editFilterId, selectedFilterItems, appliedFilters)
+      : this.applyChangesToNewFilter(filter, selectedFilterItems, appliedFilters)
 
     this.setState({
       appliedFilters: newlyAppliedFilters,
-      // Given we have now applied the filter we have added, we now want to clear it. Doing so will remove the 'temporary' pill.
+      // Given we have now applied the filter we have added, we now want to clear it.
+      // Doing so will remove the 'temporary' pill.
       addedFilter: null,
-      editFilterId: null
+      editFilterId: null,
     })
 
     return newlyAppliedFilters
@@ -158,7 +185,12 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
   renderAddFilterButton = () => {
     return (
-      <Button data-sk-name="filter-add-button" buttonType="transparent" icon="zoomIn" className="sk-px-3 sk-text-blue-600 hover:sk-text-blue-700 hover:sk-bg-transparent sk-py-1 sk-mr-2 sk-leading-normal sk-mt-px">
+      <Button
+        data-sk-name="filter-add-button"
+        buttonType="transparent"
+        icon="zoomIn"
+        className="sk-px-3 sk-text-blue-600 hover:sk-text-blue-700 hover:sk-bg-transparent sk-py-1 sk-mr-2 sk-leading-normal sk-mt-px"
+      >
         Add filter
       </Button>
     )
@@ -170,8 +202,8 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   renderAddFilterControl = () => {
     const filterNames = this.props.filters
       // If a filter is readonly then we don't need to show it in the list of selectable filters.
-      .filter(propFilter => !propFilter.isReadonly)
-      .map(propFilter => ({ id: propFilter.id, name: propFilter.name }))
+      .filter((propFilter) => !propFilter.isReadonly)
+      .map((propFilter) => ({ id: propFilter.id, name: propFilter.name }))
 
     if (!filterNames.length) {
       return null
@@ -179,10 +211,13 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     // item renderer when adding a filter.
     const renderItem = (toggleDropdown: () => void) => (filter: IFilterItem) => {
-      const appliedFilter = this.state.appliedFilters.find(appFilter => appFilter.id === filter.id)
+      const appliedFilter = this.state.appliedFilters.find((appFilter) => appFilter.id === filter.id)
 
       return (
-        <div onClick={this.addFilter(toggleDropdown, { ...filter, preSelectedItems: [] })} className="sk-flex sk-flex-grow sk-justify-between sk-items-center filter-list-item-min-height">
+        <div
+          onClick={this.addFilter(toggleDropdown, { ...filter, preSelectedItems: [] })}
+          className="sk-flex sk-flex-grow sk-justify-between sk-items-center filter-list-item-min-height"
+        >
           {filter.name}
           {appliedFilter && (
             <div className="sked-badge-min-w sk-text-xxs sk-font-medium sk-tracking-wide sk-h-5 sk-pb-px sk-rounded-full sk-inline-flex sk-items-center sk-justify-center sk-text-blue-600 sk-bg-blue-100 sk-mx-2">
@@ -195,11 +230,18 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     // if we have filters to render, display them.
     return (
-      <PopOut trigger={this.renderAddFilterButton} popOutContainer={container => container} closeOnOuterClick>
-        {toggleDropdown => (
+      <PopOut trigger={this.renderAddFilterButton} popOutContainer={(container) => container} closeOnOuterClick>
+        {(toggleDropdown) => (
           <div className="sk-shadow sk-mt-1">
             <FilterSearch placeholder="filter" className="sk-rounded-t" items={filterNames}>
-              {({ filteredItems }) => <FilterList className="sk-rounded-b" itemRenderer={renderItem(toggleDropdown)} items={filteredItems} scrollableContentClasses={this.props.scrollableContentClasses} />}
+              {({ filteredItems }) => (
+                <FilterList
+                  className="sk-rounded-b"
+                  itemRenderer={renderItem(toggleDropdown)}
+                  items={filteredItems}
+                  scrollableContentClasses={this.props.scrollableContentClasses}
+                />
+              )}
             </FilterSearch>
           </div>
         )}
@@ -210,7 +252,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   clearTemporaryPill = () => {
     this.setState({
       addedFilter: null,
-      editFilterId: null
+      editFilterId: null,
     })
   }
 
@@ -222,7 +264,12 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     // render remote search if applicable
     if (filter.useFetch) {
       return (
-        <RemoteSearch useFetch={filter.useFetch} placeholder={filter.name} className="sk-rounded-t" preSelectedItems={preSelectedItems}>
+        <RemoteSearch
+          useFetch={filter.useFetch}
+          placeholder={filter.name}
+          className="sk-rounded-t"
+          preSelectedItems={preSelectedItems}
+        >
           {({ fetchedItems, searchTerm, isFetching }) => (
             <FilterListWithApply
               applyFilter={this.applyAndSaveFilters(filter)}
@@ -242,30 +289,61 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
       return (
         <FilterSearch placeholder={filter.name} className="sk-rounded-t" items={filter.items}>
           {({ filteredItems }) => (
-            <FilterListWithApply applyFilter={this.applyAndSaveFilters(filter)} items={filteredItems as T[]} inputType={filter.inputType} preSelectedItems={preSelectedItems} scrollableContentClasses={scrollableContentClasses} />
+            <FilterListWithApply
+              applyFilter={this.applyAndSaveFilters(filter)}
+              items={filteredItems as T[]}
+              inputType={filter.inputType}
+              preSelectedItems={preSelectedItems}
+              scrollableContentClasses={scrollableContentClasses}
+            />
           )}
         </FilterSearch>
       )
     }
 
     // render base list if all else fails
-    return <FilterListWithApply applyFilter={this.applyAndSaveFilters(filter)} items={filter.items} inputType={filter.inputType} preSelectedItems={preSelectedItems} scrollableContentClasses={scrollableContentClasses} />
+    return (
+      <FilterListWithApply
+        applyFilter={this.applyAndSaveFilters(filter)}
+        items={filter.items}
+        inputType={filter.inputType}
+        preSelectedItems={preSelectedItems}
+        scrollableContentClasses={scrollableContentClasses}
+      />
+    )
   }
 
   /**
-   * After we 'add' a filter, we want to render this 'temporary' pill in the filter bar. This temporary pill will be removed once we hit apply or exit out of the dropdown.
+   * After we 'add' a filter, we want to render this 'temporary' pill in the filter bar.
+   * This temporary pill will be removed once we hit apply or exit out of the dropdown.
    */
   renderTemporaryPill = (filterName: string, filterId: string, preSelectedItems: T[]) => {
-    const filterSelected = this.props.filters.find(propFilter => propFilter.id === filterId)
+    const filterSelected = this.props.filters.find((propFilter) => propFilter.id === filterId)
     const temporaryPill = (
-      <FilterPill key={`filter-${filterId}`} id={filterId} name={filterName} selectedItems={preSelectedItems} removable={filterSelected?.removable} onRemove={this.removeFilter} className="sk-border-blue-600 sk-bg-blue-100" />
+      <FilterPill
+        key={`filter-${filterId}`}
+        id={filterId}
+        name={filterName}
+        selectedItems={preSelectedItems}
+        removable={filterSelected?.removable}
+        onRemove={this.removeFilter}
+        className="sk-border-blue-600 sk-bg-blue-100"
+      />
     )
 
     return (
-      <PopOut onClose={this.closeTemporaryPill()} trigger={() => temporaryPill} key={`${filterName}-${filterId}`} popOutContainer={container => container} openOnMount closeOnOuterClick>
+      <PopOut
+        onClose={this.closeTemporaryPill()}
+        trigger={() => temporaryPill}
+        key={`${filterName}-${filterId}`}
+        popOutContainer={(container) => container}
+        openOnMount
+        closeOnOuterClick
+      >
         {() => (
           <div className="sk-shadow sk-mt-1">
-            {filterSelected && this.renderFilterItemSearch(filterSelected, preSelectedItems, this.props.scrollableContentClasses)}
+            {filterSelected &&
+              this.renderFilterItemSearch(filterSelected, preSelectedItems, this.props.scrollableContentClasses)}
           </div>
         )}
       </PopOut>
@@ -275,10 +353,10 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   removeFilter = (filterId: string) => {
     const { appliedFilters } = this.state
 
-    const updatedAppliedFilters = appliedFilters.filter(appliedFilter => appliedFilter.id !== filterId)
+    const updatedAppliedFilters = appliedFilters.filter((appliedFilter) => appliedFilter.id !== filterId)
 
     this.setState({
-      appliedFilters: updatedAppliedFilters
+      appliedFilters: updatedAppliedFilters,
     })
 
     this.saveFilters(updatedAppliedFilters)
@@ -286,7 +364,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
   editFilter = (filterId: string) => {
     this.setState({
-      editFilterId: filterId
+      editFilterId: filterId,
     })
   }
 
@@ -296,7 +374,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     return (
       <div data-sk-name="filter-bar" className="sk-flex">
-        {appliedFilters.map(filter => {
+        {appliedFilters.map((filter) => {
           if (filter.id === editFilterId) {
             // return in edit mode if necessary
             return this.renderTemporaryPill(filter.name, filter.id, filter.selectedItems)

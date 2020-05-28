@@ -39,6 +39,8 @@ export interface ProjectDetailInterface extends ProjectListItemInterface {
   accountId?: string
   contactId?: string
   regionId?: string
+  startTime?: string
+  endTime?: string
   template?: {
     id: string
     name: string
@@ -83,7 +85,8 @@ export interface SalesforceResponseInterface {
   pageNumber: number
   pageSize: number
   totalItems: number
-  data: any
+  data?: any
+  results?: any
   success: boolean
   message: string
   devMessage: string
@@ -110,4 +113,9 @@ export interface FilterParamsInterface {
   locationIds?: string
   contactIds?: string
   regionIds?: string
+}
+
+export interface TimePickerOptionInterface {
+  stringValue: string,
+  numberValue: number
 }

@@ -29,9 +29,15 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
   const onChangeTab = useCallback((tab: string) => setActiveTab(tab), [])
 
   const onSaveProject = useCallback(async (data: any) => {
-    startGlobalLoading()
-    const res = await updateProject(data)
-    endGlobalLoading()
+    try {
+      startGlobalLoading()
+      const res = await updateProject(data)
+      setProject({ ...res})
+    } catch (error) {
+      console.log('error: ', error)
+    } finally {
+      endGlobalLoading()
+    }
   }, [])
 
   useEffect(() => {
@@ -67,10 +73,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = () => {
           </div>
           <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
         </div>
-        <div className="scroll">
-          {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
-          {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId || ''} />}
-        </div>
+        {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
+        {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId || ''} />}
       </div>
     </div>
   )

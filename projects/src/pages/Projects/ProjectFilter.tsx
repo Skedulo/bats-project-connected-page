@@ -1,10 +1,9 @@
 import React, { useState, useCallback, memo, ChangeEvent } from 'react'
 import { Button, Icon, PopOut, Datepicker, IconButton, Menu, MenuItem } from '@skedulo/sked-ui'
 import { cloneDeep, isEqual } from 'lodash'
-// import { Button, FilterBar, Icon, PopOut, Datepicker, IconButton, Menu, MenuItem } from '@skedulo/sked-ui'
 import { DATE_FORMAT } from '../../commons/constants'
 import { useProjectFilter } from './useProjectFilter'
-import { format, add } from 'date-fns'
+import { format, add, isValid } from 'date-fns'
 import { SavedFilterSetInterface } from '../../commons/types'
 import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
 
@@ -26,10 +25,11 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
     saveFilterSets,
     deleteFilterSet,
   } = useProjectFilter()
+  const [forceUpdateFilterBar, setForceUpdateFilterBar] = useState<boolean>(false)
   const [filterSetName, setFilterSetName] = useState<string>('')
-  const [filterDates, setFilterDates] = useState<{ startDate: Date; endDate: Date }>({
+  const [filterDates, setFilterDates] = useState({
     startDate: new Date(),
-    endDate: new Date(),
+    endDate: new Date(''),
   })
   const [selectedFilterSet, setSelectedFilterSet] = useState<SavedFilterSetInterface | null>(null)
 
@@ -44,18 +44,20 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
       }
       return filterItem
     })
+
     if (!isEqual(filterBar, newFilterBar)) {
       setFilterBar(newFilterBar)
     }
+    setForceUpdateFilterBar(true)
     onResetFilter()
     setSelectedFilterSet(null)
   }, [filterBar])
 
   // revoked once selecting filter date
   const onSelectDate = React.useCallback(
-    (fieldName: string) => (value: Date) => {
+    (fieldName: string, callback?: () => void) => (value: Date) => {
       if (fieldName === 'startDate') {
-        const endDate = filterDates.endDate || add(value, { days: 7 })
+        const endDate = isValid(filterDates.endDate) ? filterDates.endDate : add(value, { days: 7 })
         setFilterDates((prev) => ({ ...prev, [fieldName]: value, endDate }))
         onFilterChange({
           [fieldName]: format(value, DATE_FORMAT),
@@ -68,6 +70,9 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
       }
       if (selectedFilterSet) {
         setSelectedFilterSet(null)
+      }
+      if (typeof callback === 'function') {
+        callback()
       }
     },
     [filterDates.endDate]
@@ -84,6 +89,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
     })
     setSelectedFilterSet(null)
     setAppliedFilter(params)
+    setForceUpdateFilterBar(false)
     onFilterChange({ ...selectedParams })
   }, [filterBar])
 
@@ -144,9 +150,9 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
   // select a saved filter set
   const onSelectSavedFilter = useCallback((selectedItem: SavedFilterSetInterface) => {
     if (selectedFilterSet !== selectedItem) {
-      const filterObj = cloneDeep(selectedItem)
       const newFilterBar = filterBar.map(filterItem => {
-        const matchedItem = filterObj.filterSet?.find((item: any) => item.id === filterItem.id)
+        const matchedItem = selectedItem.filterSet?.find((item: any) => item.id === filterItem.id)
+
         if (matchedItem) {
           return {
             ...filterItem,
@@ -154,15 +160,28 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
             selectedIds: matchedItem.selectedItems.map((item: any) => item.id)
           }
         }
-        return filterItem
+        return {
+          ...filterItem,
+          selectedIds: []
+        }
       })
       if (!isEqual(filterBar, newFilterBar)) {
         setFilterBar(newFilterBar)
       }
+      const filterObj = cloneDeep(selectedItem)
       delete filterObj.id
       delete filterObj.name
       delete filterObj.filterSet
-      onFilterChange({ ...filterObj })
+
+      setFilterDates({
+        startDate: filterObj.startDate ? new Date(filterObj.startDate) : new Date(),
+        endDate: filterObj.endDate ? new Date(filterObj.endDate) : new Date('')
+      })
+      onFilterChange({
+        ...filterObj,
+        startDate: filterObj.startDate || null,
+        endDate: filterObj.endDate || null
+      })
       setSelectedFilterSet(selectedItem)
       setFilterSetName('')
     }
@@ -178,6 +197,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
     }
     saveFilterSets(newFilterSet)
     setSelectedFilterSet(newFilterSet)
+    setFilterSetName('')
   }, [filterParams, filterSetName, appliedFilter])
 
   // delete a filter set from local storage
@@ -264,13 +284,12 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
                 placement="bottom"
                 closeOnOuterClick={true}
                 closeOnScroll={true}
-                closeOnFirstClick={true}
                 trigger={filterStartDateTrigger}
               >
-                {() => (
+                {togglePopout => (
                   <Datepicker
-                    selected={filterDates.startDate}
-                    onChange={onSelectDate('startDate')}
+                    selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
+                    onChange={onSelectDate('startDate', togglePopout)}
                     dateFormat={DATE_FORMAT}
                     inline={true}
                   />
@@ -280,13 +299,12 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
                 placement="bottom"
                 closeOnOuterClick={true}
                 closeOnScroll={true}
-                closeOnFirstClick={true}
                 trigger={filterEndDateTrigger}
               >
-                {() => (
+                {togglePopout => (
                   <Datepicker
                     selected={filterDates.endDate}
-                    onChange={onSelectDate('endDate')}
+                    onChange={onSelectDate('endDate', togglePopout)}
                     dateFormat={DATE_FORMAT}
                     inline={true}
                   />
@@ -295,7 +313,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
             </div>
           </li>
           <li>
-            <FilterBar filters={filterBar} onFilter={onFilter} />
+            <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
           </li>
         </ul>
       </div>

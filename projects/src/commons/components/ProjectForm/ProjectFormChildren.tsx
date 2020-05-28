@@ -1,21 +1,38 @@
 import * as React from 'react'
-import { isDate, isAfter } from 'date-fns'
-import { SkedFormChildren, Button, FormElementWrapper, Datepicker, FormInputElement } from '@skedulo/sked-ui'
+import { isDate, isAfter, isSameDay, isEqual } from 'date-fns'
+import { SkedFormChildren, Button, FormElementWrapper, Datepicker, FormInputElement, Icon } from '@skedulo/sked-ui'
 import LookupInput from '../../../commons/components/LookupInput'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
-import { fetchAccounts, fetchContacts, fetchRegions, fetchLocations, fetchTemplates } from '../../../Services/DataServices'
-import { ProjectDetailInterface, LookupOptionInterface } from '../../../commons/types'
+import TimePicker from '../../../commons/components/TimePicker'
+import {
+  fetchAccounts,
+  fetchContacts,
+  fetchRegions,
+  fetchLocations,
+  fetchTemplates,
+} from '../../../Services/DataServices'
+import { ProjectDetailInterface, LookupOptionInterface, TimePickerOptionInterface } from '../../../commons/types'
 import { DATE_FORMAT } from '../../constants'
 
 interface ProjectFormChildrenProps {
   formParams: SkedFormChildren<ProjectDetailInterface>
   onCancel?: () => void
   project?: ProjectDetailInterface
+  timeError: string
+  setTimeError: React.Dispatch<string>
 }
 
-const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, onCancel, project }) => {
+const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
+  formParams,
+  onCancel,
+  project,
+  timeError,
+  setTimeError,
+}) => {
   const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
+
+  const isDisableDatetime = React.useMemo(() => !!(isUpdate && fields.isTemplate), [])
 
   const startDate = React.useMemo(() => {
     if (!fields.startDate || isDate(fields.startDate)) {
@@ -32,10 +49,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
   }, [fields.endDate])
 
   const handleCancel = React.useCallback(() => {
-    resetFieldsToInitialValues()
     if (typeof onCancel === 'function') {
       onCancel()
     }
+    resetFieldsToInitialValues()
   }, [onCancel])
 
   const onSelectLookupField = React.useCallback(
@@ -47,19 +64,46 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
 
   const onSelectDate = React.useCallback(
     (fieldName: string) => (value: Date) => {
-      if (fieldName === 'endDate' && isAfter(value, startDate)) {
+      // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
+      if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
         customFieldUpdate(fieldName)(value)
+        if (!value) {
+          customFieldUpdate('endDate')(value)
+        }
       }
       if (fieldName === 'startDate') {
         customFieldUpdate(fieldName)(value)
+        if (!value) {
+          customFieldUpdate('startTime')(value)
+        }
       }
     },
     [startDate, endDate]
   )
 
+  const onSelectTime = React.useCallback(
+    (fieldName: string) => (timeOption: TimePickerOptionInterface) => {
+      if (fieldName === 'endTime') {
+        customFieldUpdate(fieldName)(timeOption.stringValue)
+      }
+      if (fieldName === 'startTime') {
+        customFieldUpdate(fieldName)(timeOption.stringValue)
+      }
+    },
+    [startDate, endDate]
+  )
+
+  React.useEffect(() => {
+    if (isEqual(startDate, endDate) && fields.startTime && fields.endTime && fields.endTime <= fields.startTime) {
+      setTimeError('Start must be before End.')
+    } else if (!!timeError) {
+      setTimeError('')
+    }
+  }, [startDate, endDate, fields.startTime, fields.endTime, timeError])
+
   return (
     <>
-      <div className="vertical-panel">
+      <div className="vertical-panel cx-p-4">
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Information</h1>}
         <div className="cx-mb-4 click-to-edit-custom">
           <span className="span-label">Template</span>
@@ -86,6 +130,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           value={fields.projectName}
           error={submitted ? errors.projectName : ''}
           isRequired={true}
+          maxLength={80}
         />
         <WrappedFormInput
           name="projectDescription"
@@ -96,18 +141,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           label="Description"
           value={fields.projectDescription}
           error={submitted ? errors.projectDescription : ''}
+          maxLength={255}
           isRequired={false}
         />
         <div className="cx-mb-4 ">
-          {/* <span className="span-label">Is Template</span>
-          <FormElementWrapper
-            className="cx-mb-4"
-            name="isTemplate"
-            readOnlyValue={fields.isTemplate ? 'True' : 'False'}
-            isReadOnly={false}
-          >
-            <FormInputElement type="checkbox" name="isTemplate" checked={!!fields.isTemplate} />
-          </FormElementWrapper> */}
           <WrappedFormInput
             name="isTemplate"
             className="click-to-edit-custom"
@@ -120,9 +157,10 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
           />
         </div>
         <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
+          <div className="cx-mb-4 click-to-edit-custom">
             <span className="span-label">Start date</span>
             <FormElementWrapper
+              className="cx-relative"
               name="startDate"
               readOnlyValue={fields.startDate}
               isReadOnly={isFormReadonly}
@@ -131,17 +169,40 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 error: submitted ? errors.startDate : '',
               }}
             >
+              <div className="cx-absolute cx-inset-y-0 cx-left-0 cx-flex cx-items-center cx-p-2">
+                <Icon name="calendar" size={18} className="cx-text-neutral-500" />
+              </div>
               <Datepicker
                 selected={startDate}
                 onChange={onSelectDate('startDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={!!(isUpdate && fields.isTemplate)}
+                disabled={isDisableDatetime}
               />
             </FormElementWrapper>
           </div>
-          <div className="cx-mb-4 cx-w-2/4 cx-ml-4 click-to-edit-custom">
+          <div className="cx-mb-4 cx-ml-4 click-to-edit-custom">
+            <span className="span-label">Start time</span>
+            <FormElementWrapper
+              name="startTime"
+              readOnlyValue={project?.startTime || ''}
+              isReadOnly={isFormReadonly}
+              validation={{
+                isValid: !timeError,
+              }}
+            >
+              <TimePicker
+                onSelect={onSelectTime('startTime')}
+                defaultSelected={project?.startTime}
+                disabled={!fields.startDate || isDisableDatetime}
+              />
+            </FormElementWrapper>
+          </div>
+        </div>
+        <div className="cx-flex cx-items-center">
+          <div className="cx-mb-4 click-to-edit-custom">
             <span className="span-label">End date</span>
             <FormElementWrapper
+              className="cx-relative"
               name="endDate"
               readOnlyValue={fields.endDate}
               isReadOnly={isFormReadonly}
@@ -150,15 +211,36 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
                 error: submitted ? errors.endDate : '',
               }}
             >
+              <div className="cx-absolute cx-inset-y-0 cx-left-0 cx-flex cx-items-center cx-p-2">
+                <Icon name="calendar" size={18} className="cx-text-neutral-500" />
+              </div>
               <Datepicker
                 selected={endDate}
                 onChange={onSelectDate('endDate')}
                 dateFormat={DATE_FORMAT}
-                disabled={!!(isUpdate && fields.isTemplate)}
+                disabled={isDisableDatetime}
+              />
+            </FormElementWrapper>
+          </div>
+          <div className="cx-mb-4 cx-ml-4 click-to-edit-custom">
+            <span className="span-label">End time</span>
+            <FormElementWrapper
+              name="endTime"
+              readOnlyValue={project?.endTime || ''}
+              isReadOnly={isFormReadonly}
+              validation={{
+                isValid: !timeError,
+              }}
+            >
+              <TimePicker
+                onSelect={onSelectTime('endTime')}
+                defaultSelected={project?.endTime}
+                disabled={!fields.endDate || isDisableDatetime}
               />
             </FormElementWrapper>
           </div>
         </div>
+        {!!timeError && <p className="sked-form-element__errors cx-mb-4">{timeError}</p>}
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
@@ -288,17 +370,9 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({ formParams, o
             />
           </div>
         </div>
-        {/* <WrappedFormInput
-          name="address"
-          isReadOnly={isFormReadonly}
-          label="Address"
-          value={fields.address}
-          error={submitted ? errors.address : ''}
-          isRequired={false}
-        /> */}
       </div>
       {!isFormReadonly && (
-        <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
+        <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
           <Button buttonType="secondary" onClick={handleCancel}>
             Cancel
           </Button>

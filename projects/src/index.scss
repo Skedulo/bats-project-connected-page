@@ -10,13 +10,13 @@ body {
   .click-to-edit-custom {
     display: flex;
     flex: 0 auto;
-    span {
+    > span {
       width: 20%;
       max-width: 200px;
       min-width: 200px;
       padding-top: 5px;
     }
-    div {
+    > div {
       width: 90%;
     }
   }
@@ -28,5 +28,11 @@ body {
   }
   .sked-checkbox {
     margin-left: 10px;
+  }
+}
+
+.react-datepicker-wrapper {
+  input {
+    padding-left: 2rem;
   }
 }

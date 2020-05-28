@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mapValues } from 'lodash/fp'
+import { mapValues, isNumber } from 'lodash/fp'
 import { Services, credentials } from './Services'
 import {
   ProjectListItemInterface,
@@ -12,6 +12,7 @@ import {
 } from '../commons/types'
 
 import { LOCAL_STORAGE_KEY, DEFAULT_FILTER } from '../commons/constants'
+import { parseTimeValue, parseTimeString } from '../commons/utils';
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -52,12 +53,16 @@ export const fetchProjectById = async (projectId: string): Promise<ProjectDetail
   result.accountId = result.account?.id
   result.locationId = result.location?.id
   result.regionId = result.region?.id
-  return result
+  return {
+    ...result,
+    startTime: isNumber(result.startTime) ? parseTimeValue(result.startTime) : '',
+    endTime: isNumber(result.endTime) ? parseTimeValue(result.endTime) : ''
+  }
 }
 
 export const updateProject = async (
   requestData: ProjectDetailInterface
-): Promise<ProjectListItemInterface> => {
+): Promise<ProjectDetailInterface> => {
   const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
   const response: {
     data: SalesforceResponseInterface
@@ -96,8 +101,8 @@ export const fetchTemplates = async (searchString: string): Promise<LookupOption
       params,
     }
   )
-  if (response.data.success) {
-    return response.data.data.map((item: ProjectDetailInterface) => ({ UID: item.id, Name: item.projectName }))
+  if (response.data.success && response.data.results?.length) {
+    return response.data.results.map((item: ProjectDetailInterface) => ({ UID: item.id, Name: item.projectName }))
   }
   return []
 }

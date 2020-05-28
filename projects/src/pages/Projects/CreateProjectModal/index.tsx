@@ -28,9 +28,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProp> = ({ onClose, onSubmi
       header={<ModalHeader onClose={onClose} />}
       className="cx-w-2/4"
     >
-      <div className="cx-p-4">
-        <ProjectForm onSubmit={onSubmit} onCancel={onClose} />
-      </div>
+      <ProjectForm onSubmit={onSubmit} onCancel={onClose} />
     </DynamicModal>
   )
 }

@@ -67,12 +67,12 @@ export const useProjectFilter = () => {
   const [savedFilterSets, setSavedFilterSets] = React.useState<SavedFilterSetInterface[]>(getLocalFilterSets())
 
   const saveFilterSets = React.useCallback((newFilterSet: any) => {
-    setLocalFilterSets([...savedFilterSets, newFilterSet])
+    setLocalFilterSets([...getLocalFilterSets(), newFilterSet])
     setSavedFilterSets(getLocalFilterSets())
-  }, [])
+  }, [savedFilterSets])
 
   const deleteFilterSet = React.useCallback((id: string) => {
-    setLocalFilterSets(savedFilterSets.filter(item => item.id !== id))
+    setLocalFilterSets(getLocalFilterSets().filter((item: SavedFilterSetInterface) => item.id !== id))
     setSavedFilterSets(getLocalFilterSets())
   }, [])
 

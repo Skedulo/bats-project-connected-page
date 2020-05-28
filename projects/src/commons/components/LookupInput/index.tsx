@@ -114,6 +114,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
           onBlur={handleCloseLookup}
           placeholder={placeholderText}
           inputRef={inputRef}
+          maxLength={80}
         />
         <div className="cx-absolute cx-inset-y-0 cx-right-0 cx-flex cx-items-center cx-p-2">
           <Icon name="search" size={18} className="cx-text-neutral-500" />
