@@ -14,11 +14,11 @@ import {
 import ProjectFilter from './ProjectFilter'
 import CreateProjectModal from './CreateProjectModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
-import { ProjectListItemInterface, ListResponseInterface, ProjectDetailInterface, FilterParamsInterface } from '../../commons/types'
+import { IProjectListItem, IListResponse, IProjectDetail, IFilterParams } from '../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
 import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
 import { projectDetailPath } from '../routes'
-import { AppContext } from '../../App';
+import { AppContext } from '../../App'
 
 interface ProjectsListProps {
   children?: any
@@ -84,8 +84,8 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
   const [confirmDeleteId, setOpenConfirmDeleteId] = useState<string | null>(null)
-  const [filterParams, setFilterParams] = useState<FilterParamsInterface>(DEFAULT_FILTER)
-  const [projects, setProjects] = useState<ListResponseInterface<ProjectListItemInterface>>(DEFAULT_PROJECTS_LIST)
+  const [filterParams, setFilterParams] = useState<IFilterParams>(DEFAULT_FILTER)
+  const [projects, setProjects] = useState<IListResponse<IProjectListItem>>(DEFAULT_PROJECTS_LIST)
 
   const getProjectsList = useCallback(async () => {
     try {
@@ -106,7 +106,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
   }, [])
 
   const onPageChange = useCallback((page: number) => {
-    setFilterParams((prev: FilterParamsInterface) => ({ ...prev, pageNumber: page }))
+    setFilterParams((prev: IFilterParams) => ({ ...prev, pageNumber: page }))
   }, [])
 
   const onSearchTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -121,8 +121,8 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     setFilterParams(DEFAULT_FILTER)
   }, [])
 
-  const onFilterChange = useCallback((params: FilterParamsInterface) => {
-    setFilterParams((prev: FilterParamsInterface) => ({ ...prev, ...params }))
+  const onFilterChange = useCallback((params: IFilterParams) => {
+    setFilterParams((prev: IFilterParams) => ({ ...prev, ...params }))
   }, [])
 
   const toggleCreateModal = useCallback(() => {
@@ -137,7 +137,7 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     setOpenConfirmDeleteId(null)
   }, [])
 
-  const onSaveProject = useCallback(async (data: ProjectDetailInterface) => {
+  const onSaveProject = useCallback(async (data: IProjectDetail) => {
     try {
       setIsLoading(true)
       const res = await createProject(data)
@@ -174,11 +174,11 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     }
   }, [confirmDeleteId])
 
-  const projectsTableConfig: IDynamicTable<ProjectListItemInterface> = useMemo(() => ({
+  const projectsTableConfig: IDynamicTable<IProjectListItem> = useMemo(() => ({
     data: projects.results,
     columns: projectsTableColumns(onViewProject, (objPermissions?.Project.allowDelete ? openConfirmDelete : undefined)),
     stickyHeader: false,
-    getRowId: (row: ProjectListItemInterface) => row.id,
+    getRowId: (row: IProjectListItem) => row.id,
     rowSelectControl: 'allRows',
     onRowSelect,
     onSortBy: props => {

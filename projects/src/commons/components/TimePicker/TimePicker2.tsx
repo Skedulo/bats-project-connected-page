@@ -20,12 +20,12 @@ const getTimePickerOptions = (step = 30, is24hFormat = false) => {
   return timeOptions
 }
 
-interface TimePickerOptionInterface {
+interface ITimePickerOption {
   label: string
   value: string
 }
 
-interface TimePickerInterface {
+interface ITimePickerProps {
   className?: string
   onSelect: (item: { stringValue: string; numberValue: number }) => void
   defaultSelected?: number | string
@@ -33,23 +33,23 @@ interface TimePickerInterface {
   disabled?: boolean
 }
 
-const TimePicker: React.FC<TimePickerInterface> = ({
+const TimePicker: React.FC<ITimePickerProps> = ({
   className,
   onSelect,
   placeholderText,
   defaultSelected,
   disabled,
 }) => {
-  const timeOptions: TimePickerOptionInterface[] = React.useMemo(() => getTimePickerOptions(15), [])
+  const timeOptions: ITimePickerOption[] = React.useMemo(() => getTimePickerOptions(15), [])
   const initialSelected = React.useMemo(
     () =>
       timeOptions.find(
-        (item: TimePickerOptionInterface) => item.value === defaultSelected || item.label === defaultSelected
+        (item: ITimePickerOption) => item.value === defaultSelected || item.label === defaultSelected
       ),
     [defaultSelected]
   )
 
-  const handleSelect = React.useCallback((item: TimePickerOptionInterface) => {
+  const handleSelect = React.useCallback((item: ITimePickerOption) => {
     // setSelectedOption(item)
     onSelect({ stringValue: item?.label, numberValue: toNumber(item?.value) })
   }, [])

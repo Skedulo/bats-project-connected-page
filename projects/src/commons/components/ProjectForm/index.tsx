@@ -2,7 +2,7 @@ import * as React from 'react'
 import { format, isDate } from 'date-fns'
 import { isEmpty } from 'lodash'
 import { SkedFormChildren, SkedFormValidation } from '@skedulo/sked-ui'
-import { ProjectDetailInterface } from '../../../commons/types'
+import { IProjectDetail } from '../../../commons/types'
 import ProjectFormChildren from './ProjectFormChildren'
 import { DATE_FORMAT } from '../../constants'
 import { parseTimeValue, parseTimeString } from '../../utils'
@@ -44,15 +44,15 @@ const ProjectFormConfig = {
 }
 
 interface ProjectFormProps {
-  project?: ProjectDetailInterface
-  onSubmit: (project: ProjectDetailInterface) => void
+  project?: IProjectDetail
+  onSubmit: (project: IProjectDetail) => void
   onCancel?: () => void
 }
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }) => {
   const [timeError, setTimeError] = React.useState<string>('')
   const handleSubmit = React.useCallback(
-    async (form: SkedFormChildren<ProjectDetailInterface>) => {
+    async (form: SkedFormChildren<IProjectDetail>) => {
       if (timeError) {
         return
       }
@@ -82,7 +82,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }
       onSubmit={handleSubmit}
       initialValues={project || {}}
     >
-      {(formParams: SkedFormChildren<ProjectDetailInterface>) => (
+      {(formParams: SkedFormChildren<IProjectDetail>) => (
         <ProjectFormChildren
           formParams={formParams}
           onCancel={onCancel}

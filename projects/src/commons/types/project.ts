@@ -1,25 +1,8 @@
-export interface RouterParamsInterface {
+export interface IRouterParams {
   projectId?: string
 }
 
-export interface ObjPermissionInterface {
-  allowCreate: boolean
-  allowDelete: boolean
-  allowRead: boolean
-  allowUpdate: boolean
-}
-
-export interface AppContextInterface {
-  config: {
-    projectStatuses?: { id: string, name: string }[],
-    objPermissions?: {
-      Project: ObjPermissionInterface
-      ProjectJobTemplate: ObjPermissionInterface
-    }
-  }
-}
-
-export interface ProjectListItemInterface {
+export interface IProjectListItem {
   name: string
   id: string
   startDate: string
@@ -29,7 +12,7 @@ export interface ProjectListItemInterface {
   endDate: string
 }
 
-export interface ProjectDetailInterface extends ProjectListItemInterface {
+export interface IProjectDetail extends IProjectListItem {
   applyAccountForAllJob: boolean
   applyContactForAllJob: boolean
   applyRegionForAllJob: boolean
@@ -64,24 +47,24 @@ export interface ProjectDetailInterface extends ProjectListItemInterface {
   address: string
 }
 
-export interface ListResponseInterface<T> {
+export interface IListResponse<T> {
   totalItems: number
   pageSize?: number
   pageNumber?: number
   results: T[]
 }
 
-export interface LookupOptionInterface {
+export interface ILookupOption {
   UID: string
   Name: string
 }
 
-export interface ContactOptionInterface {
+export interface IContactOption {
   UID: string
   FullName: string
 }
 
-export interface SalesforceResponseInterface {
+export interface ISalesforceResponse {
   pageNumber: number
   pageSize: number
   totalItems: number
@@ -94,13 +77,13 @@ export interface SalesforceResponseInterface {
   code: number
 }
 
-export interface SavedFilterSetInterface extends FilterParamsInterface {
+export interface ISavedFilterSet extends IFilterParams {
   id: string
   name: string
   filterSet: any
 }
 
-export interface FilterParamsInterface {
+export interface IFilterParams {
   projectStatus?: string
   searchText?: string
   startDate?: string
@@ -113,9 +96,4 @@ export interface FilterParamsInterface {
   locationIds?: string
   contactIds?: string
   regionIds?: string
-}
-
-export interface TimePickerOptionInterface {
-  stringValue: string,
-  numberValue: number
 }

@@ -1,10 +1,10 @@
 import React, { memo } from 'react'
-import { ProjectDetailInterface } from '../../../commons/types'
+import { IProjectDetail } from '../../../commons/types'
 import ProjectForm from '../../../commons/components/ProjectForm'
 
 interface DetailTabModalProp {
-  project: ProjectDetailInterface
-  onSubmit: (data: ProjectDetailInterface) => void
+  project: IProjectDetail
+  onSubmit: (data: IProjectDetail) => void
 }
 
 const DetailTab: React.FC<DetailTabModalProp> = ({ project, onSubmit }) => {

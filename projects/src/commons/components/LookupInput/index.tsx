@@ -2,20 +2,20 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { FormInputElement, Icon, Menu, MenuItem, Loading } from '@skedulo/sked-ui'
 
-interface OptionInterface {
+interface IOption {
   UID: string,
   Name: string
 }
 
-interface LookupInputInterface {
+interface ILookupInputProps {
   className?: string
-  onSelect: (item: OptionInterface) => void
-  onSearchKeyword: (keyword: string) => Promise<OptionInterface[]>,
-  defaultSelected?: OptionInterface | null
+  onSelect: (item: IOption) => void
+  onSearchKeyword: (keyword: string) => Promise<IOption[]>,
+  defaultSelected?: IOption | null
   placeholderText?: string
 }
 
-const LookupInput: React.FC<LookupInputInterface> = ({
+const LookupInput: React.FC<ILookupInputProps> = ({
   className,
   onSelect,
   onSearchKeyword,
@@ -24,11 +24,11 @@ const LookupInput: React.FC<LookupInputInterface> = ({
 }) => {
   let searchTimeout: any = null
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const [options, setOptions] = React.useState<OptionInterface[]>([])
+  const [options, setOptions] = React.useState<IOption[]>([])
   const [openLookup, setOpenLookup] = React.useState<boolean>(false)
   const [loadingOptions, setLoadingOptions] = React.useState<boolean>(false)
   const [lookupKeyword, setLookupKeyword] = React.useState<string>('')
-  const [selectedOption, setSelectedOption] = React.useState<OptionInterface | null>(null)
+  const [selectedOption, setSelectedOption] = React.useState<IOption | null>(null)
 
   const searchOptions = async (keyword: string) => {
     setLoadingOptions(true)
@@ -69,7 +69,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
     }, 1000)
   }, [])
 
-  const handleSelect = React.useCallback((item: OptionInterface) => {
+  const handleSelect = React.useCallback((item: IOption) => {
     setSelectedOption(item)
     onSelect(item)
     setOpenLookup(false)
@@ -90,7 +90,7 @@ const LookupInput: React.FC<LookupInputInterface> = ({
     if (!options.length) {
       return <MenuItem>No data found.</MenuItem>
     }
-    return options.map((item: OptionInterface) => {
+    return options.map((item: IOption) => {
       const handleClickItem = () => handleSelect(item)
       return (
         <MenuItem key={item.UID} onClick={handleClickItem}>

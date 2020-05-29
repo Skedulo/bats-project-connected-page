@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { DynamicModal, Icon } from '@skedulo/sked-ui'
 import ProjectForm from '../../../commons/components/ProjectForm'
-import { ProjectDetailInterface } from '../../../commons/types';
+import { IProjectDetail } from '../../../commons/types';
 
 interface CreateProjectModalProp {
   onClose: () => void
-  onSubmit: (data: ProjectDetailInterface) => void
+  onSubmit: (data: IProjectDetail) => void
 }
 
 interface ModalHeaderProp {

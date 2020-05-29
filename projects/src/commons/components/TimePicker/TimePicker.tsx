@@ -2,17 +2,17 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { FormInputElement, Icon, Menu, MenuItem, Loading } from '@skedulo/sked-ui'
 import { getTimePickerOptions } from '../../utils'
-import { TimePickerOptionInterface } from '../../types'
+import { ITimePickerOption } from '../../types'
 
-interface TimePickerInterface {
+interface ITimePickerProps {
   className?: string
-  onSelect: (item: TimePickerOptionInterface) => void
+  onSelect: (item: ITimePickerOption) => void
   defaultSelected?: number | string
   placeholderText?: string
   disabled?: boolean
 }
 
-const TimePicker: React.FC<TimePickerInterface> = ({
+const TimePicker: React.FC<ITimePickerProps> = ({
   className,
   onSelect,
   placeholderText,
@@ -22,7 +22,7 @@ const TimePicker: React.FC<TimePickerInterface> = ({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const timeOptions = React.useMemo(() => getTimePickerOptions(15), [])
   const [openLookup, setOpenLookup] = React.useState<boolean>(false)
-  const [selectedOption, setSelectedOption] = React.useState<TimePickerOptionInterface | null>(
+  const [selectedOption, setSelectedOption] = React.useState<ITimePickerOption | null>(
     timeOptions.find((item) => item.numberValue === defaultSelected || item.stringValue === defaultSelected) || null
   )
 
@@ -40,7 +40,7 @@ const TimePicker: React.FC<TimePickerInterface> = ({
     }
   }, [openLookup])
 
-  const handleSelect = React.useCallback((item: TimePickerOptionInterface) => {
+  const handleSelect = React.useCallback((item: ITimePickerOption) => {
     setSelectedOption(item)
     onSelect(item)
     setOpenLookup(false)
@@ -50,7 +50,7 @@ const TimePicker: React.FC<TimePickerInterface> = ({
     if (!timeOptions.length) {
       return <MenuItem>No data found.</MenuItem>
     }
-    return timeOptions.map((item: TimePickerOptionInterface) => {
+    return timeOptions.map((item: ITimePickerOption) => {
       const handleClickItem = () => handleSelect(item)
       return (
         <MenuItem key={item.numberValue} onClick={handleClickItem}>

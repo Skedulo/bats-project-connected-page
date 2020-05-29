@@ -8,7 +8,6 @@
 
     "semicolon": [true, "never"],
     "trailing-comma": false,
-    "interface-name": [true, "never-prefix"],
     "quotemark": [true, "single", "jsx-double"],
     "member-access": [false],
     "array-type": [true, "array"],

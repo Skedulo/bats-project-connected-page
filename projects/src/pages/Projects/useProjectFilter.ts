@@ -3,7 +3,7 @@ import { AppContext } from '../../App'
 import { cloneDeep } from 'lodash'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
 import { fetchRegions, fetchAccounts, fetchContacts, getLocalFilterSets, setLocalFilterSets, fetchLocations } from '../../Services/DataServices'
-import { SavedFilterSetInterface } from '../../commons/types'
+import { ISavedFilterSet } from '../../commons/types'
 
 export const useProjectFilter = () => {
   const appContext = React.useContext(AppContext)
@@ -64,7 +64,7 @@ export const useProjectFilter = () => {
   ]), [projectStatuses])
   const [filterBar, setFilterBar] = React.useState<IFilter<{ id: string; name: string; }>[]>([])
   const [appliedFilter, setAppliedFilter] = React.useState<any>([])
-  const [savedFilterSets, setSavedFilterSets] = React.useState<SavedFilterSetInterface[]>(getLocalFilterSets())
+  const [savedFilterSets, setSavedFilterSets] = React.useState<ISavedFilterSet[]>(getLocalFilterSets())
 
   const saveFilterSets = React.useCallback((newFilterSet: any) => {
     setLocalFilterSets([...getLocalFilterSets(), newFilterSet])
@@ -72,7 +72,7 @@ export const useProjectFilter = () => {
   }, [savedFilterSets])
 
   const deleteFilterSet = React.useCallback((id: string) => {
-    setLocalFilterSets(getLocalFilterSets().filter((item: SavedFilterSetInterface) => item.id !== id))
+    setLocalFilterSets(getLocalFilterSets().filter((item: ISavedFilterSet) => item.id !== id))
     setSavedFilterSets(getLocalFilterSets())
   }, [])
 

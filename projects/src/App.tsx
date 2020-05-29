@@ -1,14 +1,13 @@
 import * as React from 'react'
-import { HashRouter, Route, Switch, useHistory } from 'react-router-dom'
-import { createBrowserHistory, createHashHistory } from 'history'
+import { HashRouter, Route, Switch } from 'react-router-dom'
 import ListProjectsPage from './pages/Projects'
 import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'
 import { fetchConfig } from './Services/DataServices'
 import * as routes from './pages/routes'
-import { AppContextInterface } from './commons/types'
+import { IAppContext } from './commons/types'
 
-export const AppContext = React.createContext<AppContextInterface>({
+export const AppContext = React.createContext<IAppContext>({
   config: {}
 })
 

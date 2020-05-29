@@ -4,7 +4,7 @@ import { cloneDeep, isEqual } from 'lodash'
 import { DATE_FORMAT } from '../../commons/constants'
 import { useProjectFilter } from './useProjectFilter'
 import { format, add, isValid } from 'date-fns'
-import { SavedFilterSetInterface } from '../../commons/types'
+import { ISavedFilterSet } from '../../commons/types'
 import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
 
 const ALL_PROJECTS = 'All Projects'
@@ -31,7 +31,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
     startDate: new Date(),
     endDate: new Date(''),
   })
-  const [selectedFilterSet, setSelectedFilterSet] = useState<SavedFilterSetInterface | null>(null)
+  const [selectedFilterSet, setSelectedFilterSet] = useState<ISavedFilterSet | null>(null)
 
   const resetFilter = React.useCallback(() => {
     const newFilterBar = filterBar.map(filterItem => {
@@ -148,7 +148,7 @@ const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterCh
   }, [])
 
   // select a saved filter set
-  const onSelectSavedFilter = useCallback((selectedItem: SavedFilterSetInterface) => {
+  const onSelectSavedFilter = useCallback((selectedItem: ISavedFilterSet) => {
     if (selectedFilterSet !== selectedItem) {
       const newFilterBar = filterBar.map(filterItem => {
         const matchedItem = selectedItem.filterSet?.find((item: any) => item.id === filterItem.id)

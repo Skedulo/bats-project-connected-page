@@ -11,14 +11,14 @@ import {
   fetchLocations,
   fetchTemplates,
 } from '../../../Services/DataServices'
-import { ProjectDetailInterface, LookupOptionInterface, TimePickerOptionInterface } from '../../../commons/types'
+import { IProjectDetail, ILookupOption, ITimePickerOption } from '../../../commons/types'
 import { DATE_FORMAT } from '../../constants'
 import { AppContext } from '../../../App'
 
 interface ProjectFormChildrenProps {
-  formParams: SkedFormChildren<ProjectDetailInterface>
+  formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
-  project?: ProjectDetailInterface
+  project?: IProjectDetail
   timeError: string
   setTimeError: React.Dispatch<string>
 }
@@ -59,7 +59,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
   }, [onCancel])
 
   const onSelectLookupField = React.useCallback(
-    (fieldName: string) => (selectedOption: LookupOptionInterface) => {
+    (fieldName: string) => (selectedOption: ILookupOption) => {
       customFieldUpdate(fieldName)(selectedOption.UID)
     },
     []
@@ -85,7 +85,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
   )
 
   const onSelectTime = React.useCallback(
-    (fieldName: string) => (timeOption: TimePickerOptionInterface) => {
+    (fieldName: string) => (timeOption: ITimePickerOption) => {
       if (fieldName === 'endTime') {
         customFieldUpdate(fieldName)(timeOption.stringValue)
       }
