@@ -1,6 +1,6 @@
 import * as React from 'react'
 import classNames from 'classnames'
-import { FormElementWrapper, FormInputElement } from '@skedulo/sked-ui'
+import { FormElementWrapper, FormInputElement, TextArea } from '@skedulo/sked-ui'
 
 interface WrappedFormInputProps {
   size?: number
@@ -88,9 +88,10 @@ const WrappedFormInput: React.FC<WrappedFormInputProps> = (props) => {
           />
         )}
         {type === 'textarea' && (
-          <textarea
+          <TextArea
+            maxHeight={300}
+            autoContract={true}
             name={name}
-            className="sked-input-textbox sked-form-element__outline"
             rows={rows}
             defaultValue={value}
             maxLength={maxLength}

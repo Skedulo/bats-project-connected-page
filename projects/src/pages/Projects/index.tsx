@@ -218,11 +218,13 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
                 )}
               </div>
             </li>
-            <li>
-              <Button buttonType="primary" onClick={toggleCreateModal}>
-                Create new
-              </Button>
-            </li>
+            {objPermissions?.Project.allowCreate && (
+              <li>
+                <Button buttonType="primary" onClick={toggleCreateModal}>
+                  Create new
+                </Button>
+              </li>
+            )}
           </ul>
         </div>
         <ProjectFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />

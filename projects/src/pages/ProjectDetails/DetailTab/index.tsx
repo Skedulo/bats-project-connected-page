@@ -1,5 +1,5 @@
-import React, { useEffect, useState, memo, useCallback } from 'react'
-import { ProjectDetailInterface, RouterParamsInterface } from '../../../commons/types'
+import React, { memo } from 'react'
+import { ProjectDetailInterface } from '../../../commons/types'
 import ProjectForm from '../../../commons/components/ProjectForm'
 
 interface DetailTabModalProp {

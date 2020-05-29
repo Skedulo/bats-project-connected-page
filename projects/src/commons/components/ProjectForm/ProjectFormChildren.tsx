@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { isDate, isAfter, isSameDay, isEqual } from 'date-fns'
-import { SkedFormChildren, Button, FormElementWrapper, Datepicker, FormInputElement, Icon } from '@skedulo/sked-ui'
+import { SkedFormChildren, Button, FormElementWrapper, Datepicker, Icon } from '@skedulo/sked-ui'
 import LookupInput from '../../../commons/components/LookupInput'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
 import TimePicker from '../../../commons/components/TimePicker'
@@ -13,6 +13,7 @@ import {
 } from '../../../Services/DataServices'
 import { ProjectDetailInterface, LookupOptionInterface, TimePickerOptionInterface } from '../../../commons/types'
 import { DATE_FORMAT } from '../../constants'
+import { AppContext } from '../../../App'
 
 interface ProjectFormChildrenProps {
   formParams: SkedFormChildren<ProjectDetailInterface>
@@ -29,10 +30,12 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
   timeError,
   setTimeError,
 }) => {
+  const appContext = React.useContext(AppContext)
+  const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
   const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
 
-  const isDisableDatetime = React.useMemo(() => !!(isUpdate && fields.isTemplate), [])
+  const isDisableDatetime = React.useMemo(() => !!(isUpdate && fields.isTemplate), [fields.isTemplate, isUpdate])
 
   const startDate = React.useMemo(() => {
     if (!fields.startDate || isDate(fields.startDate)) {
@@ -94,7 +97,11 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
   )
 
   React.useEffect(() => {
-    if (isEqual(startDate, endDate) && fields.startTime && fields.endTime && fields.endTime <= fields.startTime) {
+    if (
+      (isEqual(startDate, endDate) && fields.startTime && fields.endTime && fields.endTime <= fields.startTime) ||
+      (isEqual(startDate, endDate) && !fields.startTime && fields.endTime) ||
+      (isEqual(startDate, endDate) && fields.startTime && !fields.endTime)
+    ) {
       setTimeError('Start must be before End.')
     } else if (!!timeError) {
       setTimeError('')
@@ -376,7 +383,12 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
           <Button buttonType="secondary" onClick={handleCancel}>
             Cancel
           </Button>
-          <Button buttonType="primary" className="cx-ml-2" type="submit">
+          <Button
+            buttonType="primary"
+            className="cx-ml-2"
+            type="submit"
+            disabled={isUpdate && !objPermissions?.Project.allowUpdate}
+          >
             Save
           </Button>
         </div>
