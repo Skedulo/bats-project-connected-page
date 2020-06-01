@@ -6,6 +6,8 @@ import { withGlobalLoading } from './commons/components/GlobalLoading'
 import { fetchConfig } from './Services/DataServices'
 import * as routes from './pages/routes'
 import { IAppContext } from './commons/types'
+import { ToastContainer, toast } from 'react-toastify';
+  import 'react-toastify/dist/ReactToastify.css';
 
 export const AppContext = React.createContext<IAppContext>({
   config: {}
@@ -31,6 +33,12 @@ const App: React.FC = () => {
           <Route exact={true} path={routes.projectDetailPath()} component={ProjectDetailPage} />
         </Switch>
       </HashRouter>
+      <ToastContainer
+        position="top-right"
+        // autoClose={5000}
+        pauseOnHover={true}
+        hideProgressBar={true}
+      />
     </AppContext.Provider>
   )
 }

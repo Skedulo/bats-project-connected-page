@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent } from 'react'
 import { debounce } from 'lodash/fp'
-import { useHistory } from 'react-router-dom'
+import { Dictionary } from 'lodash'
 import {
   DynamicTable,
   IDynamicTable,
@@ -11,20 +11,29 @@ import {
   ConfirmationModal,
   Icon,
   LozengeColors,
+  ButtonGroup,
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import JobModal from './JobModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
-import { IJobDetail, IListResponse, IFilterParams, IJobFilterParams, JobStatusKey, JobStatus } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_LIST } from '../../commons/constants'
-import { fetchListJobs, createJob, deleteJob } from '../../Services/DataServices'
+import {
+  IJobDetail,
+  IListResponse,
+  IFilterParams,
+  IJobFilterParams,
+  JobStatusKey,
+  JobStatus,
+} from '../../commons/types'
+import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../commons/constants'
+import { fetchListJobs, createJob, deleteJob, deallocateMutipleJobs, dispatchMutipleJobs } from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
-import { JOB_STATUS_COLOR } from '../../commons/constants/job';
 
 interface IJobsListProps {
   projectId: string
 }
+
+const ID_LINKING_LETTER = '___'
 
 const jobsTableColumns = (onDeleteJob?: (projectId: string) => void) => {
   return [
@@ -32,12 +41,11 @@ const jobsTableColumns = (onDeleteJob?: (projectId: string) => void) => {
       Header: 'Name/Description',
       accessor: 'name',
       width: '30%',
-      Cell: (rows) => {
-        console.log('rows: ', rows)
+      Cell: ({ row }) => {
         return (
           <div>
-            <h1>Job Name</h1>
-            <h2>Job Description</h2>
+            <h1>{row.original.name}</h1>
+            <h2 className="cx-text-neutral-700">{row.original.description}</h2>
           </div>
         )
       },
@@ -49,9 +57,9 @@ const jobsTableColumns = (onDeleteJob?: (projectId: string) => void) => {
     },
     {
       Header: 'Status',
-      accessor: 'jobStatus',
-      Cell: ({ cell }: { cell: { value: JobStatus } }) => {
-        const color: LozengeColors = JOB_STATUS_COLOR[value] || 'neutral'
+      accessor: 'status',
+      Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
+        const color: LozengeColors = JOB_STATUS_COLOR[cell.value] || 'neutral'
         return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
       },
     },
@@ -86,7 +94,6 @@ const jobsTableColumns = (onDeleteJob?: (projectId: string) => void) => {
 }
 
 const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
-  const history = useHistory()
   const appContext = React.useContext(AppContext)
   const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -95,12 +102,15 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
   const [selectedJob, setSelectedJob] = useState<IJobDetail | null>(null)
+  const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
+  const [canDeallocate, setCanDeallocate] = useState<boolean>(true)
+  const [canDispatch, setCanDispatch] = useState<boolean>(true)
 
   const getJobsList = useCallback(async () => {
     try {
       setIsLoading(true)
       const res = await fetchListJobs({ projectId, ...filterParams })
-      console.log('res: ', res);
+      console.log('res: ', res)
       if (res) {
         setJobs(res)
       }
@@ -113,24 +123,24 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
 
   const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
 
-  const onRowSelect = useCallback((selectedRowIds: string[]) => {
-    // console.log('selectedRowIds: ', selectedRowIds)
-  }, [])
+  const onRowSelect = useCallback(
+    (rowIds: string[], isAllRowsSelected: boolean | undefined, rowData: Dictionary<IJobDetail> | undefined) => {
+      const selectedItems: IJobDetail[] = []
+      rowIds.forEach((id: string) => {
+        if (rowData && rowData[id]) {
+          selectedItems.push(rowData[id])
+        }
+      })
+      setSelectedRows(selectedItems)
+    }, []
+  )
 
   const onPageChange = useCallback((page: number) => {
     setFilterParams((prev: IJobFilterParams) => ({ ...prev, pageNumber: page }))
   }, [])
 
-  // const onSearchTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-  //   onFilterChange({ searchText: e.target.value })
-  // }, [])
   const onSearchTextChange = useCallback((value: string) => {
-    console.log('value: ', value)
     onFilterChange({ searchText: value })
-  }, [])
-
-  const onSearchTextClear = useCallback(() => {
-    onFilterChange({ searchText: '' })
   }, [])
 
   const onResetFilter = useCallback(() => {
@@ -188,12 +198,22 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
     }
   }, [confirmDeleteId])
 
+  const onDispatchResource = useCallback(async () => {
+    await dispatchMutipleJobs(selectedRows)
+    // getJobsList()
+  }, [selectedRows])
+
+  const onDeallocate = useCallback(async () => {
+    await deallocateMutipleJobs(selectedRows)
+    // getJobsList()
+  }, [selectedRows])
+
   const jobsTableConfig: IDynamicTable<IJobDetail> = useMemo(
     () => ({
       data: jobs.results,
       columns: jobsTableColumns(objPermissions?.Project.allowDelete ? openConfirmDelete : undefined),
       stickyHeader: false,
-      getRowId: (row: IJobDetail) => row.id,
+      getRowId: (row: IJobDetail, index) => row.id,
       rowSelectControl: 'allRows',
       onRowSelect,
       onSortBy: (props) => {
@@ -210,9 +230,24 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
   useEffect(() => {
     if (!isLoading) {
       console.log('filterParams: ', filterParams)
-      // debounceGetJobList()
+      debounceGetJobList()
     }
   }, [filterParams])
+
+  useEffect(() => {
+    let shouldDeallocation = false
+    let shouldDispatch = true
+    selectedRows.forEach((job) => {
+      if (job.allocations?.length > 0) {
+        shouldDeallocation = true
+      }
+      if (job.status !== JobStatus.PendingDispatch) {
+        shouldDispatch = false
+      }
+    })
+    setCanDeallocate(shouldDeallocation)
+    setCanDispatch(shouldDispatch)
+  }, [selectedRows])
 
   return (
     <div className="scroll">
@@ -223,14 +258,26 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId }) => {
           <Button buttonType="transparent" onClick={toggleJobModal} icon="plus">
             New Job
           </Button>
-          <SearchBox
-            className="searchbox searchbox--w240 cx-mb-0 cx-border"
-            onChange={onSearchTextChange}
-            placeholder="jobs"
-            clearable={!!filterParams.searchText}
-            value={filterParams.searchText}
-            autoFocus={false}
-          />
+          <div className="cx-flex cx-aligns-center">
+            {selectedRows.length > 0 && (
+              <ButtonGroup className="cx-mr-2">
+                <Button buttonType="secondary" disabled={!canDeallocate} onClick={onDeallocate}>
+                  Deallocate
+                </Button>
+                <Button buttonType="primary" disabled={!canDispatch} onClick={onDispatchResource}>
+                  Dispatch
+                </Button>
+              </ButtonGroup>
+            )}
+            <SearchBox
+              className="searchbox searchbox--w240 cx-mb-0 cx-border"
+              onChange={onSearchTextChange}
+              placeholder="jobs"
+              clearable={!!filterParams.searchText}
+              value={filterParams.searchText}
+              autoFocus={false}
+            />
+          </div>
         </div>
       </div>
       <div className="cx-p-4">

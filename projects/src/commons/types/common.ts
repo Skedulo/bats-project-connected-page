@@ -6,16 +6,24 @@ export interface IObjPermission {
 }
 
 export interface IAppContext {
-  config: {
-    projectStatuses?: { id: string, name: string }[],
-    objPermissions?: {
-      Project: IObjPermission
-      ProjectJobTemplate: IObjPermission
-    }
-  }
+  config: IConfig
 }
 
 export interface ITimePickerOption {
   stringValue: string,
   numberValue: number
+}
+
+export interface IBaseModel {
+  name: string
+  id: string
+}
+
+export interface IConfig {
+  jobTypes?: IBaseModel[],
+  projectStatuses?: IBaseModel[],
+  objPermissions?: {
+    Project: IObjPermission
+    // ProjectJobTemplate: IObjPermission
+  }
 }

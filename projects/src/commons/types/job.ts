@@ -1,3 +1,5 @@
+import { IBaseModel } from './common'
+
 export enum JobStatus {
   Queued = 'Queued',
   PendingAllocation = 'Pending Allocation',
@@ -15,22 +17,20 @@ export interface IJobAllocation {
   id: string
   name: string
   travelTime: string
-  resource: {
-    id: string
-    name: string
-  }
+  resource: IBaseModel
 }
 
-export declare type JobStatusKey = JobStatus.Queued
-| JobStatus.PendingAllocation
-| JobStatus.PendingDispatch
-| JobStatus.Dispatched
-| JobStatus.Ready
-| JobStatus.EnRoute
-| JobStatus.OnSite
-| JobStatus.InProgress
-| JobStatus.Complete
-| JobStatus.Cancelled
+export declare type JobStatusKey =
+  | 'Queued'
+  | 'Pending Allocation'
+  | 'Pending Dispatch'
+  | 'Dispatched'
+  | 'Ready'
+  | 'En Route'
+  | 'On Site'
+  | 'In Progress'
+  | 'Complete'
+  | 'Cancelled'
 
 export interface IJobDetail {
   id: string
@@ -41,7 +41,7 @@ export interface IJobDetail {
   endDate: string
   endTime: number
   jobType: string
-  status: JobStatus
+  status: JobStatusKey
   allocations: IJobAllocation[]
   projectId?: string
 }

@@ -11,10 +11,11 @@ import {
   IFilterParams,
   IJobDetail,
   IJobFilterParams,
+  IConfig,
 } from '../commons/types'
 
 import { DEFAULT_FILTER } from '../commons/constants'
-import { parseTimeValue } from '../commons/utils'
+import { parseTimeValue, toastMessage } from '../commons/utils'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -30,9 +31,9 @@ const salesforceApi = axios.create({
   },
 })
 
-export const fetchConfig = async (): Promise<IListResponse<IProjectListItem>> => {
+export const fetchConfig = async (): Promise<IConfig> => {
   const res = await salesforceApi.get('/services/apexrest/sked/config')
-  return { ...res.data.data, jobTypes: ['Connection']}
+  return res.data.data
 }
 
 export const fetchListProjects = async (
@@ -203,6 +204,38 @@ export const fetchLocations = async (searchString: string): Promise<ILookupOptio
 
 export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
   const res = await salesforceApi.get(`/services/apexrest/sked/job`, { params: { ...filterObj } })
+
+  return {
+    totalItems: 1,
+    pageSize: 20,
+    pageNumber: 1,
+    results: [{
+      id: '123',
+      name: 'Job#01',
+      description: 'job description',
+      startDate: '2020-06-01',
+      startTime: 800,
+      endDate: '2020-06-01',
+      endTime: 900,
+      jobType: 'Maintenance',
+      status: 'Pending Allocation',
+      allocations: [],
+      projectId: '12'
+    },
+    {
+      id: '234',
+      name: 'Job#01',
+      description: 'job description',
+      startDate: '2020-06-01',
+      startTime: 800,
+      endDate: '2020-06-01',
+      endTime: 900,
+      jobType: 'Maintenance',
+      status: 'Pending Allocation',
+      allocations: [],
+      projectId: '12'
+    }]
+  }
   return res.data.data
 }
 
@@ -237,4 +270,31 @@ export const deleteJob = async (uids: string) => {
   })
 
   return response.data
+}
+
+// export const dispatchResource = async (jobId, resourceIds): Promise<IListResponse<IJobDetail>> => {
+
+// }
+
+export const dispatchResource = async (jobId: string, resourceIds: string[]) => {
+  console.log('dispatch----jobId: ', jobId);
+  console.log('dispatch----resourceIds: ', resourceIds);
+}
+
+export const dispatchMutipleJobs = async (jobArray: IJobDetail[]) => {
+  try {
+    await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
+    toastMessage.error('Dispatched successfully!')
+  } catch (error) {
+    console.log('error: ', error);
+  }
+}
+
+export const deallocateMutipleJobs = async (jobArray: IJobDetail[]) => {
+  try {
+    await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
+    toastMessage.error('Dispatched successfully!')
+  } catch (error) {
+    console.log('error: ', error);
+  }
 }

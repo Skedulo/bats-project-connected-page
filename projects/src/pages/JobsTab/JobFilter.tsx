@@ -20,13 +20,9 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
     filterBar,
     setFilterBar,
     appliedFilter,
-    setAppliedFilter,
-    savedFilterSets,
-    saveFilterSets,
-    deleteFilterSet,
+    setAppliedFilter
   } = useJobFilter()
   const [forceUpdateFilterBar, setForceUpdateFilterBar] = useState<boolean>(false)
-  const [filterSetName, setFilterSetName] = useState<string>('')
   const [filterDates, setFilterDates] = useState({
     startDate: new Date(),
     endDate: new Date(''),
@@ -127,157 +123,10 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
     )
   }, [filterParams.startDate])
 
-  // the saved filter text
-  const myFilterSetsTrigger = useCallback(() => {
-    return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mr-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-        {selectedFilterSet ? selectedFilterSet?.name : ALL_PROJECTS}
-        <Icon name="chevronDown" size={18} />
-      </div>
-    )
-  }, [selectedFilterSet])
-
-  // the save icon
-  const saveFilterTrigger = useCallback(() => {
-    return <IconButton tooltipContent="Save filter" icon="bookmark" buttonType="secondary" />
-  }, [])
-
-  // revoked once changing filter set name
-  const onFilterSetNameChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setFilterSetName(e.target.value)
-  }, [])
-
-  // select a saved filter set
-  const onSelectSavedFilter = useCallback((selectedItem: ISavedFilterSet) => {
-    if (selectedFilterSet !== selectedItem) {
-      const newFilterBar = filterBar.map(filterItem => {
-        const matchedItem = selectedItem.filterSet?.find((item: any) => item.id === filterItem.id)
-
-        if (matchedItem) {
-          return {
-            ...filterItem,
-            items: filterItem.useFetch ? matchedItem.selectedItems : filterItem.items,
-            selectedIds: matchedItem.selectedItems.map((item: any) => item.id)
-          }
-        }
-        return {
-          ...filterItem,
-          selectedIds: []
-        }
-      })
-      if (!isEqual(filterBar, newFilterBar)) {
-        setFilterBar(newFilterBar)
-      }
-      const filterObj = cloneDeep(selectedItem)
-      delete filterObj.id
-      delete filterObj.name
-      delete filterObj.filterSet
-
-      setFilterDates({
-        startDate: filterObj.startDate ? new Date(filterObj.startDate) : new Date(),
-        endDate: filterObj.endDate ? new Date(filterObj.endDate) : new Date('')
-      })
-      onFilterChange({
-        ...filterObj,
-        startDate: filterObj.startDate || null,
-        endDate: filterObj.endDate || null
-      })
-      setSelectedFilterSet(selectedItem)
-      setFilterSetName('')
-    }
-  }, [selectedFilterSet, filterBar])
-
-  // save the current filter set to local storage
-  const onSaveFilterSet = useCallback(() => {
-    const newFilterSet = {
-      ...filterParams,
-      name: filterSetName,
-      filterSet: appliedFilter,
-      id: new Date().valueOf()
-    }
-    saveFilterSets(newFilterSet)
-    setSelectedFilterSet(newFilterSet)
-    setFilterSetName('')
-  }, [filterParams, filterSetName, appliedFilter])
-
-  // delete a filter set from local storage
-  const onDeleteSavedFilter = useCallback((id: string) => {
-    deleteFilterSet(id)
-    onFilter([])
-  }, [])
-
   return (
     <div className="top-bar cx-border-b-0">
       <div className="top-bar-left">
         <ul className="menu">
-          <li>
-            <PopOut
-              placement="bottom"
-              closeOnOuterClick={true}
-              closeOnScroll={true}
-              closeOnFirstClick={true}
-              trigger={myFilterSetsTrigger}
-            >
-              {() => (
-                <Menu>
-                  <MenuItem onClick={resetFilter}>
-                    {ALL_PROJECTS}
-                  </MenuItem>
-                  {savedFilterSets.map((item) => (
-                    <MenuItem key={item.id} className="cx-p-0">
-                      <div className="cx-flex cx-justify-between cx-items-center cx-px-3 cx-py-2">
-                        {/* tslint:disable-next-line: jsx-no-lambda */}
-                        <span className="cx-w-full" onClick={() => onSelectSavedFilter(item)}>
-                          {item.name}
-                        </span>
-                        <Icon
-                          name="trash"
-                          size={24}
-                          className="cx-text-neutral-500 cx-pl-2"
-                          /* tslint:disable-next-line: jsx-no-lambda */
-                          onClick={() => onDeleteSavedFilter(item.id)}
-                        />
-                      </div>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              )}
-            </PopOut>
-          </li>
-          <li>
-            <PopOut placement="bottom" closeOnOuterClick={true} closeOnScroll={true} trigger={saveFilterTrigger}>
-              {togglePopout => (
-                <div className="cx-p-4 cx-bg-white">
-                  <span className="span-label">Filter Set Name</span>
-                  <input type="text" value={filterSetName} onChange={onFilterSetNameChange} />
-                  <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
-                    <Button
-                      buttonType="secondary"
-                      // tslint:disable-next-line: jsx-no-lambda
-                      onClick={() => {
-                        togglePopout()
-                        setFilterSetName('')
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      buttonType="primary"
-                      className="cx-ml-2"
-                      disabled={!filterSetName}
-                      // tslint:disable-next-line: jsx-no-lambda
-                      onClick={() => {
-                        togglePopout()
-                        onSaveFilterSet()
-                      }}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </PopOut>
-          </li>
           <li>
             <div className="cx-flex cx-items-center">
               <PopOut

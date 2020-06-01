@@ -1,6 +1,7 @@
-import { JobStatus } from '../types'
+import { JobStatus, JobStatusKey } from '../types'
+import { LozengeColors } from '@skedulo/sked-ui'
 
-export const JOB_STATUS_COLOR = {
+export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors> = {
   [JobStatus.Queued]: 'neutral',
   [JobStatus.PendingAllocation]: 'neutral',
   [JobStatus.PendingDispatch]: 'neutral',
@@ -10,4 +11,5 @@ export const JOB_STATUS_COLOR = {
   [JobStatus.InProgress]: 'neutral',
   [JobStatus.Complete]: 'green',
   [JobStatus.Cancelled]: 'red',
+  [JobStatus.Dispatched]: 'cyan',
 }

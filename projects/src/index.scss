@@ -5,3 +5,21 @@ body {
   padding: 0;
   font-family: sans-serif;
 }
+
+.Toastify__toast {
+  background: #fff;
+  color: #000;
+
+  .Toastify__close-button {
+    color: #000;
+  }
+
+  &.Toastify__toast--success {
+    background: #fff;
+    border-left: 2px solid #84e7b5;
+  }
+  &.Toastify__toast--error {
+    background: #fff;
+    border-left: 2px solid #f10b0b;
+  }
+}
