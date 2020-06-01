@@ -2,7 +2,7 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { FormElementWrapper, FormInputElement, TextArea } from '@skedulo/sked-ui'
 
-interface WrappedFormInputProps {
+interface IWrappedFormInputProps {
   size?: number
   label: string
   name: string
@@ -17,7 +17,7 @@ interface WrappedFormInputProps {
   maxLength?: number
 }
 
-const WrappedFormInput: React.FC<WrappedFormInputProps> = (props) => {
+const WrappedFormInput: React.FC<IWrappedFormInputProps> = (props) => {
   const {
     label,
     name,

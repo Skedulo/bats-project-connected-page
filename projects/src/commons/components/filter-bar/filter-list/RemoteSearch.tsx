@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { debounce, uniqBy } from 'lodash'
-import { SearchBox } from '../../search-box/SearchBox'
+import SearchBox from '../../SearchBox'
 import { Loading } from '@skedulo/sked-ui'
 import { IFilterItem } from '../interfaces'
 

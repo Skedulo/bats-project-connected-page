@@ -1,12 +1,11 @@
 import * as React from 'react'
 import { AppContext } from '../../App'
-import { cloneDeep } from 'lodash'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
 import { fetchRegions, fetchAccounts, fetchContacts, fetchLocations } from '../../Services/DataServices'
 import { getLocalFilterSets, setLocalFilterSets } from '../../commons/utils'
 import { ISavedFilterSet } from '../../commons/types'
 
-export const useProjectFilter = () => {
+const useJobFilter = () => {
   const appContext = React.useContext(AppContext)
   const { projectStatuses = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
 
@@ -93,3 +92,5 @@ export const useProjectFilter = () => {
     deleteFilterSet
   }), [appliedFilter, savedFilterSets, filterBar])
 }
+
+export default useJobFilter

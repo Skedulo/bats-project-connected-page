@@ -6,13 +6,13 @@ import { useGlobalLoading, LoadingTrigger } from '../../commons/components/Globa
 import { Icon, Tabs } from '@skedulo/sked-ui'
 import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES } from '../../commons/constants'
 import DetailTab from './DetailTab'
-import JobsTab from './JobsTab'
+import JobsTab from '../JobsTab'
 
-interface ProjectDetailProps {
+interface IProjectDetailProps {
   isOpen?: boolean
 }
 
-const ProjectDetail: React.FC<ProjectDetailProps> = () => {
+const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   const params = useParams<IRouterParams>()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)

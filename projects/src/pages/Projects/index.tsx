@@ -19,8 +19,9 @@ import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
 import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
 import { projectDetailPath } from '../routes'
 import { AppContext } from '../../App'
+import SearchBox from '../../commons/components/SearchBox'
 
-interface ProjectsListProps {
+interface IProjectsListProps {
   children?: any
 }
 
@@ -77,7 +78,7 @@ export const projectsTableColumns = (
   ]
 }
 
-const ProjectsList: React.FC<ProjectsListProps> = () => {
+const ProjectsList: React.FC<IProjectsListProps> = () => {
   const history = useHistory()
   const appContext = React.useContext(AppContext)
   const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
@@ -109,12 +110,8 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
     setFilterParams((prev: IFilterParams) => ({ ...prev, pageNumber: page }))
   }, [])
 
-  const onSearchTextChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    onFilterChange({ searchText: e.target.value })
-  }, [])
-
-  const onSearchTextClear = useCallback(() => {
-    onFilterChange({ searchText: '' })
+  const onSearchTextChange = useCallback((value: string) => {
+    onFilterChange({ searchText: value })
   }, [])
 
   const onResetFilter = useCallback(() => {
@@ -186,15 +183,20 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
         onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
       }
     },
-    sortByControl: 'controlled'
+    sortByControl: 'controlled',
+    initialRowStateKey: 'id'
   }), [projects.results, projectsTableColumns, objPermissions?.Project])
 
   useEffect(() => {
     if (!isLoading) {
       console.log('filterParams: ', filterParams);
-      debounceGetProjectList()
+      // debounceGetProjectList()
     }
   }, [filterParams])
+
+  useEffect(() => {
+    onViewProject('a103L0000008YnOQAU')
+  }, [])
 
   return (
     <div className="scroll">
@@ -204,19 +206,14 @@ const ProjectsList: React.FC<ProjectsListProps> = () => {
           <h1 className="cx-text-xl cx-font-semibold">Projects</h1>
           <ul className="menu">
             <li className="padding-right">
-              <div className="searchbox searchbox--w240 cx-mb-0">
-                <i className="icon ski ski-search" />
-                <input
-                  type="text"
-                  data-sk-name="generic-filter-bar"
-                  placeholder="Search projects..."
-                  value={filterParams.searchText || ''}
-                  onChange={onSearchTextChange}
-                />
-                {filterParams.searchText && (
-                  <Icon className="cx-pr-2" size={18} color="#4A556A" onClick={onSearchTextClear} name="close" />
-                )}
-              </div>
+              <SearchBox
+                className="searchbox searchbox--w240 cx-mb-0 cx-border"
+                onChange={onSearchTextChange}
+                placeholder="projects"
+                clearable={!!filterParams.searchText}
+                value={filterParams.searchText || ''}
+                autoFocus={false}
+              />
             </li>
             {objPermissions?.Project.allowCreate && (
               <li>

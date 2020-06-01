@@ -97,3 +97,7 @@ export interface IFilterParams {
   contactIds?: string
   regionIds?: string
 }
+
+export interface IJobFilterParams extends IFilterParams {
+  projectId?: string
+}

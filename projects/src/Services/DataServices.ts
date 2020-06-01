@@ -9,9 +9,11 @@ import {
   IContactOption,
   ISalesforceResponse,
   IFilterParams,
+  IJobDetail,
+  IJobFilterParams,
 } from '../commons/types'
 
-import { LOCAL_STORAGE_KEY, DEFAULT_FILTER } from '../commons/constants'
+import { DEFAULT_FILTER } from '../commons/constants'
 import { parseTimeValue } from '../commons/utils'
 
 const httpApi = axios.create({
@@ -30,7 +32,7 @@ const salesforceApi = axios.create({
 
 export const fetchConfig = async (): Promise<IListResponse<IProjectListItem>> => {
   const res = await salesforceApi.get('/services/apexrest/sked/config')
-  return res.data.data
+  return { ...res.data.data, jobTypes: ['Connection']}
 }
 
 export const fetchListProjects = async (
@@ -195,11 +197,44 @@ export const fetchLocations = async (searchString: string): Promise<ILookupOptio
   return response.locations
 }
 
-export const setLocalFilterSets = (filterSet: any) => {
-  return window.localStorage.setItem(LOCAL_STORAGE_KEY.PROJECT_FILTER_SET, JSON.stringify(filterSet))
+/**
+ * JOBS
+ */
+
+export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
+  const res = await salesforceApi.get(`/services/apexrest/sked/job`, { params: { ...filterObj } })
+  return res.data.data
 }
 
-export const getLocalFilterSets = () => {
-  const stored = window.localStorage.getItem(LOCAL_STORAGE_KEY.PROJECT_FILTER_SET)
-  return stored ? JSON.parse(stored) : []
+export const updateJob = async (
+  requestData: IJobDetail
+): Promise<IListResponse<IJobDetail>> => {
+  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
+  const response: {
+    data: ISalesforceResponse
+  } = await salesforceApi.post('/services/apexrest/sked/job', formattedPayload)
+
+  return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
+}
+
+export const createJob = async (
+  requestData: IJobDetail
+): Promise<IListResponse<IJobDetail>> => {
+  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
+
+  const response: {
+    data: ISalesforceResponse
+  } = await salesforceApi.post('/services/apexrest/sked/job', formattedPayload)
+
+  return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
+}
+
+export const deleteJob = async (uids: string) => {
+  const response: {
+    data: ISalesforceResponse
+  } = await salesforceApi.delete('/services/apexrest/sked/job', {
+    params: { ids: uids }
+  })
+
+  return response.data
 }

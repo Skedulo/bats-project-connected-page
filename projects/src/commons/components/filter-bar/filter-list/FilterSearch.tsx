@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { SearchBox } from '../../search-box/SearchBox'
+import SearchBox from '../../SearchBox'
 import { IFilterItem } from '../interfaces'
 
 export interface IFilterSearchProps<T> {
@@ -15,28 +15,31 @@ interface IFilterSearchState<T> {
   itemsWithSearchTermApplied: T[]
 }
 
-export class FilterSearch<T extends IFilterItem> extends React.PureComponent<IFilterSearchProps<T>, IFilterSearchState<T>> {
+export class FilterSearch<T extends IFilterItem> extends React.PureComponent<
+  IFilterSearchProps<T>,
+  IFilterSearchState<T>
+> {
   constructor(props: IFilterSearchProps<T>) {
     super(props)
 
     this.state = {
-      itemsWithSearchTermApplied: this.props.items
+      itemsWithSearchTermApplied: this.props.items,
     }
   }
 
   onFilterSearch = (value: string) => {
     if (!value.length) {
       return this.setState({
-        itemsWithSearchTermApplied: this.props.items
+        itemsWithSearchTermApplied: this.props.items,
       })
     }
 
-    const searchedFilters = this.props.items.filter(item => {
+    const searchedFilters = this.props.items.filter((item) => {
       return item.name.toLowerCase().indexOf(value.toLowerCase()) > -1
     })
 
     return this.setState({
-      itemsWithSearchTermApplied: searchedFilters
+      itemsWithSearchTermApplied: searchedFilters,
     })
   }
 
@@ -45,7 +48,11 @@ export class FilterSearch<T extends IFilterItem> extends React.PureComponent<IFi
 
     return (
       <>
-        <SearchBox placeholder={this.props.placeholder || ''} onChange={this.onFilterSearch} className={this.props.className} />
+        <SearchBox
+          placeholder={this.props.placeholder || ''}
+          onChange={this.onFilterSearch}
+          className={this.props.className}
+        />
         {this.props.children({ filteredItems: itemsWithSearchTermApplied })}
       </>
     )
