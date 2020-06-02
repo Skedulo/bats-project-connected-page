@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { AppContext } from '../../App'
+import { AppContext } from '../../../App'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
-import { fetchRegions, fetchAccounts, fetchContacts, fetchLocations } from '../../Services/DataServices'
+import { fetchRegions, fetchAccounts, fetchContacts, fetchLocations } from '../../../Services/DataServices'
 
 const useJobFilter = () => {
   const appContext = React.useContext(AppContext)

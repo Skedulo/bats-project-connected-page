@@ -22,7 +22,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   const getProjectById = useCallback(async (projectId: string) => {
     startGlobalLoading()
     const res = await fetchProjectById(projectId)
-    setProject({ ...res})
+    setProject({ ...res })
     endGlobalLoading()
   }, [])
 
@@ -32,7 +32,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
     try {
       startGlobalLoading()
       const res = await updateProject(data)
-      setProject({ ...res})
+      setProject({ ...res })
     } catch (error) {
       console.log('error: ', error)
     } finally {
@@ -74,7 +74,9 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
           <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
         </div>
         {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
-        {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab projectId={params.projectId || ''} />}
+        {activeTab === PROJECT_TAB_ROUTES.JOBS && (
+          <JobsTab projectId={params.projectId || ''} isTemplate={project.isTemplate} />
+        )}
       </div>
     </div>
   )

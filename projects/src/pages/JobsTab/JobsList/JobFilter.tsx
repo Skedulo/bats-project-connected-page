@@ -1,11 +1,11 @@
 import React, { useState, useCallback, memo, ChangeEvent } from 'react'
 import { Button, Icon, PopOut, Datepicker, IconButton, Menu, MenuItem } from '@skedulo/sked-ui'
 import { cloneDeep, isEqual } from 'lodash'
-import { DATE_FORMAT } from '../../commons/constants'
+import { DATE_FORMAT } from '../../../commons/constants'
 import useJobFilter from './useJobFilter'
 import { format, add, isValid } from 'date-fns'
-import { ISavedFilterSet } from '../../commons/types'
-import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
+import { ISavedFilterSet } from '../../../commons/types'
+import { FilterBar } from '../../../commons/components/filter-bar/FilterBar'
 
 const ALL_PROJECTS = 'All Projects'
 

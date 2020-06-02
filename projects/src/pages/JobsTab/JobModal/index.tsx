@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { DynamicModal, Icon } from '@skedulo/sked-ui'
 import ProjectForm from '../../../commons/components/ProjectForm'
-import { IJobDetail } from '../../../commons/types'
+import { IJobDetail, IJobTemplate } from '../../../commons/types'
 
 interface IJobModalProp {
   onClose: () => void
-  onSubmit: (data: IJobDetail) => void
-  job: IJobDetail | null
+  onSubmit: (data: IJobTemplate) => void
+  job: IJobTemplate | null
 }
 
 interface IModalHeaderProp {

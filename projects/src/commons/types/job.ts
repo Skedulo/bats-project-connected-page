@@ -20,6 +20,12 @@ export interface IJobAllocation {
   resource: IBaseModel
 }
 
+export interface IJobConstraint {
+  id: string
+  dependencyType: string
+  dependentJob: IBaseModel
+}
+
 export declare type JobStatusKey =
   | 'Queued'
   | 'Pending Allocation'
@@ -32,6 +38,16 @@ export declare type JobStatusKey =
   | 'Complete'
   | 'Cancelled'
 
+export interface IJobTemplate {
+  id?: string
+  name: string
+  description: string
+  jobType: string
+  jobConstraints: IJobConstraint[]
+  project: IBaseModel
+  projectId?: string
+}
+
 export interface IJobDetail {
   id: string
   name: string
@@ -42,6 +58,10 @@ export interface IJobDetail {
   endTime: number
   jobType: string
   status: JobStatusKey
-  allocations: IJobAllocation[]
+  allocations: IBaseModel[]
+  jobConstraints: IJobConstraint[]
+  project: IBaseModel
   projectId?: string
 }
+
+export declare type JobItem = IJobDetail | IJobTemplate

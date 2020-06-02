@@ -12,6 +12,7 @@ import {
   IJobDetail,
   IJobFilterParams,
   IConfig,
+  IJobTemplate,
 } from '../commons/types'
 
 import { DEFAULT_FILTER } from '../commons/constants'
@@ -204,38 +205,11 @@ export const fetchLocations = async (searchString: string): Promise<ILookupOptio
 
 export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
   const res = await salesforceApi.get(`/services/apexrest/sked/job`, { params: { ...filterObj } })
+  return res.data.data
+}
 
-  return {
-    totalItems: 1,
-    pageSize: 20,
-    pageNumber: 1,
-    results: [{
-      id: '123',
-      name: 'Job#01',
-      description: 'job description',
-      startDate: '2020-06-01',
-      startTime: 800,
-      endDate: '2020-06-01',
-      endTime: 900,
-      jobType: 'Maintenance',
-      status: 'Pending Allocation',
-      allocations: [],
-      projectId: '12'
-    },
-    {
-      id: '234',
-      name: 'Job#01',
-      description: 'job description',
-      startDate: '2020-06-01',
-      startTime: 800,
-      endDate: '2020-06-01',
-      endTime: 900,
-      jobType: 'Maintenance',
-      status: 'Pending Allocation',
-      allocations: [],
-      projectId: '12'
-    }]
-  }
+export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
+  const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
   return res.data.data
 }
 
@@ -251,7 +225,7 @@ export const updateJob = async (
 }
 
 export const createJob = async (
-  requestData: IJobDetail
+  requestData: IJobTemplate
 ): Promise<IListResponse<IJobDetail>> => {
   const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
 
