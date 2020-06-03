@@ -13,6 +13,9 @@ import {
   IJobFilterParams,
   IConfig,
   IJobTemplate,
+  IJobTypeTemplate,
+  IJobTypeTemplateValue,
+  IResourceRequirement,
 } from '../commons/types'
 
 import { DEFAULT_FILTER } from '../commons/constants'
@@ -31,6 +34,23 @@ const salesforceApi = axios.create({
     Authorization: `Bearer ${credentials.vendor.token}`,
   },
 })
+
+export const fetchJobTypeTemplates = async (): Promise<IJobTypeTemplate[]> => {
+  const res = await httpApi.get('/config/templates/Jobs')
+  return res.data?.result || []
+}
+
+export const fetchJobTypeTemplateValues = async (
+  templateId: string, jobType: string
+): Promise<IResourceRequirement> => {
+  const res = await httpApi.get(`/config/template/${templateId}/values`)
+  const results = res.data?.result || []
+  const resourceRequirements = results.find((item: IJobTypeTemplateValue) => {
+    return item.field === 'ResourceRequirements'
+  }) || {}
+  const resourceRequirementValue = resourceRequirements.value ? JSON.parse(resourceRequirements.value) : {}
+  return { ...resourceRequirementValue, jobType }
+}
 
 export const fetchConfig = async (): Promise<IConfig> => {
   const res = await salesforceApi.get('/services/apexrest/sked/config')
@@ -204,13 +224,43 @@ export const fetchLocations = async (searchString: string): Promise<ILookupOptio
  */
 
 export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
-  const res = await salesforceApi.get(`/services/apexrest/sked/job`, { params: { ...filterObj } })
-  return res.data.data
+  try {
+    const res = await salesforceApi.get(`/services/apexrest/sked/job`, { params: { ...filterObj } })
+    if (res.data?.data?.results?.length > 0) {
+      return {
+        ...res.data.data,
+        results: res.data.data.results.map((item: IJobDetail) => ({
+          ...item,
+          startTime: parseTimeValue(item.startTime),
+          endTime: parseTimeValue(item.endTime)
+        }))
+      }
+    }
+    return res.data.data
+  } catch (error) {
+    toastMessage.error('Something went wrong!')
+    return {
+      totalItems: 0,
+      pageSize: filterObj.pageSize,
+      pageNumber: filterObj.pageNumber,
+      results: []
+    }
+  }
 }
 
 export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
-  const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
-  return res.data.data
+  try {
+    const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
+    return res.data.data
+  } catch (error) {
+    toastMessage.error('Something went wrong!')
+    return {
+      totalItems: 0,
+      pageSize: filterObj.pageSize,
+      pageNumber: filterObj.pageNumber,
+      results: []
+    }
+  }
 }
 
 export const updateJob = async (
@@ -258,7 +308,7 @@ export const dispatchResource = async (jobId: string, resourceIds: string[]) => 
 export const dispatchMutipleJobs = async (jobArray: IJobDetail[]) => {
   try {
     await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
-    toastMessage.error('Dispatched successfully!')
+    toastMessage.success('Dispatched successfully!')
   } catch (error) {
     console.log('error: ', error);
   }
@@ -267,7 +317,7 @@ export const dispatchMutipleJobs = async (jobArray: IJobDetail[]) => {
 export const deallocateMutipleJobs = async (jobArray: IJobDetail[]) => {
   try {
     await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
-    toastMessage.error('Dispatched successfully!')
+    toastMessage.success('Dispatched successfully!')
   } catch (error) {
     console.log('error: ', error);
   }

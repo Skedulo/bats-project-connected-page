@@ -20,6 +20,7 @@ import { fetchListProjects, deleteProject, createProject } from '../../Services/
 import { projectDetailPath } from '../routes'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
+import { toastMessage } from '../../commons/utils'
 
 interface IProjectsListProps {
   children?: any
@@ -88,17 +89,17 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   const [filterParams, setFilterParams] = useState<IFilterParams>(DEFAULT_FILTER)
   const [projects, setProjects] = useState<IListResponse<IProjectListItem>>(DEFAULT_PROJECTS_LIST)
 
-  const getProjectsList = useCallback(async () => {
+  const getProjectsList = useCallback(async (params: IFilterParams) => {
     try {
       setIsLoading(true)
-      const res = await fetchListProjects({ ...filterParams })
+      const res = await fetchListProjects({ ...params })
       setProjects(res)
     } catch (error) {
       console.log('error: ', error)
     } finally {
       setIsLoading(false)
     }
-  }, [filterParams])
+  }, [])
 
   const debounceGetProjectList = useMemo(() => debounce(700, getProjectsList), [getProjectsList])
 
@@ -151,7 +152,6 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   // TODO: made top url sync with cp url
   const onViewProject = useCallback((projectId: string) => {
     // window.top.window.location.href = `${PROJECT_DETAIL_PATH}${projectId}`
-    console.log('history: ', history);
     history.push(projectDetailPath(projectId))
   }, [])
 
@@ -162,21 +162,22 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     try {
       setIsLoading(true)
       await deleteProject(confirmDeleteId)
-      await getProjectsList()
+      await getProjectsList(filterParams)
     } catch (error) {
       console.log('error: ', error)
+      toastMessage.error('Delete project unsuccessfully!')
     } finally {
       setIsLoading(false)
       closeConfirmDelete()
     }
-  }, [confirmDeleteId])
+  }, [confirmDeleteId, filterParams])
 
   const projectsTableConfig: IDynamicTable<IProjectListItem> = useMemo(() => ({
     data: projects.results,
     columns: projectsTableColumns(onViewProject, (objPermissions?.Project.allowDelete ? openConfirmDelete : undefined)),
     stickyHeader: false,
     getRowId: (row: IProjectListItem) => row.id,
-    rowSelectControl: 'allRows',
+    rowSelectControl: 'disabled',
     onRowSelect,
     onSortBy: props => {
       if (props?.id) {
@@ -190,12 +191,15 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   useEffect(() => {
     if (!isLoading) {
       console.log('filterParams: ', filterParams);
-      // debounceGetProjectList()
+      debounceGetProjectList(filterParams)
     }
   }, [filterParams])
 
   useEffect(() => {
-    onViewProject('a103L0000008YnOQAU')
+    // isTemplate = true
+    // onViewProject('a103L0000008YnOQAU')
+    // isTemplate = false
+    // onViewProject('a103L0000008YnsQAE')
   }, [])
 
   return (

@@ -5,7 +5,7 @@ import { fetchRegions, fetchAccounts, fetchContacts, fetchLocations } from '../.
 
 const useJobFilter = () => {
   const appContext = React.useContext(AppContext)
-  const { jobTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
+  const { jobTypes = [], jobStatuses = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
 
   const defaultFilterBar: IFilter<{ id: string; name: string; }>[] = React.useMemo(() => ([
     {
@@ -15,28 +15,35 @@ const useJobFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
     },
-    // {
-    //   id: 'accountIds',
-    //   name: 'Account',
-    //   items: [],
-    //   selectedIds: [],
-    //   inputType: 'checkbox',
-    //   useFetch: async (searchTerm: string) => {
-    //     const res = await fetchAccounts(searchTerm)
-    //     return res.map(item => ({ id: item.UID, name: item.Name }))
-    //   }
-    // },
-    // {
-    //   id: 'contactIds',
-    //   name: 'Contact',
-    //   items: [],
-    //   selectedIds: [],
-    //   inputType: 'checkbox',
-    //   useFetch: async (searchTerm: string) => {
-    //     const res = await fetchContacts(searchTerm)
-    //     return res.map(item => ({ id: item.UID, name: item.Name }))
-    //   }
-    // },
+    {
+      id: 'jobStatuses',
+      name: 'Job Status',
+      items: jobStatuses,
+      selectedIds: [],
+      inputType: 'checkbox',
+    },
+    {
+      id: 'accountIds',
+      name: 'Account',
+      items: [],
+      selectedIds: [],
+      inputType: 'checkbox',
+      useFetch: async (searchTerm: string) => {
+        const res = await fetchAccounts(searchTerm)
+        return res.map(item => ({ id: item.UID, name: item.Name }))
+      }
+    },
+    {
+      id: 'contactIds',
+      name: 'Contact',
+      items: [],
+      selectedIds: [],
+      inputType: 'checkbox',
+      useFetch: async (searchTerm: string) => {
+        const res = await fetchContacts(searchTerm)
+        return res.map(item => ({ id: item.UID, name: item.Name }))
+      }
+    },
     {
       id: 'regionIds',
       name: 'Region',
@@ -48,17 +55,17 @@ const useJobFilter = () => {
         return res.map(item => ({ id: item.UID, name: item.Name }))
       }
     },
-    // {
-    //   id: 'locationIds',
-    //   name: 'Location',
-    //   items: [],
-    //   selectedIds: [],
-    //   inputType: 'checkbox',
-    //   useFetch: async (searchTerm: string) => {
-    //     const res = await fetchLocations(searchTerm)
-    //     return res.map(item => ({ id: item.UID, name: item.Name }))
-    //   }
-    // }
+    {
+      id: 'locationIds',
+      name: 'Location',
+      items: [],
+      selectedIds: [],
+      inputType: 'checkbox',
+      useFetch: async (searchTerm: string) => {
+        const res = await fetchLocations(searchTerm)
+        return res.map(item => ({ id: item.UID, name: item.Name }))
+      }
+    }
   ]), [jobTypes])
   const [filterBar, setFilterBar] = React.useState<IFilter<{ id: string; name: string; }>[]>([])
   const [appliedFilter, setAppliedFilter] = React.useState<any>([])

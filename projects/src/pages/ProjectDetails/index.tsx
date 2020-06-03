@@ -1,6 +1,6 @@
 import React, { useEffect, useState, memo, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { IProjectDetail, IRouterParams } from '../../commons/types'
+import { IProjectDetail, IRouterParams, IJobTypeTemplateValue } from '../../commons/types'
 import { fetchProjectById, updateProject } from '../../Services/DataServices'
 import { useGlobalLoading, LoadingTrigger } from '../../commons/components/GlobalLoading'
 import { Icon, Tabs } from '@skedulo/sked-ui'
@@ -16,7 +16,6 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   const params = useParams<IRouterParams>()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
-  // const [confirmDelete, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
   const [project, setProject] = useState<IProjectDetail | null>(null)
 
   const getProjectById = useCallback(async (projectId: string) => {

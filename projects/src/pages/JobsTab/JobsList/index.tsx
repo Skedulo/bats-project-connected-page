@@ -1,17 +1,15 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent } from 'react'
-import { debounce } from 'lodash/fp'
+import { debounce, uniq, keyBy, times, toNumber } from 'lodash/fp'
 import { Dictionary } from 'lodash'
 import {
   DynamicTable,
   IDynamicTable,
   Lozenge,
   Pagination,
-  ActionMenu,
   Button,
-  ConfirmationModal,
-  Icon,
   LozengeColors,
   ButtonGroup,
+  Avatar,
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
@@ -22,21 +20,19 @@ import {
   IJobFilterParams,
   JobStatusKey,
   JobStatus,
-  IBaseModel,
-  IJobTemplate,
-  JobItem,
+  IJobTypeTemplate,
+  IConfig,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
 import {
   fetchListJobs,
-  createJob,
-  deleteJob,
   deallocateMutipleJobs,
   dispatchMutipleJobs,
-  fetchListJobTemplates,
+  fetchJobTypeTemplateValues,
 } from '../../../Services/DataServices'
 import { AppContext } from '../../../App'
 import SearchBox from '../../../commons/components/SearchBox'
+import { createJobPath, jobDetailPath } from '../../routes'
 
 interface IJobsListProps {
   projectId: string
@@ -52,7 +48,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
       Cell: ({ row }: { row: { original: IJobDetail } }) => {
         const onCellClick = () => onViewJobDetail(row.original.id)
         return (
-          <div onClick={onCellClick}>
+          <div onClick={onCellClick} className="hover:cx-cursor-pointer">
             <h1>{row.original.name}</h1>
             <h2 className="cx-text-neutral-700">{row.original.description}</h2>
           </div>
@@ -62,7 +58,6 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
     {
       Header: 'Job type',
       accessor: 'jobType',
-      width: '30%',
     },
     {
       Header: 'Status',
@@ -73,49 +68,101 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
       },
     },
     {
-      Header: 'Constrains',
-      accessor: 'jobConstraints',
-
+      Header: 'Scheduled Date/Time',
+      accessor: 'startDate',
+      Cell: ({ row }: { row: { original: IJobDetail } }) => {
+        return (
+          <div>
+            <h1>{row.original.startDate}</h1>
+            <h2 className="cx-text-neutral-700">{row.original.startTime}</h2>
+          </div>
+        )
+      },
     },
     {
-      Header: 'Required Resources',
-      accessor: 'allocations',
-      Cell: ({ cell }: { cell: { value: IBaseModel[] } }) => {
-      const cellVal = cell.value.map(item => <p key={item.id}>{item.name}</p>)
-      return <>{cellVal}</>
-      },
+      Header: 'Resource/s',
+      accessor: 'resourceRequirement',
+      Cell: ({ row }: { row: { original: IJobDetail } }) => {
+        const resources: React.ReactNode[] = []
+        const time = Math.max(row.original.allocations?.length || 0, toNumber(row.original.resourceRequirement))
+        times(index => {
+          const jobAllocation = row.original.allocations ? row.original.allocations[index] : null
+          const className = jobAllocation ? 'cx-ml-1 first:cx-ml-0' : 'cx-ml-1 first:cx-ml-0 cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500'
+          resources.push(
+            <Avatar
+              name={jobAllocation?.resource?.name || ''}
+              key={`resourcerquired-${index}`}
+              className={className}
+              showTooltip={!!jobAllocation?.resource?.name}
+              size="medium"
+              preserveName={false}
+            />
+          )
+        }, time > 0 ? time : 1)
+        return (
+          <div className="sk-flex sk-items-center">
+            {resources}
+          </div>
+        )
+      }
     }
   ]
 }
 
 const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
   const appContext = React.useContext(AppContext)
-  const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
+  const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
+    appContext,
+  ])
+  const setAppConfig = React.useMemo(() => appContext?.setAppConfig, [appContext])
+  const jobTypeTemplateValueKeys = React.useMemo(() => Object.keys(jobTypeTemplateValues), [jobTypeTemplateValues])
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [openJobModal, setOpenJobModal] = useState<boolean>(false)
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
-  const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
   const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
   const [canDeallocate, setCanDeallocate] = useState<boolean>(true)
   const [canDispatch, setCanDispatch] = useState<boolean>(true)
 
-  const getJobsList = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const res = isTemplate
-        ? await fetchListJobTemplates({ projectId, ...filterParams })
-        : await fetchListJobs({ projectId, ...filterParams })
-      console.log('res: ', res)
-      if (res) {
-        setJobs(res)
+  const getJobsList = useCallback(async (params: IJobFilterParams) => {
+    setIsLoading(true)
+    const res = await fetchListJobs(params)
+    if (res) {
+      // get resource requirements
+      const jobTypes = uniq(res.results.map((item: IJobDetail) => item.jobType))
+      const templates = jobTypeTemplates.filter(
+        (template: IJobTypeTemplate) =>
+          jobTypes.includes(template.name) && !jobTypeTemplateValueKeys.includes(template.name)
+      )
+      let newJobTypeTemplateValues = { ...jobTypeTemplateValues }
+      if (templates.length > 0) {
+        const promises = templates.map((template: IJobTypeTemplate) =>
+          fetchJobTypeTemplateValues(template.id, template.name)
+        )
+        const responses = await Promise.all(promises)
+        newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
+        console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues);
+        if (setAppConfig) {
+          setAppConfig((prev: IConfig) => {
+            return ({ ...prev, jobTypeTemplateValues: newJobTypeTemplateValues })
+          })
+        }
       }
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setIsLoading(false)
+
+      const jobsWithResourceRequirement =
+        res.results.length > 0
+          ? res.results.map((item: IJobDetail) => {
+              return {
+                ...item,
+                resourceRequirement: newJobTypeTemplateValues[item.jobType]
+                  ? newJobTypeTemplateValues[item.jobType].totalQty
+                  : 1,
+              }
+            })
+          : []
+      setJobs({ ...res, results: jobsWithResourceRequirement })
     }
-  }, [filterParams, projectId, isTemplate])
+    setIsLoading(false)
+  }, [])
 
   const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
 
@@ -148,31 +195,13 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
     setFilterParams((prev: IFilterParams) => ({ ...prev, ...params }))
   }, [])
 
-  const toggleJobModal = useCallback(() => {
-    setOpenJobModal((prev: boolean) => {
-      if (prev) {
-        setSelectedJobTemplate(null)
-      }
-      return !prev
-    })
-  }, [])
-
-  const onSaveJob = useCallback(async (data: IJobTemplate) => {
-    try {
-      setIsLoading(true)
-      const res = await createJob(data)
-      setJobs(res)
-      setFilterParams(DEFAULT_FILTER)
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setOpenJobModal(false)
-      setIsLoading(false)
-    }
-  }, [])
+  const onCreateJob = useCallback(() => {
+    window.top.window.location.href = `${createJobPath()}?form.ProjectId=${projectId}`
+  }, [projectId])
 
   const onViewJobDetail = useCallback((jobId: string) => {
     console.log('jobId: ', jobId);
+    window.top.window.location.href = jobDetailPath(jobId)
   }, [])
 
   const onDispatchResource = useCallback(async () => {
@@ -191,8 +220,8 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
       columns: jobsTableColumns(onViewJobDetail),
       stickyHeader: false,
       getRowId: (row: IJobDetail, index) => row.id,
-      rowSelectControl: isTemplate ? 'disabled' : 'allRows',
-      onRowSelect: isTemplate ? onRowSelect : undefined,
+      rowSelectControl: 'allRows',
+      onRowSelect,
       onSortBy: (props) => {
         if (props?.id) {
           onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
@@ -201,15 +230,15 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
       sortByControl: 'controlled',
       initialRowStateKey: 'id',
     }),
-    [jobs.results, jobsTableColumns, objPermissions?.Project]
+    [jobs.results, jobsTableColumns]
   )
 
   useEffect(() => {
     if (!isLoading) {
       console.log('filterParams: ', filterParams)
-      debounceGetJobList()
+      debounceGetJobList({...filterParams, projectId})
     }
-  }, [filterParams])
+  }, [filterParams, projectId])
 
   useEffect(() => {
     if (!isTemplate) {
@@ -234,7 +263,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
       <div className="cx-sticky cx-px-4 cx-pt-4 cx-top-0 cx-bg-white cx-z-10">
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
-          <Button buttonType="transparent" onClick={toggleJobModal} icon="plus">
+          <Button buttonType="transparent" onClick={onCreateJob} icon="plus">
             New Job
           </Button>
           <div className="cx-flex cx-aligns-center">

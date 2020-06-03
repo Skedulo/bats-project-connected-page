@@ -46,6 +46,7 @@ export interface IJobTemplate {
   jobConstraints: IJobConstraint[]
   project: IBaseModel
   projectId?: string
+  resourceRequirement?: number
 }
 
 export interface IJobDetail {
@@ -58,10 +59,11 @@ export interface IJobDetail {
   endTime: number
   jobType: string
   status: JobStatusKey
-  allocations: IBaseModel[]
+  allocations: IJobAllocation[]
   jobConstraints: IJobConstraint[]
   project: IBaseModel
   projectId?: string
+  resourceRequirement?: number
 }
 
 export declare type JobItem = IJobDetail | IJobTemplate

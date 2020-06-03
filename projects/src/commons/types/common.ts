@@ -7,6 +7,7 @@ export interface IObjPermission {
 
 export interface IAppContext {
   config: IConfig
+  setAppConfig?: React.Dispatch<React.SetStateAction<IConfig>>
 }
 
 export interface ITimePickerOption {
@@ -21,9 +22,32 @@ export interface IBaseModel {
 
 export interface IConfig {
   jobTypes?: IBaseModel[],
+  jobStatuses?: IBaseModel[],
   projectStatuses?: IBaseModel[],
   objPermissions?: {
     Project: IObjPermission
     // ProjectJobTemplate: IObjPermission
   }
+  jobTypeTemplates?: IJobTypeTemplate[]
+  jobTypeTemplateValues?: Record<string, IResourceRequirement>
+}
+
+export interface IJobTypeTemplate {
+  id: string
+  name: string
+  schemaName: string
+}
+
+export interface IJobTypeTemplateValue {
+  field: string
+  id: string
+  rel: string
+  templateId: string
+  value: string
+}
+
+export interface IResourceRequirement {
+  totalQty: number,
+  jobType: string,
+  requirements: string
 }

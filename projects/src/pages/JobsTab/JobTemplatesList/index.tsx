@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce } from 'lodash/fp'
-import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors } from '@skedulo/sked-ui'
+import { debounce, uniq, keyBy, times } from 'lodash/fp'
+import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors, Avatar } from '@skedulo/sked-ui'
 import JobFilter from './JobTemplateFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
 import {
@@ -10,11 +10,14 @@ import {
   JobStatusKey,
   IJobDetail,
   IJobTemplate,
+  IJobTypeTemplate,
+  IConfig,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
-import { fetchListJobTemplates, updateJob, createJob } from '../../../Services/DataServices'
+import { fetchListJobTemplates, updateJob, createJob, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
-import JobTemplateModal from '../JobModal'
+// import JobTemplateModal from '../JobModal'
+import { AppContext } from '../../../App'
 
 interface IJobTemplatesListProps {
   projectId: string
@@ -55,32 +58,85 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobTemplate) => void
       accessor: 'constraints',
     },
     {
-      Header: 'Required Resources',
-      accessor: 'requiredResources',
+      Header: 'Resource/s',
+      accessor: 'resourceRequirement',
+      Cell: ({ cell }: { cell: { value: number } }) => {
+        const resources: React.ReactNode[] = []
+        times(index => {
+          resources.push(
+            <Avatar
+              name={''}
+              key={`resourcerquired-${index}`}
+              className="cx-ml-1 first:cx-ml-0 cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500"
+              showTooltip={false}
+              size="medium"
+              preserveName={false}
+            />
+          )
+        }, cell.value)
+        return (
+          <div className="sk-flex sk-items-center">
+            {resources}
+          </div>
+        )
+      },
     },
   ]
 }
 
-const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId, isTemplate }) => {
+const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
+  const appContext = React.useContext(AppContext)
+  const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
+    appContext,
+  ])
+  const setAppConfig = React.useMemo(() => appContext?.setAppConfig, [appContext])
+  const jobTypeTemplateValueKeys = React.useMemo(() => Object.keys(jobTypeTemplateValues), [jobTypeTemplateValues])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
   const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
   const [openJobTemplateModal, setOpenJobTemplateModal] = useState<boolean>(false)
 
-  const getJobTemplatesList = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const res = await fetchListJobTemplates({ projectId, ...filterParams })
-      if (res) {
-        setJobTemplates(res)
+  const getJobTemplatesList = useCallback(async (params: IJobFilterParams) => {
+    setIsLoading(true)
+    const res = await fetchListJobTemplates({ ...params })
+    if (res) {
+      // get resource requirements
+      const jobTypes = uniq(res.results.map((item: IJobTemplate) => item.jobType))
+      const templates = jobTypeTemplates.filter(
+        (template: IJobTypeTemplate) =>
+          jobTypes.includes(template.name) && !jobTypeTemplateValueKeys.includes(template.name)
+      )
+      let newJobTypeTemplateValues = { ...jobTypeTemplateValues }
+      if (templates.length > 0) {
+        const promises = templates.map((template: IJobTypeTemplate) =>
+          fetchJobTypeTemplateValues(template.id, template.name)
+        )
+        const responses = await Promise.all(promises)
+        newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
+        console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues);
+        if (setAppConfig) {
+          setAppConfig((prev: IConfig) => {
+            return ({ ...prev, jobTypeTemplateValues: newJobTypeTemplateValues })
+          })
+        }
       }
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setIsLoading(false)
+
+      const jobsWithResourceRequirement =
+        res.results.length > 0
+          ? res.results.map((item: IJobTemplate) => {
+              return {
+                ...item,
+                resourceRequirement: newJobTypeTemplateValues[item.jobType]
+                  ? newJobTypeTemplateValues[item.jobType].totalQty
+                  : 1,
+              }
+            })
+          : []
+      setJobTemplates({ ...res, results: jobsWithResourceRequirement })
     }
-  }, [filterParams, projectId, isTemplate])
+    setIsLoading(false)
+  }, [jobTypeTemplateValueKeys, jobTypeTemplateValues])
 
   const debounceGetJobTemplatesList = useMemo(() => debounce(700, getJobTemplatesList), [getJobTemplatesList])
 
@@ -147,9 +203,9 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId, isTempl
   useEffect(() => {
     if (!isLoading) {
       console.log('filterParams: ', filterParams)
-      debounceGetJobTemplatesList()
+      debounceGetJobTemplatesList({ ...filterParams, projectId })
     }
-  }, [filterParams])
+  }, [filterParams, projectId])
 
   return (
     <div className="scroll">
@@ -182,9 +238,9 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId, isTempl
           />
         )}
       </div>
-      {openJobTemplateModal && (
+      {/* {openJobTemplateModal && (
         <JobTemplateModal job={selectedJobTemplate} onSubmit={onSaveJob} onClose={onCloseJobTemplateModal} />
-      )}
+      )} */}
     </div>
   )
 }

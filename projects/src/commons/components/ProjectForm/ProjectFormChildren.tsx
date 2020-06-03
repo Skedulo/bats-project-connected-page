@@ -169,7 +169,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
             <FormElementWrapper
               className="cx-relative"
               name="startDate"
-              readOnlyValue={fields.startDate}
+              readOnlyValue={project?.startDate}
               isReadOnly={isFormReadonly}
               validation={{
                 isValid: submitted ? !errors.startDate : true,
@@ -205,13 +205,13 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
             </FormElementWrapper>
           </div>
         </div>
-        <div className="cx-flex cx-items-center">
+        {/* <div className="cx-flex cx-items-center">
           <div className="cx-mb-4 click-to-edit-custom">
             <span className="span-label">End date</span>
             <FormElementWrapper
               className="cx-relative"
               name="endDate"
-              readOnlyValue={fields.endDate}
+              readOnlyValue={project?.endDate}
               isReadOnly={isFormReadonly}
               validation={{
                 isValid: submitted ? !errors.endDate : true,
@@ -246,7 +246,7 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
               />
             </FormElementWrapper>
           </div>
-        </div>
+        </div> */}
         {!!timeError && <p className="sked-form-element__errors cx-mb-4">{timeError}</p>}
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">

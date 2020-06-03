@@ -50,40 +50,6 @@ const JobTemplateFilter: React.FC<IJobTemplateFilterProps> = ({ onResetFilter, o
     onFilterChange({ ...selectedParams })
   }, [filterBar])
 
-  // the end date filter text
-  const filterEndDateTrigger = useCallback(() => {
-    if (!filterParams.endDate) {
-      return <></>
-    }
-    return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-        <span>
-          End date:
-          <span className="cx-font-semibold cx-ml-2">{filterParams.endDate}</span>
-        </span>
-      </div>
-    )
-  }, [filterParams.endDate])
-
-  // the start date filter text
-  const filterStartDateTrigger = useCallback(() => {
-    return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-        {!filterParams.startDate ? (
-          <span>
-            Date:
-            <span className="cx-font-semibold cx-ml-2">All time</span>
-          </span>
-        ) : (
-          <span>
-            Start date:
-            <span className="cx-font-semibold cx-ml-2">{filterParams.startDate}</span>
-          </span>
-        )}
-      </div>
-    )
-  }, [filterParams.startDate])
-
   return (
     <div className="top-bar cx-border-b-0">
       <div className="top-bar-left">

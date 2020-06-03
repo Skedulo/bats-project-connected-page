@@ -127,6 +127,11 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
     <div className="top-bar cx-border-b-0">
       <div className="top-bar-left">
         <ul className="menu">
+          <li onClick={resetFilter}>
+            <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+              All Jobs
+            </div>
+          </li>
           <li>
             <div className="cx-flex cx-items-center">
               <PopOut

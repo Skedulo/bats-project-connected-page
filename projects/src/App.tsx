@@ -3,22 +3,22 @@ import { HashRouter, Route, Switch } from 'react-router-dom'
 import ListProjectsPage from './pages/Projects'
 import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'
-import { fetchConfig } from './Services/DataServices'
+import { fetchConfig, fetchJobTypeTemplates } from './Services/DataServices'
 import * as routes from './pages/routes'
-import { IAppContext } from './commons/types'
-import { ToastContainer, toast } from 'react-toastify';
-  import 'react-toastify/dist/ReactToastify.css';
+import { IAppContext, IConfig } from './commons/types'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 export const AppContext = React.createContext<IAppContext>({
   config: {}
 })
 
 const App: React.FC = () => {
-  const [appConfig, setAppConfig] = React.useState<any>(null)
+  const [appConfig, setAppConfig] = React.useState<IConfig>({})
 
   const getConfig = React.useCallback(async () => {
-    const res = await fetchConfig()
-    setAppConfig(res)
+    const [config, jobTypeTemplates] = await Promise.all([fetchConfig(), fetchJobTypeTemplates()])
+    setAppConfig({ ...config, jobTypeTemplates, jobTypeTemplateValues: {} })
   }, [])
 
   React.useEffect(() => {
@@ -26,7 +26,7 @@ const App: React.FC = () => {
   }, [])
 
   return (
-    <AppContext.Provider value={{ config: appConfig }}>
+    <AppContext.Provider value={{ config: appConfig, setAppConfig }}>
       <HashRouter>
         <Switch>
           <Route exact={true} path={routes.listProjectPath()} component={ListProjectsPage} />
@@ -35,7 +35,7 @@ const App: React.FC = () => {
       </HashRouter>
       <ToastContainer
         position="top-right"
-        // autoClose={5000}
+        autoClose={5000}
         pauseOnHover={true}
         hideProgressBar={true}
       />
