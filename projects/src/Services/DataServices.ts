@@ -107,14 +107,34 @@ export const createProject = async (
   return fetchListProjects(DEFAULT_FILTER)
 }
 
-export const deleteProject = async (uids: string) => {
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.delete('/services/apexrest/sked/project', {
-    params: { ids: uids }
-  })
+export const deleteProject = async (uids: string): Promise<boolean> => {
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.delete('/services/apexrest/sked/project', {
+      params: { ids: uids }
+    })
 
-  return response.data
+    return response.data.success
+  } catch (error) {
+    console.log('error: ', error)
+    return false
+  }
+}
+
+export const cancelProject = async (
+  projectId: string
+): Promise<boolean> => {
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.post('/services/apexrest/sked/project', { id: projectId, projectStatus: 'Cancelled' })
+
+    return response.data.success
+  } catch (error) {
+    console.log('error: ', error)
+    return false
+  }
 }
 
 export const fetchTemplates = async (searchString: string): Promise<ILookupOption[]> => {
@@ -284,16 +304,6 @@ export const createJob = async (
   } = await salesforceApi.post('/services/apexrest/sked/job', formattedPayload)
 
   return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
-}
-
-export const deleteJob = async (uids: string) => {
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.delete('/services/apexrest/sked/job', {
-    params: { ids: uids }
-  })
-
-  return response.data
 }
 
 export const dispatchMutipleJobs = async (jobIds: string) => {

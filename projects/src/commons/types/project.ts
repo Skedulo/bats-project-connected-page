@@ -10,6 +10,7 @@ export interface IProjectListItem {
   projectDescription: string
   projectStatus?: ProjectStatusKey
   endDate: string
+  isTemplate?: boolean
 }
 
 export interface IProjectDetail extends IProjectListItem {

@@ -163,8 +163,8 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
           />
         </div>
         {isUpdate && (
-          <div className="cx-flex cx-items-center">
-            <div className="cx-mb-4 click-to-edit-custom cx-mr-4">
+          <>
+            <div className="cx-mb-4 click-to-edit-custom">
               <span className="span-label">Start date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.startDate ? `${project?.startDate}` : 'No start date'}</span>
@@ -182,7 +182,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 </span>
               </div>
             </div>
-          </div>
+          </>
         )}
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">
