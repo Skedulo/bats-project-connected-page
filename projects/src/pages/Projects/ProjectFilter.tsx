@@ -9,13 +9,13 @@ import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
 
 const ALL_PROJECTS = 'All Projects'
 
-interface ProjectFilterProps {
+interface IProjectFilterProps {
   onFilterChange: (data: any) => void
   onResetFilter: () => void
   filterParams: any
 }
 
-const ProjectFilter: React.FC<ProjectFilterProps> = ({ onResetFilter, onFilterChange, filterParams }) => {
+const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterChange, filterParams }) => {
   const {
     filterBar,
     setFilterBar,

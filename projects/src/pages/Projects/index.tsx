@@ -10,12 +10,13 @@ import {
   Button,
   ConfirmationModal,
   Icon,
+  LozengeColors,
 } from '@skedulo/sked-ui'
 import ProjectFilter from './ProjectFilter'
 import CreateProjectModal from './CreateProjectModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
-import { IProjectListItem, IListResponse, IProjectDetail, IFilterParams } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
+import { IProjectListItem, IListResponse, IProjectDetail, IFilterParams, ProjectStatusKey } from '../../commons/types'
+import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST, PROJECT_STATUS_COLOR } from '../../commons/constants'
 import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
 import { projectDetailPath } from '../routes'
 import { AppContext } from '../../App'
@@ -44,8 +45,10 @@ export const projectsTableColumns = (
     {
       Header: 'Status',
       accessor: 'projectStatus',
-      Cell: ({ cell }: { cell: { value: string }}) => {
-        return <Lozenge label={cell.value} color="neutral" size="small" solid={false} border={false} />
+      Cell: ({ cell }: { cell: { value: ProjectStatusKey }}) => {
+        const color = PROJECT_STATUS_COLOR[cell.value] || 'neutral'
+
+        return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
       },
     },
     {
@@ -177,9 +180,10 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     columns: projectsTableColumns(onViewProject, (objPermissions?.Project.allowDelete ? openConfirmDelete : undefined)),
     stickyHeader: false,
     getRowId: (row: IProjectListItem) => row.id,
-    rowSelectControl: 'disabled',
+    rowSelectControl: 'allRows',
     onRowSelect,
     onSortBy: props => {
+      console.log('props: ', props);
       if (props?.id) {
         onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
       }
@@ -199,7 +203,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     // isTemplate = true
     // onViewProject('a103L0000008YnOQAU')
     // isTemplate = false
-    // onViewProject('a103L0000008YnsQAE')
+    onViewProject('a103L0000008YnsQAE')
   }, [])
 
   return (

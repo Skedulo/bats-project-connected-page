@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent } from 'react'
+import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
 import { debounce, uniq, keyBy, times, toNumber } from 'lodash/fp'
 import { Dictionary } from 'lodash'
 import {
@@ -19,7 +19,6 @@ import {
   IFilterParams,
   IJobFilterParams,
   JobStatusKey,
-  JobStatus,
   IJobTypeTemplate,
   IConfig,
 } from '../../../commons/types'
@@ -33,6 +32,7 @@ import {
 import { AppContext } from '../../../App'
 import SearchBox from '../../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../../routes'
+import { toastMessage } from '../../../commons/utils';
 
 interface IJobsListProps {
   projectId: string
@@ -63,7 +63,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
       Header: 'Status',
       accessor: 'status',
       Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
-        const color: LozengeColors = JOB_STATUS_COLOR[cell.value] || 'neutral'
+        const color = JOB_STATUS_COLOR[cell.value] || 'neutral'
         return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
       },
     },
@@ -205,14 +205,26 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
   }, [])
 
   const onDispatchResource = useCallback(async () => {
-    await dispatchMutipleJobs(selectedRows as IJobDetail[])
-    // getJobsList()
-  }, [selectedRows])
+    const jobIds = selectedRows.map(job => job.id).join(',')
+    const success = await dispatchMutipleJobs(jobIds)
+    if (success) {
+      getJobsList({ ...filterParams, projectId })
+      toastMessage.success('Dispatched successfully!')
+    } else {
+      toastMessage.success('Dispatched unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, projectId])
 
   const onDeallocate = useCallback(async () => {
-    await deallocateMutipleJobs(selectedRows as IJobDetail[])
-    // getJobsList()
-  }, [selectedRows])
+    const jobIds = selectedRows.map(job => job.id).join(',')
+    const success = await deallocateMutipleJobs(jobIds)
+    if (success) {
+      getJobsList({ ...filterParams, projectId })
+      toastMessage.success('Deallocated successfully!')
+    } else {
+      toastMessage.success('Deallocated unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, projectId])
 
   const jobsTableConfig: IDynamicTable<IJobDetail> = useMemo(
     () => ({
@@ -248,7 +260,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
         if ((job as IJobDetail).allocations?.length ?? 0 > 0) {
           shouldDeallocation = true
         }
-        if ((job as IJobDetail).status !== JobStatus.PendingDispatch) {
+        if ((job as IJobDetail).status !== 'Pending Dispatch') {
           shouldDispatch = false
         }
       })

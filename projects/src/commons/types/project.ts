@@ -8,7 +8,7 @@ export interface IProjectListItem {
   startDate: string
   projectName: string
   projectDescription: string
-  projectStatus?: string
+  projectStatus?: ProjectStatusKey
   endDate: string
 }
 
@@ -45,6 +45,7 @@ export interface IProjectDetail extends IProjectListItem {
     name: string
   }
   address: string
+  canEdit?: boolean
 }
 
 export interface IListResponse<T> {
@@ -84,7 +85,7 @@ export interface ISavedFilterSet extends IFilterParams {
 }
 
 export interface IFilterParams {
-  projectStatus?: string
+  projectStatuses?: string
   searchText?: string
   startDate?: string
   endDate?: string
@@ -101,3 +102,15 @@ export interface IFilterParams {
 export interface IJobFilterParams extends IFilterParams {
   projectId?: string
 }
+
+export enum ProjectStatusColor {
+  'Template',
+  'Draft',
+  'Planned',
+  'Ready',
+  'In Progress',
+  'Complete',
+  'Cancelled',
+}
+
+export declare type ProjectStatusKey = keyof typeof ProjectStatusColor
