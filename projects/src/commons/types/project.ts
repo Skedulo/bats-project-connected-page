@@ -19,10 +19,10 @@ export interface IProjectDetail extends IProjectListItem {
   applyRegionForAllJob: boolean
   applyLocationForAllJob: boolean
   isTemplate: boolean
-  templateId?: string
-  accountId?: string
-  contactId?: string
-  regionId?: string
+  // templateId?: string
+  // accountId?: string
+  // contactId?: string
+  // regionId?: string
   startTime?: string
   endTime?: string
   template?: {
@@ -45,7 +45,7 @@ export interface IProjectDetail extends IProjectListItem {
     id: string
     name: string
   }
-  address: string
+  // address: string
   canEdit?: boolean
 }
 

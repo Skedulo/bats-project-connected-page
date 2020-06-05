@@ -21,6 +21,7 @@ import {
   JobStatusKey,
   IJobTypeTemplate,
   IConfig,
+  IProjectDetail,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
 import {
@@ -36,7 +37,7 @@ import { toastMessage } from '../../../commons/utils';
 
 interface IJobsListProps {
   projectId: string
-  isTemplate: boolean
+  project: IProjectDetail
 }
 
 const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
@@ -109,7 +110,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
   ]
 }
 
-const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
+const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   const appContext = React.useContext(AppContext)
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
     appContext,
@@ -196,8 +197,21 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
   }, [])
 
   const onCreateJob = useCallback(() => {
-    window.top.window.location.href = `${createJobPath()}?form.ProjectId=${projectId}`
-  }, [projectId])
+    let preFillStr = `form.ProjectId=${projectId}`
+    if (project.account?.id && project.applyAccountForAllJob) {
+      preFillStr = preFillStr + `&form.AccountId=${project.account?.id}`
+    }
+    if (project.contact?.id && project.applyContactForAllJob) {
+      preFillStr = preFillStr + `&form.ContactId=${project.contact?.id}`
+    }
+    if (project.region?.id && project.applyRegionForAllJob) {
+      preFillStr = preFillStr + `&form.RegionId=${project.region?.id}`
+    }
+    if (project.location?.id && project.applyLocationForAllJob) {
+      preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
+    }
+    window.top.window.location.href = `${createJobPath()}?${preFillStr}`
+  }, [projectId, project])
 
   const onViewJobDetail = useCallback((jobId: string) => {
     console.log('jobId: ', jobId);
@@ -253,21 +267,19 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, isTemplate }) => {
   }, [filterParams, projectId])
 
   useEffect(() => {
-    if (!isTemplate) {
-      let shouldDeallocation = false
-      let shouldDispatch = true
-      selectedRows.forEach((job) => {
-        if ((job as IJobDetail).allocations?.length ?? 0 > 0) {
-          shouldDeallocation = true
-        }
-        if ((job as IJobDetail).status !== 'Pending Dispatch') {
-          shouldDispatch = false
-        }
-      })
-      setCanDeallocate(shouldDeallocation)
-      setCanDispatch(shouldDispatch)
-    }
-  }, [selectedRows, isTemplate])
+    let shouldDeallocation = false
+    let shouldDispatch = true
+    selectedRows.forEach((job: IJobDetail) => {
+      if (job.allocations?.length > 0 && (job.status === 'Pending Dispatch' || job.status === 'Dispatched')) {
+        shouldDeallocation = true
+      }
+      if (job.status !== 'Pending Dispatch') {
+        shouldDispatch = false
+      }
+    })
+    setCanDeallocate(shouldDeallocation)
+    setCanDispatch(shouldDispatch)
+  }, [selectedRows])
 
   return (
     <div className="scroll">

@@ -74,7 +74,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
         </div>
         {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
         {activeTab === PROJECT_TAB_ROUTES.JOBS && (
-          <JobsTab projectId={params.projectId || ''} isTemplate={project.isTemplate} />
+          <JobsTab projectId={params.projectId || ''} project={project} />
         )}
       </div>
     </div>

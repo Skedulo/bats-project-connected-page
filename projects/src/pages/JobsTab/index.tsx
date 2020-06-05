@@ -2,16 +2,17 @@ import React, { memo } from 'react'
 
 import JobTemplatesList from './JobTemplatesList'
 import JobsList from './JobsList'
+import { IProjectDetail } from '../../commons/types'
 
 interface IJobsTabProps {
   projectId: string
-  isTemplate: boolean
+  project: IProjectDetail
 }
 
-const JobsTab: React.FC<IJobsTabProps> = ({ projectId, isTemplate }) => {
-  if (isTemplate) {
-    return <JobTemplatesList projectId={projectId} isTemplate={isTemplate} />
+const JobsTab: React.FC<IJobsTabProps> = ({ projectId, project }) => {
+  if (project.isTemplate) {
+    return <JobTemplatesList projectId={projectId} isTemplate={project.isTemplate} />
   }
-  return <JobsList projectId={projectId} isTemplate={isTemplate} />
+  return <JobsList projectId={projectId} project={project} />
 }
 export default memo(JobsTab)

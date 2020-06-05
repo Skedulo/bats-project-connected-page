@@ -145,8 +145,9 @@ export const fetchTemplates = async (searchString: string): Promise<ILookupOptio
       params,
     }
   )
-  if (response.data.success && response.data.results?.length) {
-    return response.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
+
+  if (response.data?.data?.results?.length) {
+    return response.data.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
   }
   return []
 }

@@ -64,36 +64,36 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
     []
   )
 
-  const onSelectDate = React.useCallback(
-    (fieldName: string) => (value: Date) => {
-      // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
-      if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
-        customFieldUpdate(fieldName)(value)
-        if (!value) {
-          customFieldUpdate('endDate')(value)
-        }
-      }
-      if (fieldName === 'startDate') {
-        customFieldUpdate(fieldName)(value)
-        if (!value) {
-          customFieldUpdate('startTime')(value)
-        }
-      }
-    },
-    [startDate, endDate]
-  )
+  // const onSelectDate = React.useCallback(
+  //   (fieldName: string) => (value: Date) => {
+  //     // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
+  //     if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
+  //       customFieldUpdate(fieldName)(value)
+  //       if (!value) {
+  //         customFieldUpdate('endDate')(value)
+  //       }
+  //     }
+  //     if (fieldName === 'startDate') {
+  //       customFieldUpdate(fieldName)(value)
+  //       if (!value) {
+  //         customFieldUpdate('startTime')(value)
+  //       }
+  //     }
+  //   },
+  //   [startDate, endDate]
+  // )
 
-  const onSelectTime = React.useCallback(
-    (fieldName: string) => (timeOption: ITimePickerOption) => {
-      if (fieldName === 'endTime') {
-        customFieldUpdate(fieldName)(timeOption.stringValue)
-      }
-      if (fieldName === 'startTime') {
-        customFieldUpdate(fieldName)(timeOption.stringValue)
-      }
-    },
-    [startDate, endDate]
-  )
+  // const onSelectTime = React.useCallback(
+  //   (fieldName: string) => (timeOption: ITimePickerOption) => {
+  //     if (fieldName === 'endTime') {
+  //       customFieldUpdate(fieldName)(timeOption.stringValue)
+  //     }
+  //     if (fieldName === 'startTime') {
+  //       customFieldUpdate(fieldName)(timeOption.stringValue)
+  //     }
+  //   },
+  //   [startDate, endDate]
+  // )
 
   React.useEffect(() => {
     if (
@@ -164,7 +164,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         </div>
         {isUpdate && (
           <>
-            <div className="cx-mb-4 click-to-edit-custom">
+            <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
               <span className="span-label">Start date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.startDate ? `${project?.startDate}` : 'No start date'}</span>
@@ -173,7 +173,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 </span>
               </div>
             </div>
-            <div className="cx-mb-4 click-to-edit-custom">
+            <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
               <span className="span-label">End date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.endDate ? `${project?.endDate}` : 'No end date'}</span>
