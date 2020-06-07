@@ -11,12 +11,13 @@ import {
   IJobDetail,
   IJobTemplate,
   IJobTypeTemplate,
+  IJobTemplateDetail,
   IConfig,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
 import { fetchListJobTemplates, updateJob, createJob, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
-// import JobTemplateModal from '../JobModal'
+import JobTemplateDetailModal from './JobTemplateDetailModal'
 import { AppContext } from '../../../App'
 
 interface IJobTemplatesListProps {
@@ -24,7 +25,7 @@ interface IJobTemplatesListProps {
   isTemplate: boolean
 }
 
-const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobTemplate) => void) => {
+const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) => {
   return [
     {
       Header: 'Name/Description',
@@ -94,7 +95,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
-  const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
+  const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplateDetail | null>(null)
   const [openJobTemplateModal, setOpenJobTemplateModal] = useState<boolean>(false)
 
   const getJobTemplatesList = useCallback(async (params: IJobFilterParams) => {
@@ -170,7 +171,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
     setOpenJobTemplateModal(false)
   }, [])
 
-  const onSaveJob = useCallback(async (data: IJobTemplate) => {
+  const onSaveJob = useCallback(async (data: IJobTemplateDetail) => {
     try {
       setIsLoading(true)
       console.log('submit----data: ', data)
@@ -238,9 +239,9 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
           />
         )}
       </div>
-      {/* {openJobTemplateModal && (
-        <JobTemplateModal job={selectedJobTemplate} onSubmit={onSaveJob} onClose={onCloseJobTemplateModal} />
-      )} */}
+      {openJobTemplateModal && (
+        <JobTemplateDetailModal onSubmit={onSaveJob} onClose={onCloseJobTemplateModal} />
+      )}
     </div>
   )
 }

@@ -15,7 +15,7 @@ import { IProjectDetail, ILookupOption, ITimePickerOption } from '../../../commo
 import { DATE_FORMAT } from '../../constants'
 import { AppContext } from '../../../App'
 
-interface ProjectFormChildrenProps {
+interface JobTemplateFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
   project?: IProjectDetail
@@ -23,7 +23,7 @@ interface ProjectFormChildrenProps {
   setTimeError: React.Dispatch<string>
 }
 
-const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
+const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
   formParams,
   onCancel,
   project,
@@ -397,4 +397,4 @@ const ProjectFormChildren: React.FC<ProjectFormChildrenProps> = ({
   )
 }
 
-export default React.memo(ProjectFormChildren)
+export default React.memo(JobTemplateFormChildren)
