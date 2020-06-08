@@ -2,6 +2,7 @@
 let colors = {
   black: '#0C131E',
   transparent: 'transparent',
+  primary: '#008CFF',
   inherit: 'inherit',
   white: '#FFFFFF',
   neutral: {

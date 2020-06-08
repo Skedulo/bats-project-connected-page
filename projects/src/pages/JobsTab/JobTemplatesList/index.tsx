@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, memo, useMemo, useContext } from 'react'
 import { debounce, uniq, keyBy, times } from 'lodash/fp'
 import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors, Avatar } from '@skedulo/sked-ui'
 import JobFilter from './JobTemplateFilter'
@@ -11,14 +11,15 @@ import {
   IJobDetail,
   IJobTemplate,
   IJobTypeTemplate,
-  IJobTemplateDetail,
   IConfig,
+  IJobConstraint,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
-import { fetchListJobTemplates, updateJob, createJob, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
+import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
-import JobTemplateDetailModal from './JobTemplateDetailModal'
+import JobTemplateModal from '../JobTemplateModal'
 import { AppContext } from '../../../App'
+import { toastMessage } from '../../../commons/utils'
 
 interface IJobTemplatesListProps {
   projectId: string
@@ -56,14 +57,23 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
     },
     {
       Header: 'Constrains',
-      accessor: 'constraints',
+      accessor: 'jobConstraints',
+      Cell: ({ cell }: { cell: { value: IJobConstraint[] } }) => {
+        if (!cell.value?.length) {
+          return 'No constraints'
+        }
+        const constraints = cell.value.map(item => {
+          return `${item.constraintType} ${item.dependencyType.toLowerCase()} ${item.dependentJob?.name}`
+        })
+        return <div className="sk-flex sk-items-center">{constraints.join(' and ')}</div>
+      },
     },
     {
       Header: 'Resource/s',
       accessor: 'resourceRequirement',
       Cell: ({ cell }: { cell: { value: number } }) => {
         const resources: React.ReactNode[] = []
-        times(index => {
+        times((index: number) => {
           resources.push(
             <Avatar
               name={''}
@@ -75,69 +85,68 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
             />
           )
         }, cell.value)
-        return (
-          <div className="sk-flex sk-items-center">
-            {resources}
-          </div>
-        )
+        return <div className="sk-flex sk-items-center">{resources}</div>
       },
     },
   ]
 }
 
 const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
-  const appContext = React.useContext(AppContext)
-  const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
-    appContext,
-  ])
-  const setAppConfig = React.useMemo(() => appContext?.setAppConfig, [appContext])
-  const jobTypeTemplateValueKeys = React.useMemo(() => Object.keys(jobTypeTemplateValues), [jobTypeTemplateValues])
+  const appContext = useContext(AppContext)
+
+  const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = useMemo(() => appContext?.config || {}, [appContext])
+  const setAppConfig = useMemo(() => appContext?.setAppConfig, [appContext])
+  const jobTypeTemplateValueKeys = useMemo(() => Object.keys(jobTypeTemplateValues), [jobTypeTemplateValues])
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
-  const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplateDetail | null>(null)
+  const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
   const [openJobTemplateModal, setOpenJobTemplateModal] = useState<boolean>(false)
 
-  const getJobTemplatesList = useCallback(async (params: IJobFilterParams) => {
-    setIsLoading(true)
-    const res = await fetchListJobTemplates({ ...params })
-    if (res) {
-      // get resource requirements
-      const jobTypes = uniq(res.results.map((item: IJobTemplate) => item.jobType))
-      const templates = jobTypeTemplates.filter(
-        (template: IJobTypeTemplate) =>
-          jobTypes.includes(template.name) && !jobTypeTemplateValueKeys.includes(template.name)
-      )
-      let newJobTypeTemplateValues = { ...jobTypeTemplateValues }
-      if (templates.length > 0) {
-        const promises = templates.map((template: IJobTypeTemplate) =>
-          fetchJobTypeTemplateValues(template.id, template.name)
+  const getJobTemplatesList = useCallback(
+    async (params: IJobFilterParams) => {
+      setIsLoading(true)
+      const res = await fetchListJobTemplates({ ...params })
+      if (res) {
+        // get resource requirements
+        const jobTypes = uniq(res.results.map((item: IJobTemplate) => item.jobType))
+        const templates = jobTypeTemplates.filter(
+          (template: IJobTypeTemplate) =>
+            jobTypes.includes(template.name) && !jobTypeTemplateValueKeys.includes(template.name)
         )
-        const responses = await Promise.all(promises)
-        newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
-        console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues);
-        if (setAppConfig) {
-          setAppConfig((prev: IConfig) => {
-            return ({ ...prev, jobTypeTemplateValues: newJobTypeTemplateValues })
-          })
-        }
-      }
-
-      const jobsWithResourceRequirement =
-        res.results.length > 0
-          ? res.results.map((item: IJobTemplate) => {
-              return {
-                ...item,
-                resourceRequirement: newJobTypeTemplateValues[item.jobType]
-                  ? newJobTypeTemplateValues[item.jobType].totalQty
-                  : 1,
-              }
+        let newJobTypeTemplateValues = { ...jobTypeTemplateValues }
+        if (templates.length > 0) {
+          const promises = templates.map((template: IJobTypeTemplate) =>
+            fetchJobTypeTemplateValues(template.id, template.name)
+          )
+          const responses = await Promise.all(promises)
+          newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
+          console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues)
+          if (setAppConfig) {
+            setAppConfig((prev: IConfig) => {
+              return { ...prev, jobTypeTemplateValues: newJobTypeTemplateValues }
             })
-          : []
-      setJobTemplates({ ...res, results: jobsWithResourceRequirement })
-    }
-    setIsLoading(false)
-  }, [jobTypeTemplateValueKeys, jobTypeTemplateValues])
+          }
+        }
+
+        const jobsWithResourceRequirement =
+          res.results.length > 0
+            ? res.results.map((item: IJobTemplate) => {
+                return {
+                  ...item,
+                  resourceRequirement: newJobTypeTemplateValues[item.jobType]
+                    ? newJobTypeTemplateValues[item.jobType].totalQty
+                    : 1,
+                }
+              })
+            : []
+        setJobTemplates({ ...res, results: jobsWithResourceRequirement })
+      }
+      setIsLoading(false)
+    },
+    [jobTypeTemplateValueKeys, jobTypeTemplateValues]
+  )
 
   const debounceGetJobTemplatesList = useMemo(() => debounce(700, getJobTemplatesList), [getJobTemplatesList])
 
@@ -169,20 +178,20 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
 
   const onCloseJobTemplateModal = useCallback(() => {
     setOpenJobTemplateModal(false)
+    setSelectedJobTemplate(null)
   }, [])
 
-  const onSaveJob = useCallback(async (data: IJobTemplateDetail) => {
-    try {
-      setIsLoading(true)
-      console.log('submit----data: ', data)
-      setFilterParams(DEFAULT_FILTER)
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      onCloseJobTemplateModal()
-      setIsLoading(false)
+  const onSaveJobTemplate = useCallback(async (data: IJobTemplate) => {
+    setIsLoading(true)
+    const success = await createUpdateJobTemplate({ ...data, projectId })
+    if (success) {
+      getJobTemplatesList({ ...filterParams, projectId })
+    }  else {
+      toastMessage.error('Created unsuccessfully!')
     }
-  }, [])
+    onCloseJobTemplateModal()
+    setIsLoading(false)
+  }, [projectId, filterParams])
 
   const jobsTableConfig: IDynamicTable<IJobTemplate> = useMemo(
     () => ({
@@ -190,7 +199,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
       columns: jobTemplatesTableColumns(onViewJobTemplate),
       stickyHeader: false,
       rowSelectControl: 'disabled',
-      onSortBy: (props) => {
+      onSortBy: props => {
         if (props?.id) {
           onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
         }
@@ -203,10 +212,8 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('filterParams: ', filterParams)
       debounceGetJobTemplatesList({ ...filterParams, projectId })
     }
-    onCreateJobTemplate();
   }, [filterParams, projectId])
 
   return (
@@ -216,7 +223,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJobTemplate} icon="plus">
-            New Job 
+            New Job
           </Button>
           <SearchBox
             className="searchbox searchbox--w240 cx-mb-0 cx-border"
@@ -241,7 +248,13 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
         )}
       </div>
       {openJobTemplateModal && (
-        <JobTemplateDetailModal onSubmit={onSaveJob} onClose={onCloseJobTemplateModal} />
+        <JobTemplateModal
+          onSubmit={onSaveJobTemplate}
+          onClose={onCloseJobTemplateModal}
+          jobTemplate={selectedJobTemplate}
+          projectId={projectId}
+          totalJobTemplates={jobTemplates.totalItems}
+        />
       )}
     </div>
   )

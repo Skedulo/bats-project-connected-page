@@ -1,96 +1,149 @@
 import * as React from 'react'
-import { isDate, isAfter, isSameDay, isEqual } from 'date-fns'
-import { SkedFormChildren, Button, FormElementWrapper, Datepicker, Icon } from '@skedulo/sked-ui'
-import LookupInput from '../LookupInput'
+import { SkedFormChildren, Button, FormElementWrapper, SearchSelect, ISelectItem, AsyncSearchSelect } from '@skedulo/sked-ui'
 import WrappedFormInput from '../WrappedFormInput'
-import TimePicker from '../TimePicker'
-import {
-  fetchAccounts,
-  fetchContacts,
-  fetchRegions,
-  fetchLocations,
-  fetchTemplates,
-} from '../../../Services/DataServices'
-import { ILookupOption, ITimePickerOption } from '../../types'
-import { DATE_FORMAT } from '../../constants'
 import { AppContext } from '../../../App'
-import { IJobTemplateDetail } from '../../types/jobTemplate'
+import JobTemplateConstraint from '../JobTemplateConstraint'
+import { IJobConstraint, IJobTemplate, IBaseModel } from '../../types'
 
-interface JobTemplateFormChildrenProps {
-  formParams: SkedFormChildren<IJobTemplateDetail>
+interface IJobTemplateFormChildrenProps {
+  formParams: SkedFormChildren<IJobTemplate>
   onCancel?: () => void
-  jobTemplate?: IJobTemplateDetail
-  timeError: string
-  setTimeError: React.Dispatch<string>
+  jobTemplate: IJobTemplate | null
+  jobConstraints: IJobConstraint[]
+  setJobConstraints: React.Dispatch<React.SetStateAction<IJobConstraint[]>>
+  totalJobTemplates: number
+  projectId: string
 }
 
-const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
+const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   formParams,
   onCancel,
   jobTemplate,
-  timeError,
-  setTimeError,
+  jobConstraints,
+  setJobConstraints,
+  totalJobTemplates,
+  projectId
 }) => {
   const appContext = React.useContext(AppContext)
-  const { jobTypes } = React.useMemo(() => appContext?.config || {}, [appContext])
-  const isUpdate = React.useMemo(() => !!jobTemplate?.id, [jobTemplate?.id])
-  const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
-  const shouldReadonly = isUpdate && jobTemplate?.canEdit === false ? true : isFormReadonly
+  const { jobTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
+  const { fields, customFieldUpdate, errors, submitted } = formParams
+  const jobTypeOptions = React.useMemo(
+    () =>
+      jobTypes.map((item: IBaseModel) => ({
+        value: item.id,
+        label: item.name,
+      })),
+    [jobTypes]
+  )
 
+  const initialJobType = React.useMemo(() => jobTypeOptions.find(item => item.value === jobTemplate?.jobType), [
+    jobTemplate,
+    jobTypeOptions,
+  ])
+
+  const handleJobType = React.useCallback((jobType: ISelectItem) => {
+    customFieldUpdate('jobType')(jobType.value)
+  }, [])
+
+  const handleAddConstraint = React.useCallback(() => {
+    setJobConstraints((prev) => [
+      ...prev,
+      {
+        tempId: new Date().valueOf().toString(),
+        dependencyType: '',
+        constraintType: '',
+        dependentJobId: '',
+      },
+    ])
+  }, [jobConstraints, setJobConstraints])
+
+  const handleChangeConstraint = React.useCallback(
+    (newConstraint: Record<string, string>, id: string) => {
+      setJobConstraints((prev) =>
+        prev.map((item: IJobConstraint) => {
+          if (item.id === id || item.tempId === id) {
+            return { ...item, ...newConstraint }
+          }
+          return item
+        })
+      )
+    },
+    [setJobConstraints]
+  )
+
+  const handleDeleteConstraint = React.useCallback(
+    (id: string) => {
+      setJobConstraints((prev) => prev.filter((item: IJobConstraint) => item.id !== id))
+    },
+    [setJobConstraints]
+  )
 
   const handleCancel = React.useCallback(() => {
     if (typeof onCancel === 'function') {
       onCancel()
     }
-    resetFieldsToInitialValues()
   }, [onCancel])
-
-  const onSelectLookupField = React.useCallback(
-    (fieldName: string) => (selectedOption: ILookupOption) => {
-      customFieldUpdate(fieldName)(selectedOption.UID)
-    },
-    []
-  )
-
-  const fetchJobTypes = async (searchText: string): Promise<any> => {
-    console.log(jobTypes);
-    return jobTypes?.map(item=> { return {Name: item.name, UID: item.id}}).filter(item => item.Name?.toUpperCase().indexOf(searchText.toUpperCase()) > -1)
-  }
 
   return (
     <>
-     <div className="vertical-panel cx-p-4">
-      <div className="cx-mb-4 click-to-edit-custom">
+      <div className="vertical-panel cx-p-4">
+        <div className="cx-mb-4">
           <span className="span-label">Type</span>
           <FormElementWrapper
-            name="type"
-            validation={{ isValid: submitted ? !errors.jobType : true, error: submitted ? errors.type : '' }}
-            readOnlyValue={jobTemplate?.jobType}
-            isReadOnly={shouldReadonly}
+            name="jobType"
+            validation={{ isValid: submitted ? !errors.jobType : true, error: submitted ? errors.jobType : '' }}
           >
-            <LookupInput
-              className="form-element__outline"
-              onSelect={onSelectLookupField('type')}
-              onSearchKeyword={fetchJobTypes}
-              placeholderText="Search type..."
+            <SearchSelect
+              items={jobTypeOptions}
+              onSelectedItemChange={handleJobType}
+              disabled={false}
+              initialSelectedItem={initialJobType}
+              placeholder="Select job type"
+              icon="chevronDown"
+              name="jobType"
             />
           </FormElementWrapper>
         </div>
+        <WrappedFormInput
+          name="description"
+          type="textarea"
+          rows={3}
+          isReadOnly={false}
+          label="Description"
+          value={fields.description}
+          maxLength={255}
+          isRequired={false}
+        />
+        {totalJobTemplates > 1 && (
+          <div className="cx-mb-4">
+            <span className="span-label">Job Dependencies</span>
+            {jobConstraints.map((jobConstraint: IJobConstraint, index: number) => (
+              <JobTemplateConstraint
+                key={jobConstraint.id || jobConstraint.tempId}
+                wrapperClassName="cx-mb-4"
+                jobConstraint={jobConstraint}
+                handleChange={handleChangeConstraint}
+                handleDelete={handleDeleteConstraint}
+                projectId={projectId}
+                jobTemplateId={jobTemplate?.id || ''}
+              />
+            ))}
+            <div className="cx-text-center">
+              <Button className="cx-text-primary" buttonType="transparent" onClick={handleAddConstraint} icon="plus">
+                Add job dependency
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
-      {!isFormReadonly && (
-        <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
-          <Button buttonType="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button
-            buttonType="primary"
-            className="cx-ml-2"
-            type="submit"
-          >
-            Save
-          </Button>
-        </div>
-      )}
+      <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
+        <Button buttonType="secondary" onClick={handleCancel}>
+          Cancel
+        </Button>
+        <Button buttonType="primary" className="cx-ml-2" type="submit">
+          Save
+        </Button>
+      </div>
     </>
   )
 }

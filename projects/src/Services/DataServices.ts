@@ -16,10 +16,12 @@ import {
   IJobTypeTemplate,
   IJobTypeTemplateValue,
   IResourceRequirement,
+  IBaseModel,
 } from '../commons/types'
 
 import { DEFAULT_FILTER } from '../commons/constants'
 import { parseTimeValue, toastMessage } from '../commons/utils'
+import { ISelectItem } from '@skedulo/sked-ui'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -41,13 +43,15 @@ export const fetchJobTypeTemplates = async (): Promise<IJobTypeTemplate[]> => {
 }
 
 export const fetchJobTypeTemplateValues = async (
-  templateId: string, jobType: string
+  templateId: string,
+  jobType: string
 ): Promise<IResourceRequirement> => {
   const res = await httpApi.get(`/config/template/${templateId}/values`)
   const results = res.data?.result || []
-  const resourceRequirements = results.find((item: IJobTypeTemplateValue) => {
-    return item.field === 'ResourceRequirements'
-  }) || {}
+  const resourceRequirements =
+    results.find((item: IJobTypeTemplateValue) => {
+      return item.field === 'ResourceRequirements'
+    }) || {}
   const resourceRequirementValue = resourceRequirements.value ? JSON.parse(resourceRequirements.value) : {}
   return { ...resourceRequirementValue, jobType }
 }
@@ -57,21 +61,16 @@ export const fetchConfig = async (): Promise<IConfig> => {
   return res.data.data
 }
 
-export const fetchListProjects = async (
-  filterObj: IFilterParams
-): Promise<IListResponse<IProjectListItem>> => {
+export const fetchListProjects = async (filterObj: IFilterParams): Promise<IListResponse<IProjectListItem>> => {
   const res = await salesforceApi.get('/services/apexrest/sked/project', { params: { ...filterObj } })
   return res.data.data
 }
 
 export const fetchProjectById = async (projectId: string): Promise<IProjectDetail> => {
   const params = { projectId }
-  const response: { data: ISalesforceResponse } = await salesforceApi.get(
-    '/services/apexrest/sked/project',
-    {
-      params,
-    }
-  )
+  const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/project', {
+    params,
+  })
   const result = response.data.data
   result.contactId = result.contact?.id
   result.accountId = result.account?.id
@@ -80,14 +79,12 @@ export const fetchProjectById = async (projectId: string): Promise<IProjectDetai
   return {
     ...result,
     startTime: isNumber(result.startTime) ? parseTimeValue(result.startTime) : '',
-    endTime: isNumber(result.endTime) ? parseTimeValue(result.endTime) : ''
+    endTime: isNumber(result.endTime) ? parseTimeValue(result.endTime) : '',
   }
 }
 
-export const updateProject = async (
-  requestData: IProjectDetail
-): Promise<IProjectDetail> => {
-  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
+export const updateProject = async (requestData: IProjectDetail): Promise<IProjectDetail> => {
+  const formattedPayload = mapValues((value) => (value === '' ? null : value), requestData)
   const response: {
     data: ISalesforceResponse
   } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
@@ -95,10 +92,8 @@ export const updateProject = async (
   return fetchProjectById(requestData.id)
 }
 
-export const createProject = async (
-  createInput: IProjectDetail
-): Promise<IListResponse<IProjectListItem>> => {
-  const formattedPayload = mapValues(value => value === '' ? null : value, createInput)
+export const createProject = async (createInput: IProjectDetail): Promise<IListResponse<IProjectListItem>> => {
+  const formattedPayload = mapValues((value) => (value === '' ? null : value), createInput)
 
   const response: {
     data: ISalesforceResponse
@@ -112,7 +107,7 @@ export const deleteProject = async (uids: string): Promise<boolean> => {
     const response: {
       data: ISalesforceResponse
     } = await salesforceApi.delete('/services/apexrest/sked/project', {
-      params: { ids: uids }
+      params: { ids: uids },
     })
 
     return response.data.success
@@ -122,9 +117,7 @@ export const deleteProject = async (uids: string): Promise<boolean> => {
   }
 }
 
-export const cancelProject = async (
-  projectId: string
-): Promise<boolean> => {
+export const cancelProject = async (projectId: string): Promise<boolean> => {
   try {
     const response: {
       data: ISalesforceResponse
@@ -139,12 +132,9 @@ export const cancelProject = async (
 
 export const fetchTemplates = async (searchString: string): Promise<ILookupOption[]> => {
   const params = searchString ? { name: searchString } : {}
-  const response: { data: ISalesforceResponse } = await salesforceApi.get(
-    '/services/apexrest/sked/projectTemplate',
-    {
-      params,
-    }
-  )
+  const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/projectTemplate', {
+    params,
+  })
 
   if (response.data?.data?.results?.length) {
     return response.data.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
@@ -253,8 +243,8 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
         results: res.data.data.results.map((item: IJobDetail) => ({
           ...item,
           startTime: parseTimeValue(item.startTime),
-          endTime: parseTimeValue(item.endTime)
-        }))
+          endTime: parseTimeValue(item.endTime),
+        })),
       }
     }
     return res.data.data
@@ -264,7 +254,7 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
       totalItems: 0,
       pageSize: filterObj.pageSize,
       pageNumber: filterObj.pageNumber,
-      results: []
+      results: [],
     }
   }
 }
@@ -279,32 +269,37 @@ export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promis
       totalItems: 0,
       pageSize: filterObj.pageSize,
       pageNumber: filterObj.pageNumber,
-      results: []
+      results: [],
     }
   }
 }
 
-export const updateJob = async (
-  requestData: IJobDetail
-): Promise<IListResponse<IJobDetail>> => {
-  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.post('/services/apexrest/sked/job', formattedPayload)
-
-  return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
+export const fetchJobTemplateOptions = async (
+  filterObj: IJobFilterParams,
+  jobTemplateId?: string
+): Promise<ISelectItem[]> => {
+  try {
+    const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
+    // exclude current jobTemplateId
+    return res.data.data.results
+      .filter((item: IJobTemplate) => item.id !== jobTemplateId)
+      .map((item: IJobTemplate) => ({ value: item.id, label: item.name }))
+  } catch (error) {
+    return []
+  }
 }
 
-export const createJob = async (
-  requestData: IJobTemplate
-): Promise<IListResponse<IJobDetail>> => {
-  const formattedPayload = mapValues(value => value === '' ? null : value, requestData)
+export const createUpdateJobTemplate = async (requestData: IJobTemplate): Promise<boolean> => {
+  const formattedPayload = mapValues((value) => (value === '' ? null : value), requestData)
 
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.post('/services/apexrest/sked/job', formattedPayload)
-
-  return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.post('/services/apexrest/sked/projectJobTemplate', formattedPayload)
+    return response.data.success
+  } catch (error) {
+    return false
+  }
 }
 
 export const dispatchMutipleJobs = async (jobIds: string) => {

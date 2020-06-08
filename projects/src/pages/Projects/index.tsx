@@ -216,8 +216,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
       getRowId: (row: IProjectListItem) => row.id,
       rowSelectControl: 'allRows',
       onRowSelect,
-      onSortBy: (props) => {
-        console.log('props: ', props)
+      onSortBy: props => {
         if (props?.id) {
           onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
         }

@@ -30,6 +30,8 @@ export interface IConfig {
   }
   jobTypeTemplates?: IJobTypeTemplate[]
   jobTypeTemplateValues?: Record<string, IResourceRequirement>
+  constraintTypes?: IBaseModel[]
+  dependencyTypes?: IBaseModel[]
 }
 
 export interface IJobTypeTemplate {

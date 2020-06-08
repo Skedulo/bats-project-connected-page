@@ -21,9 +21,12 @@ export interface IJobAllocation {
 }
 
 export interface IJobConstraint {
-  id: string
+  id?: string
+  tempId?: string
+  constraintType: string
   dependencyType: string
-  dependentJob: IBaseModel
+  dependentJob?: IBaseModel | null
+  dependentJobId?: string
 }
 
 export declare type JobStatusKey = keyof typeof JobStatusColor
