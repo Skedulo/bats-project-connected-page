@@ -107,14 +107,34 @@ export const createProject = async (
   return fetchListProjects(DEFAULT_FILTER)
 }
 
-export const deleteProject = async (uids: string) => {
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.delete('/services/apexrest/sked/project', {
-    params: { ids: uids }
-  })
+export const deleteProject = async (uids: string): Promise<boolean> => {
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.delete('/services/apexrest/sked/project', {
+      params: { ids: uids }
+    })
 
-  return response.data
+    return response.data.success
+  } catch (error) {
+    console.log('error: ', error)
+    return false
+  }
+}
+
+export const cancelProject = async (
+  projectId: string
+): Promise<boolean> => {
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.post('/services/apexrest/sked/project', { id: projectId, projectStatus: 'Cancelled' })
+
+    return response.data.success
+  } catch (error) {
+    console.log('error: ', error)
+    return false
+  }
 }
 
 export const fetchTemplates = async (searchString: string): Promise<ILookupOption[]> => {
@@ -125,8 +145,9 @@ export const fetchTemplates = async (searchString: string): Promise<ILookupOptio
       params,
     }
   )
-  if (response.data.success && response.data.results?.length) {
-    return response.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
+
+  if (response.data?.data?.results?.length) {
+    return response.data.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
   }
   return []
 }
@@ -286,39 +307,22 @@ export const createJob = async (
   return fetchListJobs({ ...DEFAULT_FILTER, projectId: requestData.projectId })
 }
 
-export const deleteJob = async (uids: string) => {
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.delete('/services/apexrest/sked/job', {
-    params: { ids: uids }
-  })
-
-  return response.data
-}
-
-// export const dispatchResource = async (jobId, resourceIds): Promise<IListResponse<IJobDetail>> => {
-
-// }
-
-export const dispatchResource = async (jobId: string, resourceIds: string[]) => {
-  console.log('dispatch----jobId: ', jobId);
-  console.log('dispatch----resourceIds: ', resourceIds);
-}
-
-export const dispatchMutipleJobs = async (jobArray: IJobDetail[]) => {
+export const dispatchMutipleJobs = async (jobIds: string) => {
   try {
-    await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
-    toastMessage.success('Dispatched successfully!')
+    const res = await salesforceApi.get('/services/apexrest/sked/job/dispatch', { params: { ids: jobIds } })
+    return res.data.success
   } catch (error) {
-    console.log('error: ', error);
+    console.log('error: ', error)
+    return false
   }
 }
 
-export const deallocateMutipleJobs = async (jobArray: IJobDetail[]) => {
+export const deallocateMutipleJobs = async (jobIds: string): Promise<boolean> => {
   try {
-    await Promise.all(jobArray.map(job => dispatchResource(job.id, job.allocations.map(item => item.id))))
-    toastMessage.success('Dispatched successfully!')
+    const res = await salesforceApi.get('/services/apexrest/sked/job/deallocate', { params: { ids: jobIds } })
+    return res.data.success
   } catch (error) {
-    console.log('error: ', error);
+    console.log('error: ', error)
+    return false
   }
 }

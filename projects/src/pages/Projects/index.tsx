@@ -10,13 +10,14 @@ import {
   Button,
   ConfirmationModal,
   Icon,
+  LozengeColors,
 } from '@skedulo/sked-ui'
 import ProjectFilter from './ProjectFilter'
 import CreateProjectModal from './CreateProjectModal'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
-import { IProjectListItem, IListResponse, IProjectDetail, IFilterParams } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST } from '../../commons/constants'
-import { fetchListProjects, deleteProject, createProject } from '../../Services/DataServices'
+import { IProjectListItem, IListResponse, IProjectDetail, IFilterParams, ProjectStatusKey } from '../../commons/types'
+import { DEFAULT_FILTER, DEFAULT_PROJECTS_LIST, PROJECT_STATUS_COLOR } from '../../commons/constants'
+import { fetchListProjects, deleteProject, createProject, cancelProject } from '../../Services/DataServices'
 import { projectDetailPath } from '../routes'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
@@ -26,8 +27,14 @@ interface IProjectsListProps {
   children?: any
 }
 
+const CONFIRM_ACTION = {
+  CANCEL: 'cancel',
+  DELETE: 'delete',
+}
+
 export const projectsTableColumns = (
   onViewProject: (projectId: string) => void,
+  onCancelProject: (projectId: string) => void,
   onDeleteProject?: (projectId: string) => void
 ) => {
   return [
@@ -44,27 +51,31 @@ export const projectsTableColumns = (
     {
       Header: 'Status',
       accessor: 'projectStatus',
-      Cell: ({ cell }: { cell: { value: string }}) => {
-        return <Lozenge label={cell.value} color="neutral" size="small" solid={false} border={false} />
+      Cell: ({ cell }: { cell: { value: ProjectStatusKey } }) => {
+        const color = PROJECT_STATUS_COLOR[cell.value] || 'neutral'
+
+        return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
       },
     },
     {
       Header: 'Start',
       accessor: 'startDate',
-      emptyCellText: 'No start date'
+      emptyCellText: 'No start date',
     },
     {
       Header: 'Finish',
       accessor: 'endDate',
-      emptyCellText: 'No finish date'
+      emptyCellText: 'No finish date',
     },
     {
       Header: '',
       accessor: 'id',
       disableSortBy: true,
-      Cell: ({ cell }: { cell: { value: string }}) => {
+      Cell: ({ cell, row }: { cell: { value: string }; row: { original: IProjectDetail } }) => {
         const actionItems = [{ label: 'View/Edit', onClick: () => onViewProject(cell.value) }]
-
+        if (!row.original?.isTemplate && row.original?.projectStatus !== 'Cancelled') {
+          actionItems.push({ label: 'Cancel', onClick: () => onCancelProject(cell.value) })
+        }
         if (onDeleteProject) {
           actionItems.push({ label: 'Delete', onClick: () => onDeleteProject(cell.value) })
         }
@@ -85,7 +96,8 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
-  const [confirmDeleteId, setOpenConfirmDeleteId] = useState<string | null>(null)
+  const [confirmId, setConfirmId] = useState<string | null>(null)
+  const confirmAction = React.useMemo(() => confirmId?.split(',')[0], [confirmId])
   const [filterParams, setFilterParams] = useState<IFilterParams>(DEFAULT_FILTER)
   const [projects, setProjects] = useState<IListResponse<IProjectListItem>>(DEFAULT_PROJECTS_LIST)
 
@@ -128,11 +140,15 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   }, [])
 
   const openConfirmDelete = useCallback((projectId: string) => {
-    setOpenConfirmDeleteId(projectId)
+    setConfirmId(`${CONFIRM_ACTION.DELETE},${projectId}`)
   }, [])
 
-  const closeConfirmDelete = useCallback(() => {
-    setOpenConfirmDeleteId(null)
+  const openConfirmCancel = useCallback((projectId: string) => {
+    setConfirmId(`${CONFIRM_ACTION.CANCEL},${projectId}`)
+  }, [])
+
+  const closeConfirm = useCallback(() => {
+    setConfirmId(null)
   }, [])
 
   const onSaveProject = useCallback(async (data: IProjectDetail) => {
@@ -155,49 +171,73 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     history.push(projectDetailPath(projectId))
   }, [])
 
-  const onDeleteProject = useCallback(async () => {
-    if (!confirmDeleteId) {
+  const onCancelProject = useCallback(async () => {
+    const projectId = confirmId?.split(',')[1]
+    if (!projectId) {
       return
     }
-    try {
-      setIsLoading(true)
-      await deleteProject(confirmDeleteId)
+    setIsLoading(true)
+    const success = await cancelProject(projectId)
+    if (success) {
       await getProjectsList(filterParams)
-    } catch (error) {
-      console.log('error: ', error)
-      toastMessage.error('Delete project unsuccessfully!')
-    } finally {
-      setIsLoading(false)
-      closeConfirmDelete()
+    } else {
+      toastMessage.error('Cancelled unsuccessfully!')
     }
-  }, [confirmDeleteId, filterParams])
+    setIsLoading(false)
+    closeConfirm()
+  }, [confirmId, filterParams])
 
-  const projectsTableConfig: IDynamicTable<IProjectListItem> = useMemo(() => ({
-    data: projects.results,
-    columns: projectsTableColumns(onViewProject, (objPermissions?.Project.allowDelete ? openConfirmDelete : undefined)),
-    stickyHeader: false,
-    getRowId: (row: IProjectListItem) => row.id,
-    rowSelectControl: 'disabled',
-    onRowSelect,
-    onSortBy: props => {
-      if (props?.id) {
-        onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
-      }
-    },
-    sortByControl: 'controlled',
-    initialRowStateKey: 'id'
-  }), [projects.results, projectsTableColumns, objPermissions?.Project])
+  const onDeleteProject = useCallback(async () => {
+    const projectId = confirmId?.split(',')[1]
+
+    if (!projectId) {
+      return
+    }
+    setIsLoading(true)
+    const success = await deleteProject(projectId)
+    if (success) {
+      await getProjectsList(filterParams)
+    } else {
+      toastMessage.error('Deleted unsuccessfully!')
+    }
+    setIsLoading(false)
+    closeConfirm()
+  }, [confirmId, filterParams])
+
+  const projectsTableConfig: IDynamicTable<IProjectListItem> = useMemo(
+    () => ({
+      data: projects.results,
+      columns: projectsTableColumns(
+        onViewProject,
+        openConfirmCancel,
+        objPermissions?.Project.allowDelete ? openConfirmDelete : undefined
+      ),
+      stickyHeader: false,
+      getRowId: (row: IProjectListItem) => row.id,
+      rowSelectControl: 'allRows',
+      onRowSelect,
+      onSortBy: (props) => {
+        console.log('props: ', props)
+        if (props?.id) {
+          onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
+        }
+      },
+      sortByControl: 'controlled',
+      initialRowStateKey: 'id',
+    }),
+    [projects.results, projectsTableColumns, objPermissions?.Project]
+  )
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('filterParams: ', filterParams);
+      console.log('filterParams: ', filterParams)
       debounceGetProjectList(filterParams)
     }
   }, [filterParams])
 
   useEffect(() => {
-    // isTemplate = true
-    // onViewProject('a103L0000008YnOQAU')
+    //isTemplate = true
+    onViewProject('a103L0000008ZKIQA2')
     // isTemplate = false
     // onViewProject('a103L0000008YnsQAE')
   }, [])
@@ -243,9 +283,13 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
         )}
       </div>
       {openCreateModal && <CreateProjectModal onClose={toggleCreateModal} onSubmit={onSaveProject} />}
-      {!!confirmDeleteId && (
-        <ConfirmationModal onCancel={closeConfirmDelete} onConfirm={onDeleteProject} confirmButtonText="Ok">
-          Are you sure you want to delete this project?
+      {!!confirmAction && (
+        <ConfirmationModal
+          onCancel={closeConfirm}
+          onConfirm={confirmAction === CONFIRM_ACTION.DELETE ? onDeleteProject : onCancelProject}
+          confirmButtonText="Ok"
+        >
+          {`Are you sure you want to ${confirmAction} this project?`}
         </ConfirmationModal>
       )}
     </div>

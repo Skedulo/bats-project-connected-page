@@ -206,6 +206,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
       console.log('filterParams: ', filterParams)
       debounceGetJobTemplatesList({ ...filterParams, projectId })
     }
+    onCreateJobTemplate();
   }, [filterParams, projectId])
 
   return (
@@ -215,7 +216,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJobTemplate} icon="plus">
-            New Job
+            New Job 
           </Button>
           <SearchBox
             className="searchbox searchbox--w240 cx-mb-0 cx-border"

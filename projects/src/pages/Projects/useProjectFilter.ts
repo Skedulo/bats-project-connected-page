@@ -12,7 +12,7 @@ export const useProjectFilter = () => {
 
   const defaultFilterBar: IFilter<{ id: string; name: string; }>[] = React.useMemo(() => ([
     {
-      id: 'projectStatus',
+      id: 'projectStatuses',
       name: 'Status',
       items: projectStatuses,
       selectedIds: [],

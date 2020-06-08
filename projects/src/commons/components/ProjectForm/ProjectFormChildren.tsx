@@ -34,8 +34,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
   const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
   const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
-
-  const isDisableDatetime = React.useMemo(() => !!(isUpdate && fields.isTemplate), [fields.isTemplate, isUpdate])
+  const shouldReadonly = isUpdate && project?.canEdit === false ? true : isFormReadonly
 
   const startDate = React.useMemo(() => {
     if (!fields.startDate || isDate(fields.startDate)) {
@@ -65,36 +64,36 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
     []
   )
 
-  const onSelectDate = React.useCallback(
-    (fieldName: string) => (value: Date) => {
-      // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
-      if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
-        customFieldUpdate(fieldName)(value)
-        if (!value) {
-          customFieldUpdate('endDate')(value)
-        }
-      }
-      if (fieldName === 'startDate') {
-        customFieldUpdate(fieldName)(value)
-        if (!value) {
-          customFieldUpdate('startTime')(value)
-        }
-      }
-    },
-    [startDate, endDate]
-  )
+  // const onSelectDate = React.useCallback(
+  //   (fieldName: string) => (value: Date) => {
+  //     // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
+  //     if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
+  //       customFieldUpdate(fieldName)(value)
+  //       if (!value) {
+  //         customFieldUpdate('endDate')(value)
+  //       }
+  //     }
+  //     if (fieldName === 'startDate') {
+  //       customFieldUpdate(fieldName)(value)
+  //       if (!value) {
+  //         customFieldUpdate('startTime')(value)
+  //       }
+  //     }
+  //   },
+  //   [startDate, endDate]
+  // )
 
-  const onSelectTime = React.useCallback(
-    (fieldName: string) => (timeOption: ITimePickerOption) => {
-      if (fieldName === 'endTime') {
-        customFieldUpdate(fieldName)(timeOption.stringValue)
-      }
-      if (fieldName === 'startTime') {
-        customFieldUpdate(fieldName)(timeOption.stringValue)
-      }
-    },
-    [startDate, endDate]
-  )
+  // const onSelectTime = React.useCallback(
+  //   (fieldName: string) => (timeOption: ITimePickerOption) => {
+  //     if (fieldName === 'endTime') {
+  //       customFieldUpdate(fieldName)(timeOption.stringValue)
+  //     }
+  //     if (fieldName === 'startTime') {
+  //       customFieldUpdate(fieldName)(timeOption.stringValue)
+  //     }
+  //   },
+  //   [startDate, endDate]
+  // )
 
   React.useEffect(() => {
     if (
@@ -118,7 +117,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
             name="templateId"
             validation={{ isValid: submitted ? !errors.templateId : true, error: submitted ? errors.templateId : '' }}
             readOnlyValue={project?.template?.name || ''}
-            isReadOnly={isFormReadonly}
+            isReadOnly={shouldReadonly}
           >
             <LookupInput
               className="form-element__outline"
@@ -132,7 +131,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
         <WrappedFormInput
           name="projectName"
           className="click-to-edit-custom"
-          isReadOnly={isFormReadonly}
+          isReadOnly={shouldReadonly}
           label="Name"
           value={fields.projectName}
           error={submitted ? errors.projectName : ''}
@@ -144,7 +143,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
           className="click-to-edit-custom"
           type="textarea"
           rows={3}
-          isReadOnly={isFormReadonly}
+          isReadOnly={shouldReadonly}
           label="Description"
           value={fields.projectDescription}
           error={submitted ? errors.projectDescription : ''}
@@ -157,97 +156,34 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
             className="click-to-edit-custom"
             type="checkbox"
             isReadOnly={false}
-            disabled={isFormReadonly}
+            disabled={shouldReadonly}
             label="Is Template"
             value={fields.isTemplate}
             isRequired={false}
           />
         </div>
-        <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 click-to-edit-custom">
-            <span className="span-label">Start date</span>
-            <FormElementWrapper
-              className="cx-relative"
-              name="startDate"
-              readOnlyValue={project?.startDate}
-              isReadOnly={isFormReadonly}
-              validation={{
-                isValid: submitted ? !errors.startDate : true,
-                error: submitted ? errors.startDate : '',
-              }}
-            >
-              <div className="cx-absolute cx-inset-y-0 cx-left-0 cx-flex cx-items-center cx-p-2">
-                <Icon name="calendar" size={18} className="cx-text-neutral-500" />
+        {isUpdate && (
+          <>
+            <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
+              <span className="span-label">Start date</span>
+              <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
+                <span>{project?.startDate ? `${project?.startDate}` : 'No start date'}</span>
+                <span className="cx-ml-1">
+                  {project?.startTime && project?.startTime ? ` - ${project?.startTime}` : ''}
+                </span>
               </div>
-              <Datepicker
-                selected={startDate}
-                onChange={onSelectDate('startDate')}
-                dateFormat={DATE_FORMAT}
-                disabled={isDisableDatetime}
-              />
-            </FormElementWrapper>
-          </div>
-          <div className="cx-mb-4 cx-ml-4 click-to-edit-custom">
-            <span className="span-label">Start time</span>
-            <FormElementWrapper
-              name="startTime"
-              readOnlyValue={project?.startTime || ''}
-              isReadOnly={isFormReadonly}
-              validation={{
-                isValid: !timeError,
-              }}
-            >
-              <TimePicker
-                onSelect={onSelectTime('startTime')}
-                defaultSelected={project?.startTime}
-                disabled={!fields.startDate || isDisableDatetime}
-              />
-            </FormElementWrapper>
-          </div>
-        </div>
-        {/* <div className="cx-flex cx-items-center">
-          <div className="cx-mb-4 click-to-edit-custom">
-            <span className="span-label">End date</span>
-            <FormElementWrapper
-              className="cx-relative"
-              name="endDate"
-              readOnlyValue={project?.endDate}
-              isReadOnly={isFormReadonly}
-              validation={{
-                isValid: submitted ? !errors.endDate : true,
-                error: submitted ? errors.endDate : '',
-              }}
-            >
-              <div className="cx-absolute cx-inset-y-0 cx-left-0 cx-flex cx-items-center cx-p-2">
-                <Icon name="calendar" size={18} className="cx-text-neutral-500" />
+            </div>
+            <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
+              <span className="span-label">End date</span>
+              <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
+                <span>{project?.endDate ? `${project?.endDate}` : 'No end date'}</span>
+                <span className="cx-ml-1">
+                  {project?.endDate && project?.endTime ? `- ${project?.endTime}` : ''}
+                </span>
               </div>
-              <Datepicker
-                selected={endDate}
-                onChange={onSelectDate('endDate')}
-                dateFormat={DATE_FORMAT}
-                disabled={isDisableDatetime}
-              />
-            </FormElementWrapper>
-          </div>
-          <div className="cx-mb-4 cx-ml-4 click-to-edit-custom">
-            <span className="span-label">End time</span>
-            <FormElementWrapper
-              name="endTime"
-              readOnlyValue={project?.endTime || ''}
-              isReadOnly={isFormReadonly}
-              validation={{
-                isValid: !timeError,
-              }}
-            >
-              <TimePicker
-                onSelect={onSelectTime('endTime')}
-                defaultSelected={project?.endTime}
-                disabled={!fields.endDate || isDisableDatetime}
-              />
-            </FormElementWrapper>
-          </div>
-        </div> */}
-        {!!timeError && <p className="sked-form-element__errors cx-mb-4">{timeError}</p>}
+            </div>
+          </>
+        )}
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
@@ -256,7 +192,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               name="accountId"
               validation={{ isValid: submitted ? !errors.accountId : true, error: errors.accountId }}
               readOnlyValue={project?.account?.name || ''}
-              isReadOnly={isFormReadonly}
+              isReadOnly={shouldReadonly}
             >
               <LookupInput
                 className="form-element__outline"
@@ -273,7 +209,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               className="click-to-edit-custom"
               type="checkbox"
               isReadOnly={false}
-              disabled={isFormReadonly}
+              disabled={shouldReadonly}
               label="Apply to all jobs"
               value={fields.applyAccountForAllJob}
               error={submitted ? errors.applyAccountForAllJob : ''}
@@ -288,7 +224,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               name="contactId"
               validation={{ isValid: submitted ? !errors.contactId : true, error: errors.contactId }}
               readOnlyValue={project?.contact?.name || ''}
-              isReadOnly={isFormReadonly}
+              isReadOnly={shouldReadonly}
             >
               <LookupInput
                 className="form-element__outline"
@@ -305,7 +241,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               className="click-to-edit-custom"
               type="checkbox"
               isReadOnly={false}
-              disabled={isFormReadonly}
+              disabled={shouldReadonly}
               label="Apply to all jobs"
               value={fields.applyContactForAllJob}
               error={submitted ? errors.applyContactForAllJob : ''}
@@ -320,7 +256,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               name="regionId"
               validation={{ isValid: submitted ? !errors.regionId : true, error: errors.regionId }}
               readOnlyValue={project?.region?.name || ''}
-              isReadOnly={isFormReadonly}
+              isReadOnly={shouldReadonly}
             >
               <LookupInput
                 className="form-element__outline"
@@ -337,7 +273,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               className="click-to-edit-custom"
               type="checkbox"
               isReadOnly={false}
-              disabled={isFormReadonly}
+              disabled={shouldReadonly}
               label="Apply to all jobs"
               value={fields.applyRegionForAllJob}
               error={submitted ? errors.applyRegionForAllJob : ''}
@@ -352,7 +288,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               name="locationId"
               validation={{ isValid: submitted ? !errors.locationId : true, error: errors.locationId }}
               readOnlyValue={project?.location?.name || ''}
-              isReadOnly={isFormReadonly}
+              isReadOnly={shouldReadonly}
             >
               <LookupInput
                 className="form-element__outline"
@@ -369,7 +305,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               name="applyLocationForAllJob"
               type="checkbox"
               isReadOnly={false}
-              disabled={isFormReadonly}
+              disabled={shouldReadonly}
               label="Apply to all jobs"
               value={fields.applyLocationForAllJob}
               error={submitted ? errors.applyLocationForAllJob : ''}
@@ -378,7 +314,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
           </div>
         </div>
       </div>
-      {!isFormReadonly && (
+      {!shouldReadonly && (
         <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
           <Button buttonType="secondary" onClick={handleCancel}>
             Cancel

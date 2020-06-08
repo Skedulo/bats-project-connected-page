@@ -1,16 +1,16 @@
 import { IBaseModel } from './common'
 
-export enum JobStatus {
-  Queued = 'Queued',
-  PendingAllocation = 'Pending Allocation',
-  PendingDispatch = 'Pending Dispatch',
-  Dispatched = 'Dispatched',
-  Ready = 'Ready',
-  EnRoute = 'En Route',
-  OnSite = 'On Site',
-  InProgress = 'In Progress',
-  Complete = 'Complete',
-  Cancelled = 'Cancelled',
+export enum JobStatusColor {
+  'Queued',
+  'Pending Allocation',
+  'Pending Dispatch',
+  'Dispatched',
+  'Ready',
+  'En Route',
+  'On Site',
+  'In Progress',
+  'Complete',
+  'Cancelled',
 }
 
 export interface IJobAllocation {
@@ -26,17 +26,7 @@ export interface IJobConstraint {
   dependentJob: IBaseModel
 }
 
-export declare type JobStatusKey =
-  | 'Queued'
-  | 'Pending Allocation'
-  | 'Pending Dispatch'
-  | 'Dispatched'
-  | 'Ready'
-  | 'En Route'
-  | 'On Site'
-  | 'In Progress'
-  | 'Complete'
-  | 'Cancelled'
+export declare type JobStatusKey = keyof typeof JobStatusColor
 
 export interface IJobTemplate {
   id?: string

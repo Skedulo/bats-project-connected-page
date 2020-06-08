@@ -43,13 +43,13 @@ const ProjectFormConfig = {
   isTemplate: {},
 }
 
-interface ProjectFormProps {
+interface IProjectFormProps {
   project?: IProjectDetail
   onSubmit: (project: IProjectDetail) => void
   onCancel?: () => void
 }
 
-const ProjectForm: React.FC<ProjectFormProps> = ({ project, onSubmit, onCancel }) => {
+const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel }) => {
   const [timeError, setTimeError] = React.useState<string>('')
   const handleSubmit = React.useCallback(
     async (form: SkedFormChildren<IProjectDetail>) => {

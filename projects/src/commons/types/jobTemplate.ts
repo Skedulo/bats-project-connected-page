@@ -2,10 +2,13 @@
 export interface IJobTemplateListItem {
   name: string
   id: string
-  type: string
+  jobType: string
   description: string
 }
 
 export interface IJobTemplateDetail extends IJobTemplateListItem {
-  jobDependencies?:{}
+  jobConstraints?:{},
+  canEdit?:boolean,
+  projectId: string,
+  project?: {}
 }

@@ -37,7 +37,7 @@
     "webpack-dev-server": "^3.8.0"
   },
   "dependencies": {
-    "@skedulo/sked-ui": "^13.0.0",
+    "@skedulo/sked-ui": "^13.4.3",
     "@types/axios": "^0.14.0",
     "@types/classnames": "^2.2.10",
     "@types/react-router-dom": "^5.1.5",
