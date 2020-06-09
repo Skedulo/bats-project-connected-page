@@ -219,7 +219,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [])
 
   const onDispatchResource = useCallback(async () => {
-    const jobIds = selectedRows.map(job => job.id).join(',')
+    const jobIds = selectedRows.filter(job => job.status === 'Pending Dispatch').map(job => job.id).join(',')
     const success = await dispatchMutipleJobs(jobIds)
     if (success) {
       getJobsList({ ...filterParams, projectId })
@@ -272,10 +272,11 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
     selectedRows.forEach((job: IJobDetail) => {
       if (!['Queued', 'Pending Allocation', 'Pending Dispatch', 'Dispatched'].includes(job.status)) {
         shouldDeallocation = false
-      }
-      if (job.status !== 'Pending Dispatch') {
         shouldDispatch = false
       }
+      // if (job.status !== 'Pending Dispatch') {
+      //   shouldDispatch = false
+      // }
     })
 
     setCanDeallocate(shouldDeallocation)

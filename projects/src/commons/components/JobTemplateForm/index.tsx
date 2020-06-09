@@ -34,8 +34,10 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
         validatedJobConstraints = jobConstraints.map((item, index) => {
           const jobId = item.dependentJobId || item.dependentJob?.id
           const duplicatedJobId = jobConstraints.find(
-            (jc, jcIndex) => (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index
+            (jc, jcIndex) =>
+              (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index && !jc.action && !item.action
           )
+          console.log('duplicatedJobId: ', duplicatedJobId)
           if (!item.constraintType || !item.dependencyType || !jobId) {
             hasError = true
             return {

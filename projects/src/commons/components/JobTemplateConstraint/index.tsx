@@ -10,8 +10,7 @@ interface IJobTemplateConstraintProps {
   handleChange: (newConstraint: Record<string, any>, index: string) => void
   wrapperClassName?: string
   projectId: string
-  jobTemplateId: string
-  jobConstraints: IJobConstraint[]
+  ignoreJobTemplateIds: string[]
 }
 
 const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
@@ -20,8 +19,7 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
   handleChange,
   wrapperClassName,
   projectId,
-  jobTemplateId,
-  jobConstraints,
+  ignoreJobTemplateIds
 }) => {
   const appContext = React.useContext(AppContext)
 
@@ -39,8 +37,8 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
 
   const initialConstraints = React.useMemo(
     () => ({
-      constraintType: constraintTypeOptions.find((item) => item.value === jobConstraint.constraintType),
-      dependencyType: dependencyTypeOptions.find((item) => item.value === jobConstraint.dependencyType),
+      constraintType: constraintTypeOptions.find(item => item.value === jobConstraint.constraintType),
+      dependencyType: dependencyTypeOptions.find(item => item.value === jobConstraint.dependencyType),
       dependentJob: jobConstraint.dependentJob?.id
         ? { value: jobConstraint.dependentJob.id, label: jobConstraint.dependentJob.name }
         : undefined,
@@ -48,39 +46,27 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
     [dependencyTypeOptions, constraintTypeOptions, jobConstraint]
   )
 
-  const excludeJobTemplateIds = React.useMemo(() => {
-    let excludeIds = jobTemplateId ? [jobTemplateId] : []
-    if (jobConstraints.length > 0) {
-      const jobConstraintJobIds = jobConstraints
-        .map((item) => item.dependentJobId || item.dependentJob?.id)
-        .filter((item) => !!item)
-      excludeIds = [...excludeIds, ...(jobConstraintJobIds as string[])]
-    }
-    return excludeIds
-  }, [jobConstraints, jobTemplateId])
-
   const handleGetDependentJobs = React.useCallback(
     (searchTerm: string) => {
+      console.log('ignoreJobTemplateIds: ', ignoreJobTemplateIds);
       return fetchJobTemplateOptions(
         { searchText: searchTerm, pageNumber: 1, pageSize: 20, projectId },
-        excludeJobTemplateIds
+        ignoreJobTemplateIds.filter(item => !!item)
       )
     },
-    [projectId, excludeJobTemplateIds]
+    [projectId, ignoreJobTemplateIds]
   )
 
-  const onSelectLookupField = React.useCallback(
+  const onChangeConstraint = React.useCallback(
     (fieldName: string) => (selectedOption: ISelectItem) => {
-      if (selectedOption) {
-        if (fieldName === 'dependentJobId') {
-          handleChange({ [fieldName]: selectedOption.value }, jobConstraint.id || jobConstraint.tempId || '')
-          handleChange(
-            { dependentJob: { id: selectedOption.value, name: selectedOption.label } },
-            jobConstraint.id || jobConstraint.tempId || ''
-          )
-        } else {
-          handleChange({ [fieldName]: selectedOption.value }, jobConstraint.id || jobConstraint.tempId || '')
-        }
+      if (fieldName === 'dependentJobId') {
+        handleChange({ [fieldName]: selectedOption?.value || '' }, jobConstraint.id || jobConstraint.tempId || '')
+        handleChange(
+          { dependentJob: selectedOption ? { id: selectedOption?.value, name: selectedOption?.label } : {} },
+          jobConstraint.id || jobConstraint.tempId || ''
+        )
+      } else {
+        handleChange({ [fieldName]: selectedOption?.value || '' }, jobConstraint.id || jobConstraint.tempId || '')
       }
     },
     [jobConstraint]
@@ -97,7 +83,7 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
         <div className="cx-mr-2">
           <SearchSelect
             items={constraintTypeOptions}
-            onSelectedItemChange={onSelectLookupField('constraintType')}
+            onSelectedItemChange={onChangeConstraint('constraintType')}
             placeholder="Constraint type"
             initialSelectedItem={initialConstraints.constraintType}
             icon="chevronDown"
@@ -107,7 +93,7 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
         <div className="cx-mr-2">
           <SearchSelect
             items={dependencyTypeOptions}
-            onSelectedItemChange={onSelectLookupField('dependencyType')}
+            onSelectedItemChange={onChangeConstraint('dependencyType')}
             placeholder="Dependency type"
             initialSelectedItem={initialConstraints.dependencyType}
             icon="chevronDown"
@@ -128,7 +114,7 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
             name="dependentJob"
             fetchItems={handleGetDependentJobs}
             debounceTime={300}
-            onSelectedItemChange={onSelectLookupField('dependentJobId')}
+            onSelectedItemChange={onChangeConstraint('dependentJobId')}
             initialSelectedItem={initialConstraints.dependentJob}
             useCache={false}
             placeholder="Dependent job"

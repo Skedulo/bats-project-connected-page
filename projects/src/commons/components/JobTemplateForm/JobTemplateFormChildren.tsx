@@ -34,6 +34,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   const appContext = React.useContext(AppContext)
   const { jobTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
   const { fields, customFieldUpdate, errors, submitted } = formParams
+
   const jobTypeOptions = React.useMemo(
     () =>
       jobTypes.map((item: IBaseModel) => ({
@@ -47,6 +48,21 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
     jobTemplate,
     jobTypeOptions,
   ])
+
+  const displayJobConstraints = React.useMemo(() => jobConstraints.filter(item => !item.action), [
+    jobConstraints,
+  ])
+
+  const ignoreJobTemplateIds = React.useMemo(() => {
+    let ignorePjtIds = jobTemplate?.id ? [jobTemplate?.id] : []
+    if (displayJobConstraints.length > 0) {
+      const jobConstraintJobIds = displayJobConstraints
+        .map(item => item.dependentJobId || item.dependentJob?.id)
+      ignorePjtIds = [...ignorePjtIds, ...(jobConstraintJobIds as string[])]
+    }
+
+    return ignorePjtIds
+  }, [displayJobConstraints, jobTemplate])
 
   const handleJobType = React.useCallback((jobType: ISelectItem) => {
     customFieldUpdate('jobType')(jobType.value)
@@ -62,7 +78,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
         dependentJobId: '',
       },
     ])
-  }, [jobConstraints, setJobConstraints])
+  }, [setJobConstraints])
 
   const handleChangeConstraint = React.useCallback(
     (newConstraint: Record<string, any>, id: string) => {
@@ -80,16 +96,17 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
 
   const handleDeleteConstraint = React.useCallback(
     (id: string) => {
-      setJobConstraints(prev => {
-        return prev.filter((item: IJobConstraint) => {
-          if (item.id === id || item.tempId === id) {
-            return false
-          }
-          return true
-        })
-      })
+      // setJobConstraints(prev => {
+      //   return prev.filter((item: IJobConstraint) => {
+      //     if (item.id === id || item.tempId === id) {
+      //       return false
+      //     }
+      //     return true
+      //   })
+      // })
+      handleChangeConstraint({ action: 'delete' }, id)
     },
-    [setJobConstraints]
+    [handleChangeConstraint]
   )
 
   return (
@@ -125,7 +142,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
         {totalJobTemplates > 0 && (
           <div className="cx-mb-4">
             <span className="span-label">Job Dependencies</span>
-            {jobConstraints.map((jobConstraint: IJobConstraint) => (
+            {displayJobConstraints.map((jobConstraint: IJobConstraint) => (
               <JobTemplateConstraint
                 key={jobConstraint.id || jobConstraint.tempId}
                 wrapperClassName="cx-mb-4"
@@ -133,12 +150,11 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
                 handleChange={handleChangeConstraint}
                 handleDelete={handleDeleteConstraint}
                 projectId={projectId}
-                jobTemplateId={jobTemplate?.id || ''}
-                jobConstraints={jobConstraints}
+                ignoreJobTemplateIds={ignoreJobTemplateIds}
               />
             ))}
             {
-              totalJobTemplates > jobConstraints.length && (
+              totalJobTemplates > ignoreJobTemplateIds.length && (
                 <div className="cx-text-center">
                   <Button
                     className="cx-text-primary"
