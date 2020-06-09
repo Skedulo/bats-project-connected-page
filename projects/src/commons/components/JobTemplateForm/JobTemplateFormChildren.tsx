@@ -65,7 +65,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   }, [jobConstraints, setJobConstraints])
 
   const handleChangeConstraint = React.useCallback(
-    (newConstraint: Record<string, string>, id: string) => {
+    (newConstraint: Record<string, any>, id: string) => {
       setJobConstraints(prev =>
         prev.map((item: IJobConstraint) => {
           if (item.id === id || item.tempId === id) {
