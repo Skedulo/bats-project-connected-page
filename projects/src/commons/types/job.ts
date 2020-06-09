@@ -27,6 +27,7 @@ export interface IJobConstraint {
   dependencyType: string
   dependentJob?: IBaseModel | null
   dependentJobId?: string
+  error?: string
 }
 
 export declare type JobStatusKey = keyof typeof JobStatusColor

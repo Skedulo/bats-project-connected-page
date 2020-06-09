@@ -122,7 +122,6 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
           )
           const responses = await Promise.all(promises)
           newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
-          console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues)
           if (setAppConfig) {
             setAppConfig((prev: IConfig) => {
               return { ...prev, jobTypeTemplateValues: newJobTypeTemplateValues }
@@ -187,7 +186,8 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
     if (success) {
       getJobTemplatesList({ ...filterParams, projectId })
     }  else {
-      toastMessage.error('Created unsuccessfully!')
+      const errorMsg = data.id ? 'Edited unsuccessfully!' : 'Created unsuccessfully!'
+      toastMessage.error(errorMsg)
     }
     onCloseJobTemplateModal()
     setIsLoading(false)

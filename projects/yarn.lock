@@ -372,10 +372,10 @@
   resolved "https://registry.yarnpkg.com/@scarf/scarf/-/scarf-1.0.5.tgz#accee0bce88a9047672f7c8faf3cada59c996b81"
   integrity sha512-9WKaGVpQH905Aqkk+BczFEeLQxS07rl04afFRPUG9IcSlOwmo5EVVuuNu0d4M9LMYucObvK0LoAe+5HfMW2QhQ==
 
-"@skedulo/sked-ui@^13.4.3":
-  version "13.4.3"
-  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-13.4.3.tgz#859f1f3f3aba8eb51d71554ffa4c21c54822dcce"
-  integrity sha512-2XFCJINozS+opuiBNCqSLwitkfXSyZ7gvRB6bhft1UaAKasm6dDnmSREfMA0yKEpINMgP9GQE3UwJxq2WSgSuA==
+"@skedulo/sked-ui@^13.6.1":
+  version "13.6.1"
+  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-13.6.1.tgz#a037bd8b97860ade12f1c753abb7866a9524dbcf"
+  integrity sha512-0K952YI+HCQvfYO1itSUjNn1OmJZyV/+UTiB9HFIjgYJ2KSB6XaFpAvJElFwS2i8QMuHcStrd8mrmlUSayW76A==
   dependencies:
     "@types/react-table" "^7.0.3"
     date-fns "2.14.0"

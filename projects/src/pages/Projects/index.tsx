@@ -236,7 +236,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
 
   useEffect(() => {
     //isTemplate = true
-    onViewProject('a103L0000008ZKIQA2')
+    // onViewProject('a103L0000008ZjLQAU')
     // isTemplate = false
     // onViewProject('a103L0000008YnsQAE')
   }, [])

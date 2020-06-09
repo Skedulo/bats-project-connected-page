@@ -1,5 +1,12 @@
 import * as React from 'react'
-import { SkedFormChildren, Button, FormElementWrapper, SearchSelect, ISelectItem, AsyncSearchSelect } from '@skedulo/sked-ui'
+import {
+  SkedFormChildren,
+  Button,
+  FormElementWrapper,
+  SearchSelect,
+  ISelectItem,
+  AsyncSearchSelect,
+} from '@skedulo/sked-ui'
 import WrappedFormInput from '../WrappedFormInput'
 import { AppContext } from '../../../App'
 import JobTemplateConstraint from '../JobTemplateConstraint'
@@ -22,7 +29,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   jobConstraints,
   setJobConstraints,
   totalJobTemplates,
-  projectId
+  projectId,
 }) => {
   const appContext = React.useContext(AppContext)
   const { jobTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
@@ -46,7 +53,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   }, [])
 
   const handleAddConstraint = React.useCallback(() => {
-    setJobConstraints((prev) => [
+    setJobConstraints(prev => [
       ...prev,
       {
         tempId: new Date().valueOf().toString(),
@@ -59,7 +66,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
 
   const handleChangeConstraint = React.useCallback(
     (newConstraint: Record<string, string>, id: string) => {
-      setJobConstraints((prev) =>
+      setJobConstraints(prev =>
         prev.map((item: IJobConstraint) => {
           if (item.id === id || item.tempId === id) {
             return { ...item, ...newConstraint }
@@ -73,16 +80,17 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
 
   const handleDeleteConstraint = React.useCallback(
     (id: string) => {
-      setJobConstraints((prev) => prev.filter((item: IJobConstraint) => item.id !== id))
+      setJobConstraints(prev => {
+        return prev.filter((item: IJobConstraint) => {
+          if (item.id === id || item.tempId === id) {
+            return false
+          }
+          return true
+        })
+      })
     },
     [setJobConstraints]
   )
-
-  const handleCancel = React.useCallback(() => {
-    if (typeof onCancel === 'function') {
-      onCancel()
-    }
-  }, [onCancel])
 
   return (
     <>
@@ -114,10 +122,10 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
           maxLength={255}
           isRequired={false}
         />
-        {totalJobTemplates > 1 && (
+        {totalJobTemplates > 0 && (
           <div className="cx-mb-4">
             <span className="span-label">Job Dependencies</span>
-            {jobConstraints.map((jobConstraint: IJobConstraint, index: number) => (
+            {jobConstraints.map((jobConstraint: IJobConstraint) => (
               <JobTemplateConstraint
                 key={jobConstraint.id || jobConstraint.tempId}
                 wrapperClassName="cx-mb-4"
@@ -126,18 +134,28 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
                 handleDelete={handleDeleteConstraint}
                 projectId={projectId}
                 jobTemplateId={jobTemplate?.id || ''}
+                jobConstraints={jobConstraints}
               />
             ))}
-            <div className="cx-text-center">
-              <Button className="cx-text-primary" buttonType="transparent" onClick={handleAddConstraint} icon="plus">
-                Add job dependency
-              </Button>
-            </div>
+            {
+              totalJobTemplates > jobConstraints.length && (
+                <div className="cx-text-center">
+                  <Button
+                    className="cx-text-primary"
+                    buttonType="transparent"
+                    onClick={handleAddConstraint}
+                    icon="plus"
+                  >
+                    Add job dependency
+                  </Button>
+                </div>
+              )
+            }
           </div>
         )}
       </div>
       <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
-        <Button buttonType="secondary" onClick={handleCancel}>
+        <Button buttonType="secondary" onClick={onCancel}>
           Cancel
         </Button>
         <Button buttonType="primary" className="cx-ml-2" type="submit">
