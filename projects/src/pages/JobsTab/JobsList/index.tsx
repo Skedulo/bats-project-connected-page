@@ -267,16 +267,17 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [filterParams, projectId])
 
   useEffect(() => {
-    let shouldDeallocation = false
+    let shouldDeallocation = !!selectedRows.find((job: IJobDetail) => job.allocations?.length > 0)
     let shouldDispatch = true
     selectedRows.forEach((job: IJobDetail) => {
-      if (job.allocations?.length > 0 && (job.status === 'Pending Dispatch' || job.status === 'Dispatched')) {
-        shouldDeallocation = true
+      if (!['Queued', 'Pending Allocation', 'Pending Dispatch', 'Dispatched'].includes(job.status)) {
+        shouldDeallocation = false
       }
       if (job.status !== 'Pending Dispatch') {
         shouldDispatch = false
       }
     })
+
     setCanDeallocate(shouldDeallocation)
     setCanDispatch(shouldDispatch)
   }, [selectedRows])
