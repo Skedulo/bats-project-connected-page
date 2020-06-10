@@ -58,14 +58,14 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
     (fieldName: string, callback?: () => void) => (value: Date) => {
       if (fieldName === 'startDate') {
         const endDate = isValid(filterDates.endDate) ? filterDates.endDate : add(value, { days: 7 })
-        setFilterDates((prev) => ({ ...prev, [fieldName]: value, endDate }))
+        setFilterDates(prev => ({ ...prev, [fieldName]: value, endDate }))
         onFilterChange({
           [fieldName]: format(value, DATE_FORMAT),
           endDate: format(endDate, DATE_FORMAT),
         })
       }
       if (fieldName === 'endDate') {
-        setFilterDates((prev) => ({ ...prev, [fieldName]: value }))
+        setFilterDates(prev => ({ ...prev, [fieldName]: value }))
         onFilterChange({ [fieldName]: format(value, DATE_FORMAT) })
       }
       if (selectedFilterSet) {
@@ -223,7 +223,7 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
                   <MenuItem onClick={resetFilter}>
                     {ALL_PROJECTS}
                   </MenuItem>
-                  {savedFilterSets.map((item) => (
+                  {savedFilterSets.map(item => (
                     <MenuItem key={item.id} className="cx-p-0">
                       <div className="cx-flex cx-justify-between cx-items-center cx-px-3 cx-py-2">
                         {/* tslint:disable-next-line: jsx-no-lambda */}

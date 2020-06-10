@@ -54,14 +54,14 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
     (fieldName: string, callback?: () => void) => (value: Date) => {
       if (fieldName === 'startDate') {
         const endDate = isValid(filterDates.endDate) ? filterDates.endDate : add(value, { days: 7 })
-        setFilterDates((prev) => ({ ...prev, [fieldName]: value, endDate }))
+        setFilterDates(prev => ({ ...prev, [fieldName]: value, endDate }))
         onFilterChange({
           [fieldName]: format(value, DATE_FORMAT),
           endDate: format(endDate, DATE_FORMAT),
         })
       }
       if (fieldName === 'endDate') {
-        setFilterDates((prev) => ({ ...prev, [fieldName]: value }))
+        setFilterDates(prev => ({ ...prev, [fieldName]: value }))
         onFilterChange({ [fieldName]: format(value, DATE_FORMAT) })
       }
       if (selectedFilterSet) {

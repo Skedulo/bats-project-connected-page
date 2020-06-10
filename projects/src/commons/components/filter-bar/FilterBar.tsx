@@ -46,14 +46,14 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   async componentDidMount() {
     // add any filters that are already set.
     const appliedFilters = this.props.filters
-      .filter((filter) => filter.isReadonly || filter.selectedIds.length)
-      .map((filter) => {
+      .filter(filter => filter.isReadonly || filter.selectedIds.length)
+      .map(filter => {
         return {
           id: filter.id,
           name: filter.name,
           isReadonly: filter.isReadonly || false,
           removable: defaultTo(filter.removable, true),
-          selectedItems: filter.items.filter((item) => filter.selectedIds.find((selectedId) => selectedId === item.id)),
+          selectedItems: filter.items.filter(item => filter.selectedIds.find(selectedId => selectedId === item.id)),
         }
       })
 
@@ -66,15 +66,15 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     if (!isEqual(prevProps.filters, this.props.filters) && prevProps.filters.length && this.props.filters.length) {
       // add any filters that are already set.
       const appliedFilters = this.props.filters
-        .filter((filter) => filter.isReadonly || filter.selectedIds.length)
-        .map((filter) => {
+        .filter(filter => filter.isReadonly || filter.selectedIds.length)
+        .map(filter => {
           return {
             id: filter.id,
             name: filter.name,
             isReadonly: filter.isReadonly || false,
             removable: defaultTo(filter.removable, true),
-            selectedItems: filter.items.filter((item) =>
-              filter.selectedIds.find((selectedId) => selectedId === item.id)
+            selectedItems: filter.items.filter(item =>
+              filter.selectedIds.find(selectedId => selectedId === item.id)
             ),
           }
         })
@@ -85,15 +85,15 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     }
     if (!prevProps.forceUpdate && !!this.props.forceUpdate) {
       const appliedFilters = this.props.filters
-        .filter((filter) => filter.isReadonly || filter.selectedIds.length)
-        .map((filter) => {
+        .filter(filter => filter.isReadonly || filter.selectedIds.length)
+        .map(filter => {
           return {
             id: filter.id,
             name: filter.name,
             isReadonly: filter.isReadonly || false,
             removable: defaultTo(filter.removable, true),
-            selectedItems: filter.items.filter((item) =>
-              filter.selectedIds.find((selectedId) => selectedId === item.id)
+            selectedItems: filter.items.filter(item =>
+              filter.selectedIds.find(selectedId => selectedId === item.id)
             ),
           }
         })
@@ -111,7 +111,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
    */
   addFilter = (hideAddFilterDropdownList: () => void, filterToAdd: IAddedFilter) => () => {
     // edit existing filter if applicable
-    if (this.state.appliedFilters.find((appliedFilter) => appliedFilter.id === filterToAdd.id)) {
+    if (this.state.appliedFilters.find(appliedFilter => appliedFilter.id === filterToAdd.id)) {
       this.editFilter(filterToAdd.id)
     } else {
       // add it otherwise
@@ -125,7 +125,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   }
 
   applyChangesToExistingFilter = (editFilterId: string, selectedItems: T[], existingFilters: IAppliedFilter<T>[]) => {
-    return existingFilters.map((existingFilter) => {
+    return existingFilters.map(existingFilter => {
       if (existingFilter.id === editFilterId) {
         return {
           ...existingFilter,
@@ -202,8 +202,8 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   renderAddFilterControl = () => {
     const filterNames = this.props.filters
       // If a filter is readonly then we don't need to show it in the list of selectable filters.
-      .filter((propFilter) => !propFilter.isReadonly)
-      .map((propFilter) => ({ id: propFilter.id, name: propFilter.name }))
+      .filter(propFilter => !propFilter.isReadonly)
+      .map(propFilter => ({ id: propFilter.id, name: propFilter.name }))
 
     if (!filterNames.length) {
       return null
@@ -211,7 +211,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     // item renderer when adding a filter.
     const renderItem = (toggleDropdown: () => void) => (filter: IFilterItem) => {
-      const appliedFilter = this.state.appliedFilters.find((appFilter) => appFilter.id === filter.id)
+      const appliedFilter = this.state.appliedFilters.find(appFilter => appFilter.id === filter.id)
 
       return (
         <div
@@ -230,8 +230,8 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     // if we have filters to render, display them.
     return (
-      <PopOut trigger={this.renderAddFilterButton} popOutContainer={(container) => container} closeOnOuterClick>
-        {(toggleDropdown) => (
+      <PopOut trigger={this.renderAddFilterButton} popOutContainer={container => container} closeOnOuterClick={true}>
+        {toggleDropdown => (
           <div className="sk-shadow sk-mt-1">
             <FilterSearch placeholder="filter" className="sk-rounded-t" items={filterNames}>
               {({ filteredItems }) => (
@@ -318,7 +318,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
    * This temporary pill will be removed once we hit apply or exit out of the dropdown.
    */
   renderTemporaryPill = (filterName: string, filterId: string, preSelectedItems: T[]) => {
-    const filterSelected = this.props.filters.find((propFilter) => propFilter.id === filterId)
+    const filterSelected = this.props.filters.find(propFilter => propFilter.id === filterId)
     const temporaryPill = (
       <FilterPill
         key={`filter-${filterId}`}
@@ -336,9 +336,9 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
         onClose={this.closeTemporaryPill()}
         trigger={() => temporaryPill}
         key={`${filterName}-${filterId}`}
-        popOutContainer={(container) => container}
-        openOnMount
-        closeOnOuterClick
+        popOutContainer={container => container}
+        openOnMount={true}
+        closeOnOuterClick={true}
       >
         {() => (
           <div className="sk-shadow sk-mt-1">
@@ -353,7 +353,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   removeFilter = (filterId: string) => {
     const { appliedFilters } = this.state
 
-    const updatedAppliedFilters = appliedFilters.filter((appliedFilter) => appliedFilter.id !== filterId)
+    const updatedAppliedFilters = appliedFilters.filter(appliedFilter => appliedFilter.id !== filterId)
 
     this.setState({
       appliedFilters: updatedAppliedFilters,
@@ -374,7 +374,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     return (
       <div data-sk-name="filter-bar" className="sk-flex">
-        {appliedFilters.map((filter) => {
+        {appliedFilters.map(filter => {
           if (filter.id === editFilterId) {
             // return in edit mode if necessary
             return this.renderTemporaryPill(filter.name, filter.id, filter.selectedItems)
