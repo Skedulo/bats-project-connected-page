@@ -285,11 +285,11 @@ export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promis
 
 export const fetchJobTemplateOptions = async (
   filterObj: IJobFilterParams,
-  ignoreIds: string[]
+  ignoreIds: string
 ): Promise<ISelectItem[]> => {
   try {
     const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`,
-      { params: { ...filterObj, ignorePjtIds: ignoreIds.join(',') }
+      { params: { ...filterObj, ignorePjtIds: ignoreIds }
     })
     return res.data.data.results
       .map((item: IJobTemplate) => ({ value: item.id, label: item.name }))

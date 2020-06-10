@@ -25,6 +25,11 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
 
   const { constraintTypes = [], dependencyTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
 
+  const ignoreIdsString = React.useMemo(
+    () => ignoreJobTemplateIds.filter(item => !!item).join(','),
+    [ignoreJobTemplateIds]
+  )
+
   const constraintTypeOptions = React.useMemo(
     () => constraintTypes.map((item: IBaseModel) => ({ value: item.id, label: item.name })),
     [constraintTypes]
@@ -48,13 +53,12 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
 
   const handleGetDependentJobs = React.useCallback(
     (searchTerm: string) => {
-      console.log('ignoreJobTemplateIds: ', ignoreJobTemplateIds);
       return fetchJobTemplateOptions(
         { searchText: searchTerm, pageNumber: 1, pageSize: 20, projectId },
-        ignoreJobTemplateIds.filter(item => !!item)
+        ignoreIdsString
       )
     },
-    [projectId, ignoreJobTemplateIds]
+    [projectId, ignoreIdsString]
   )
 
   const onChangeConstraint = React.useCallback(
@@ -112,6 +116,7 @@ const JobTemplateConstraint: React.FC<IJobTemplateConstraintProps> = ({
           /> */}
           <AsyncSearchSelect
             name="dependentJob"
+            key={ignoreIdsString}
             fetchItems={handleGetDependentJobs}
             debounceTime={300}
             onSelectedItemChange={onChangeConstraint('dependentJobId')}

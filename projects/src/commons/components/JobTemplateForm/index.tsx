@@ -26,6 +26,7 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
   projectId,
 }) => {
   const [jobConstraints, setJobConstraints] = React.useState<IJobConstraint[]>(jobTemplate?.jobConstraints || [])
+
   const handleSubmit = React.useCallback(
     async (form: SkedFormChildren<IJobTemplate>) => {
       let hasError = false
@@ -37,7 +38,6 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
             (jc, jcIndex) =>
               (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index && !jc.action && !item.action
           )
-          console.log('duplicatedJobId: ', duplicatedJobId)
           if (!item.constraintType || !item.dependencyType || !jobId) {
             hasError = true
             return {

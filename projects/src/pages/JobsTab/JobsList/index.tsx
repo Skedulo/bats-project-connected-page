@@ -110,6 +110,9 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
   ]
 }
 
+const ALLOWED_DEALLOCATE_STATUS = ['Dispatched', 'Pending Dispatch']
+const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
+
 const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   const appContext = React.useContext(AppContext)
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
@@ -219,7 +222,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [])
 
   const onDispatchResource = useCallback(async () => {
-    const jobIds = selectedRows.filter(job => job.status === 'Pending Dispatch').map(job => job.id).join(',')
+    const jobIds = selectedRows.filter(job => ALLOWED_DISPATCH_STATUS.includes(job.status)).map(job => job.id).join(',')
     const success = await dispatchMutipleJobs(jobIds)
     if (success) {
       getJobsList({ ...filterParams, projectId })
@@ -230,7 +233,9 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [selectedRows, filterParams, projectId])
 
   const onDeallocate = useCallback(async () => {
-    const jobIds = selectedRows.map(job => job.id).join(',')
+    const jobIds = selectedRows
+      .filter(job => ALLOWED_DEALLOCATE_STATUS.includes(job.status))
+      .map(job => job.id).join(',')
     const success = await deallocateMutipleJobs(jobIds)
     if (success) {
       getJobsList({ ...filterParams, projectId })
@@ -267,17 +272,18 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [filterParams, projectId])
 
   useEffect(() => {
-    let shouldDeallocation = !!selectedRows.find((job: IJobDetail) => job.allocations?.length > 0)
+    let shouldDeallocation = true
     let shouldDispatch = true
-    selectedRows.forEach((job: IJobDetail) => {
-      if (!['Queued', 'Pending Allocation', 'Pending Dispatch', 'Dispatched'].includes(job.status)) {
-        shouldDeallocation = false
-        shouldDispatch = false
-      }
-      // if (job.status !== 'Pending Dispatch') {
-      //   shouldDispatch = false
-      // }
-    })
+    if (selectedRows.length === 1) {
+      shouldDeallocation = ALLOWED_DEALLOCATE_STATUS.includes(selectedRows[0].status) &&
+        selectedRows[0].allocations?.length > 0
+      shouldDispatch = ALLOWED_DISPATCH_STATUS.includes(selectedRows[0].status)
+    } else {
+      shouldDeallocation = !!selectedRows.find(
+        (job: IJobDetail) => job.allocations?.length > 0 && ALLOWED_DEALLOCATE_STATUS.includes(job.status)
+      )
+      shouldDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
+    }
 
     setCanDeallocate(shouldDeallocation)
     setCanDispatch(shouldDispatch)
