@@ -43,7 +43,6 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
     if (params?.projectId) {
       getProjectById(params.projectId)
     }
-    onChangeTab(PROJECT_TAB_ROUTES.JOBS);
   }, [params.projectId])
 
   if (!project) {

@@ -130,19 +130,24 @@ export const cancelProject = async (projectId: string): Promise<boolean> => {
   }
 }
 
-export const fetchTemplates = async (searchString: string): Promise<ILookupOption[]> => {
+export const fetchTemplates = async (searchString: string, ignoreIds?: string[]): Promise<ISelectItem[]> => {
   const params = searchString ? { name: searchString } : {}
   const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/projectTemplate', {
     params,
   })
 
   if (response.data?.data?.results?.length) {
-    return response.data.data.results.map((item: IProjectDetail) => ({ UID: item.id, Name: item.projectName }))
+    if (ignoreIds) {
+      return response.data.data.results
+        .filter((item: IProjectDetail) => !ignoreIds.includes(item.id))
+        .map((item: IProjectDetail) => ({ value: item.id, label: item.projectName }))
+    }
+    return response.data.data.results.map((item: IProjectDetail) => ({ value: item.id, label: item.projectName }))
   }
   return []
 }
 
-export const fetchAccounts = async (searchString: string): Promise<ILookupOption[]> => {
+export const fetchAccounts = async (searchString: string): Promise<ISelectItem[]> => {
   const response = await Services.graphQL.fetch<{ accounts: ILookupOption[] }>({
     query: `
       query fetchAccounts($filter:  EQLQueryFilterAccounts){
@@ -161,10 +166,10 @@ export const fetchAccounts = async (searchString: string): Promise<ILookupOption
     },
   })
 
-  return response.accounts
+  return response.accounts.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
 }
 
-export const fetchContacts = async (searchString: string): Promise<ILookupOption[]> => {
+export const fetchContacts = async (searchString: string, accountId?: string): Promise<ISelectItem[]> => {
   const response = await Services.graphQL.fetch<{ contacts: IContactOption[] }>({
     query: `
       query fetchContacts($filter:  EQLQueryFilterContacts){
@@ -179,14 +184,16 @@ export const fetchContacts = async (searchString: string): Promise<ILookupOption
       }
     `,
     variables: {
-      filter: `FullName LIKE '%${searchString}%'`,
+      filter: accountId
+        ? `FullName LIKE '%${searchString}%' AND AccountId == '${accountId}'`
+        : `FullName LIKE '%${searchString}%'`,
     },
   })
 
-  return response.contacts.map((item: IContactOption) => ({ UID: item.UID, Name: item.FullName }))
+  return response.contacts.map((item: IContactOption) => ({ value: item.UID, label: item.FullName }))
 }
 
-export const fetchRegions = async (searchString: string): Promise<ILookupOption[]> => {
+export const fetchRegions = async (searchString: string): Promise<ISelectItem[]> => {
   const response = await Services.graphQL.fetch<{ regions: ILookupOption[] }>({
     query: `
       query fetchRegions($filter:  EQLQueryFilterRegions){
@@ -205,10 +212,10 @@ export const fetchRegions = async (searchString: string): Promise<ILookupOption[
     },
   })
 
-  return response.regions
+  return response.regions.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
 }
 
-export const fetchLocations = async (searchString: string): Promise<ILookupOption[]> => {
+export const fetchLocations = async (searchString: string, regionId?: string): Promise<ISelectItem[]> => {
   const response = await Services.graphQL.fetch<{ locations: ILookupOption[] }>({
     query: `
       query fetchLocations($filter:  EQLQueryFilterLocations){
@@ -223,11 +230,13 @@ export const fetchLocations = async (searchString: string): Promise<ILookupOptio
       }
     `,
     variables: {
-      filter: `Name LIKE '%${searchString}%'`,
+      filter: regionId
+        ? `Name LIKE '%${searchString}%' AND RegionId == '${regionId}'`
+        : `Name LIKE '%${searchString}%'`,
     },
   })
 
-  return response.locations
+  return response.locations.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
 }
 
 /**

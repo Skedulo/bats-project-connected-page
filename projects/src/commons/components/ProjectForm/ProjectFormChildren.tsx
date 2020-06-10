@@ -1,9 +1,13 @@
 import * as React from 'react'
-import { isDate, isAfter, isSameDay, isEqual } from 'date-fns'
-import { SkedFormChildren, Button, FormElementWrapper, Datepicker, Icon } from '@skedulo/sked-ui'
-import LookupInput from '../../../commons/components/LookupInput'
+import classnames from 'classnames'
+import {
+  SkedFormChildren,
+  Button,
+  FormElementWrapper,
+  AsyncSearchSelect,
+  ISelectItem,
+} from '@skedulo/sked-ui'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
-import TimePicker from '../../../commons/components/TimePicker'
 import {
   fetchAccounts,
   fetchContacts,
@@ -11,11 +15,10 @@ import {
   fetchLocations,
   fetchTemplates,
 } from '../../../Services/DataServices'
-import { IProjectDetail, ILookupOption, ITimePickerOption } from '../../../commons/types'
-import { DATE_FORMAT } from '../../constants'
+import { IProjectDetail } from '../../../commons/types'
 import { AppContext } from '../../../App'
 
-interface JobTemplateFormChildrenProps {
+interface IProjectFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
   project?: IProjectDetail
@@ -23,7 +26,7 @@ interface JobTemplateFormChildrenProps {
   setTimeError: React.Dispatch<string>
 }
 
-const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
+const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
   formParams,
   onCancel,
   project,
@@ -36,20 +39,6 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
   const shouldReadonly = isUpdate && project?.canEdit === false ? true : isFormReadonly
 
-  const startDate = React.useMemo(() => {
-    if (!fields.startDate || isDate(fields.startDate)) {
-      return fields.startDate
-    }
-    return new Date(fields.startDate)
-  }, [fields.startDate])
-
-  const endDate = React.useMemo(() => {
-    if (!fields.endDate || isDate(fields.endDate)) {
-      return fields.endDate
-    }
-    return new Date(fields.endDate)
-  }, [fields.endDate])
-
   const handleCancel = React.useCallback(() => {
     if (typeof onCancel === 'function') {
       onCancel()
@@ -57,59 +46,37 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
     resetFieldsToInitialValues()
   }, [onCancel])
 
+  const handleFetchTemplate = React.useCallback((searchTerm: string) => {
+    return fetchTemplates(searchTerm, project ? [project.id] : undefined)
+  }, [project])
+
+  const handleFetchContacts = React.useCallback((searchTerm: string) => {
+    return fetchContacts(searchTerm, fields.accountId)
+  }, [fields.accountId])
+
+  const handleFetchLocations = React.useCallback((searchTerm: string) => {
+    return fetchLocations(searchTerm, fields.regionId)
+  }, [fields.regionId])
+
   const onSelectLookupField = React.useCallback(
-    (fieldName: string) => (selectedOption: ILookupOption) => {
-      customFieldUpdate(fieldName)(selectedOption.UID)
+    (fieldName: string) => (selectedOption: ISelectItem) => {
+      if (selectedOption) {
+        if (fieldName === 'accountId') {
+          // setTempAccountId(selectedOption.value)
+        }
+        customFieldUpdate(fieldName)(selectedOption.value)
+      }
     },
-    []
+    [customFieldUpdate]
   )
-
-  // const onSelectDate = React.useCallback(
-  //   (fieldName: string) => (value: Date) => {
-  //     // if (fieldName === 'endDate' && (isAfter(value, startDate))) {
-  //     if (fieldName === 'endDate' && (isSameDay(value, startDate) || isAfter(value, startDate))) {
-  //       customFieldUpdate(fieldName)(value)
-  //       if (!value) {
-  //         customFieldUpdate('endDate')(value)
-  //       }
-  //     }
-  //     if (fieldName === 'startDate') {
-  //       customFieldUpdate(fieldName)(value)
-  //       if (!value) {
-  //         customFieldUpdate('startTime')(value)
-  //       }
-  //     }
-  //   },
-  //   [startDate, endDate]
-  // )
-
-  // const onSelectTime = React.useCallback(
-  //   (fieldName: string) => (timeOption: ITimePickerOption) => {
-  //     if (fieldName === 'endTime') {
-  //       customFieldUpdate(fieldName)(timeOption.stringValue)
-  //     }
-  //     if (fieldName === 'startTime') {
-  //       customFieldUpdate(fieldName)(timeOption.stringValue)
-  //     }
-  //   },
-  //   [startDate, endDate]
-  // )
-
-  React.useEffect(() => {
-    if (
-      (isEqual(startDate, endDate) && fields.startTime && fields.endTime && fields.endTime <= fields.startTime) ||
-      (isEqual(startDate, endDate) && !fields.startTime && fields.endTime) ||
-      (isEqual(startDate, endDate) && fields.startTime && !fields.endTime)
-    ) {
-      setTimeError('Start must be before End.')
-    } else if (!!timeError) {
-      setTimeError('')
-    }
-  }, [startDate, endDate, fields.startTime, fields.endTime, timeError])
 
   return (
     <>
-      <div className="vertical-panel cx-p-4">
+      <div
+        className={
+          classnames('vertical-panel cx-p-4', { 'custom-input-readonly': isUpdate && project?.canEdit === false })
+        }
+      >
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Information</h1>}
         <div className="cx-mb-4 click-to-edit-custom">
           <span className="span-label">Template</span>
@@ -119,12 +86,17 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
             readOnlyValue={project?.template?.name || ''}
             isReadOnly={shouldReadonly}
           >
-            <LookupInput
-              className="form-element__outline"
-              onSelect={onSelectLookupField('templateId')}
-              onSearchKeyword={fetchTemplates}
-              placeholderText="Search template..."
-              defaultSelected={project?.template ? { UID: project.template.id, Name: project.template.name } : null}
+            <AsyncSearchSelect
+              name="templateId"
+              fetchItems={handleFetchTemplate}
+              debounceTime={300}
+              onSelectedItemChange={onSelectLookupField('templateId')}
+              initialSelectedItem={
+                project?.template ? { value: project.template.id, label: project.template.name } : undefined
+              }
+              useCache={true}
+              placeholder="Search template..."
+              icon="chevronDown"
             />
           </FormElementWrapper>
         </div>
@@ -177,9 +149,7 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               <span className="span-label">End date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.endDate ? `${project?.endDate}` : 'No end date'}</span>
-                <span className="cx-ml-1">
-                  {project?.endDate && project?.endTime ? `- ${project?.endTime}` : ''}
-                </span>
+                <span className="cx-ml-1">{project?.endDate && project?.endTime ? `- ${project?.endTime}` : ''}</span>
               </div>
             </div>
           </>
@@ -194,12 +164,17 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               readOnlyValue={project?.account?.name || ''}
               isReadOnly={shouldReadonly}
             >
-              <LookupInput
-                className="form-element__outline"
-                onSelect={onSelectLookupField('accountId')}
-                onSearchKeyword={fetchAccounts}
-                placeholderText="Search accounts..."
-                defaultSelected={project?.account ? { UID: project.account.id, Name: project.account.name } : null}
+              <AsyncSearchSelect
+                name="accountId"
+                fetchItems={fetchAccounts}
+                debounceTime={300}
+                onSelectedItemChange={onSelectLookupField('accountId')}
+                initialSelectedItem={
+                  project?.account ? { value: project.account.id, label: project.account.name } : undefined
+                }
+                useCache={true}
+                placeholder="Search accounts..."
+                icon="chevronDown"
               />
             </FormElementWrapper>
           </div>
@@ -226,12 +201,18 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               readOnlyValue={project?.contact?.name || ''}
               isReadOnly={shouldReadonly}
             >
-              <LookupInput
-                className="form-element__outline"
-                onSelect={onSelectLookupField('contactId')}
-                onSearchKeyword={fetchContacts}
-                placeholderText="Search contacts..."
-                defaultSelected={project?.contact ? { UID: project.contact.id, Name: project.contact.name } : null}
+              <AsyncSearchSelect
+                name="contactId"
+                fetchItems={handleFetchContacts}
+                debounceTime={300}
+                key={fields.accountId}
+                onSelectedItemChange={onSelectLookupField('contactId')}
+                initialSelectedItem={
+                  project?.contact ? { value: project.contact.id, label: project.contact.name } : undefined
+                }
+                useCache={false}
+                placeholder="Search contacts..."
+                icon="chevronDown"
               />
             </FormElementWrapper>
           </div>
@@ -258,12 +239,18 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               readOnlyValue={project?.region?.name || ''}
               isReadOnly={shouldReadonly}
             >
-              <LookupInput
-                className="form-element__outline"
-                onSelect={onSelectLookupField('regionId')}
-                onSearchKeyword={fetchRegions}
-                placeholderText="Search regions..."
-                defaultSelected={project?.region ? { UID: project.region.id, Name: project.region.name } : null}
+              <AsyncSearchSelect
+                name="regionId"
+                fetchItems={fetchRegions}
+                debounceTime={300}
+                onSelectedItemChange={onSelectLookupField('regionId')}
+                initialSelectedItem={
+                  project?.region ? { value: project.region.id, label: project.region.name } : undefined
+                }
+                disabled={false}
+                useCache={true}
+                placeholder="Search regions..."
+                icon="chevronDown"
               />
             </FormElementWrapper>
           </div>
@@ -290,12 +277,19 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
               readOnlyValue={project?.location?.name || ''}
               isReadOnly={shouldReadonly}
             >
-              <LookupInput
-                className="form-element__outline"
-                onSelect={onSelectLookupField('locationId')}
-                onSearchKeyword={fetchLocations}
-                placeholderText="Search locations..."
-                defaultSelected={project?.location ? { UID: project.location.id, Name: project.location.name } : null}
+              <AsyncSearchSelect
+                name="locationId"
+                fetchItems={handleFetchLocations}
+                key={fields.regionId}
+                debounceTime={300}
+                onSelectedItemChange={onSelectLookupField('locationId')}
+                initialSelectedItem={
+                  project?.location ? { value: project.location.id, label: project.location.name } : undefined
+                }
+                disabled={false}
+                useCache={false}
+                placeholder="Search locations..."
+                icon="chevronDown"
               />
             </FormElementWrapper>
           </div>
@@ -333,4 +327,5 @@ const JobTemplateFormChildren: React.FC<JobTemplateFormChildrenProps> = ({
   )
 }
 
-export default React.memo(JobTemplateFormChildren)
+// export default React.memo(ProjectFormChildren)
+export default ProjectFormChildren

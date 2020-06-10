@@ -30,7 +30,7 @@ const useJobFilter = () => {
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
         const res = await fetchAccounts(searchTerm)
-        return res.map(item => ({ id: item.UID, name: item.Name }))
+        return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
     {
@@ -41,7 +41,7 @@ const useJobFilter = () => {
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
         const res = await fetchContacts(searchTerm)
-        return res.map(item => ({ id: item.UID, name: item.Name }))
+        return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
     {
@@ -52,7 +52,7 @@ const useJobFilter = () => {
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
         const res = await fetchRegions(searchTerm)
-        return res.map(item => ({ id: item.UID, name: item.Name }))
+        return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
     {
@@ -63,7 +63,7 @@ const useJobFilter = () => {
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
         const res = await fetchLocations(searchTerm)
-        return res.map(item => ({ id: item.UID, name: item.Name }))
+        return res.map(item => ({ id: item.value, name: item.label }))
       }
     }
   ]), [jobTypes])
