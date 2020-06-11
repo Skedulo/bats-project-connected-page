@@ -17,7 +17,7 @@ interface IWrappedFormInputProps {
   maxLength?: number
 }
 
-const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
+const WrappedFormInput: React.FC<IWrappedFormInputProps> = (props) => {
   const {
     label,
     name,
@@ -35,7 +35,7 @@ const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
 
   const labelClasses = React.useMemo(
     () =>
-      classNames('label', className, {
+      classNames('cx-text-black cx-leading-relaxed cx-mb-5', className, {
         required: isRequired,
         valid: !error,
       }),
@@ -52,7 +52,7 @@ const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
 
   return (
     <div className={labelClasses}>
-      <span className="span-label">{label}</span>
+      <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">{label}</span>
       <FormElementWrapper
         className={wrapperClasses}
         name={name}

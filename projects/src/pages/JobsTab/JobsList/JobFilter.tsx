@@ -95,7 +95,7 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
       return <></>
     }
     return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
         <span>
           End date:
           <span className="cx-font-semibold cx-ml-2">{filterParams.endDate}</span>
@@ -107,7 +107,7 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
   // the start date filter text
   const filterStartDateTrigger = useCallback(() => {
     return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
         {!filterParams.startDate ? (
           <span>
             Date:
@@ -124,53 +124,51 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
   }, [filterParams.startDate])
 
   return (
-    <div className="top-bar cx-border-b-0">
-      <div className="top-bar-left">
-        <ul className="menu">
-          <li onClick={resetFilter}>
-            <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-              All Jobs
-            </div>
-          </li>
-          <li>
-            <div className="cx-flex cx-items-center">
-              <PopOut
-                placement="bottom"
-                closeOnOuterClick={true}
-                closeOnScroll={true}
-                trigger={filterStartDateTrigger}
-              >
-                {togglePopout => (
-                  <Datepicker
-                    selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
-                    onChange={onSelectDate('startDate', togglePopout)}
-                    dateFormat={DATE_FORMAT}
-                    inline={true}
-                  />
-                )}
-              </PopOut>
-              <PopOut
-                placement="bottom"
-                closeOnOuterClick={true}
-                closeOnScroll={true}
-                trigger={filterEndDateTrigger}
-              >
-                {togglePopout => (
-                  <Datepicker
-                    selected={filterDates.endDate}
-                    onChange={onSelectDate('endDate', togglePopout)}
-                    dateFormat={DATE_FORMAT}
-                    inline={true}
-                  />
-                )}
-              </PopOut>
-            </div>
-          </li>
-          <li>
-            <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
-          </li>
-        </ul>
-      </div>
+    <div className="cx-relative cx-p-2">
+      <ul className="cx-flex cx-items-center">
+        <li onClick={resetFilter}>
+          <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
+            All Jobs
+          </div>
+        </li>
+        <li>
+          <div className="cx-flex cx-items-center">
+            <PopOut
+              placement="bottom"
+              closeOnOuterClick={true}
+              closeOnScroll={true}
+              trigger={filterStartDateTrigger}
+            >
+              {togglePopout => (
+                <Datepicker
+                  selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
+                  onChange={onSelectDate('startDate', togglePopout)}
+                  dateFormat={DATE_FORMAT}
+                  inline={true}
+                />
+              )}
+            </PopOut>
+            <PopOut
+              placement="bottom"
+              closeOnOuterClick={true}
+              closeOnScroll={true}
+              trigger={filterEndDateTrigger}
+            >
+              {togglePopout => (
+                <Datepicker
+                  selected={filterDates.endDate}
+                  onChange={onSelectDate('endDate', togglePopout)}
+                  dateFormat={DATE_FORMAT}
+                  inline={true}
+                />
+              )}
+            </PopOut>
+          </div>
+        </li>
+        <li>
+          <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
+        </li>
+      </ul>
     </div>
   )
 }

@@ -207,116 +207,114 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
   }, [])
 
   return (
-    <div className="top-bar">
-      <div className="top-bar-left">
-        <ul className="menu">
-          <li>
+    <div className="cx-relative cx-p-2 cx-border-b cx-border-neutral-300">
+      <ul className="cx-flex cx-items-center">
+        <li>
+          <PopOut
+            placement="bottom"
+            closeOnOuterClick={true}
+            closeOnScroll={true}
+            closeOnFirstClick={true}
+            trigger={myFilterSetsTrigger}
+          >
+            {() => (
+              <Menu>
+                <MenuItem onClick={resetFilter}>
+                  {ALL_PROJECTS}
+                </MenuItem>
+                {savedFilterSets.map(item => (
+                  <MenuItem key={item.id} className="cx-p-0">
+                    <div className="cx-flex cx-justify-between cx-items-center cx-px-3 cx-py-2">
+                      {/* tslint:disable-next-line: jsx-no-lambda */}
+                      <span className="cx-w-full" onClick={() => onSelectSavedFilter(item)}>
+                        {item.name}
+                      </span>
+                      <Icon
+                        name="trash"
+                        size={24}
+                        className="cx-text-neutral-500 cx-pl-2"
+                        /* tslint:disable-next-line: jsx-no-lambda */
+                        onClick={() => onDeleteSavedFilter(item.id)}
+                      />
+                    </div>
+                  </MenuItem>
+                ))}
+              </Menu>
+            )}
+          </PopOut>
+        </li>
+        <li>
+          <PopOut placement="bottom" closeOnOuterClick={true} closeOnScroll={true} trigger={saveFilterTrigger}>
+            {togglePopout => (
+              <div className="cx-p-4 cx-bg-white">
+                <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Filter Set Name</span>
+                <input type="text" value={filterSetName} onChange={onFilterSetNameChange} />
+                <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
+                  <Button
+                    buttonType="secondary"
+                    // tslint:disable-next-line: jsx-no-lambda
+                    onClick={() => {
+                      togglePopout()
+                      setFilterSetName('')
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    buttonType="primary"
+                    className="cx-ml-2"
+                    disabled={!filterSetName}
+                    // tslint:disable-next-line: jsx-no-lambda
+                    onClick={() => {
+                      togglePopout()
+                      onSaveFilterSet()
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            )}
+          </PopOut>
+        </li>
+        <li>
+          <div className="cx-flex cx-items-center">
             <PopOut
               placement="bottom"
               closeOnOuterClick={true}
               closeOnScroll={true}
-              closeOnFirstClick={true}
-              trigger={myFilterSetsTrigger}
+              trigger={filterStartDateTrigger}
             >
-              {() => (
-                <Menu>
-                  <MenuItem onClick={resetFilter}>
-                    {ALL_PROJECTS}
-                  </MenuItem>
-                  {savedFilterSets.map(item => (
-                    <MenuItem key={item.id} className="cx-p-0">
-                      <div className="cx-flex cx-justify-between cx-items-center cx-px-3 cx-py-2">
-                        {/* tslint:disable-next-line: jsx-no-lambda */}
-                        <span className="cx-w-full" onClick={() => onSelectSavedFilter(item)}>
-                          {item.name}
-                        </span>
-                        <Icon
-                          name="trash"
-                          size={24}
-                          className="cx-text-neutral-500 cx-pl-2"
-                          /* tslint:disable-next-line: jsx-no-lambda */
-                          onClick={() => onDeleteSavedFilter(item.id)}
-                        />
-                      </div>
-                    </MenuItem>
-                  ))}
-                </Menu>
-              )}
-            </PopOut>
-          </li>
-          <li>
-            <PopOut placement="bottom" closeOnOuterClick={true} closeOnScroll={true} trigger={saveFilterTrigger}>
               {togglePopout => (
-                <div className="cx-p-4 cx-bg-white">
-                  <span className="span-label">Filter Set Name</span>
-                  <input type="text" value={filterSetName} onChange={onFilterSetNameChange} />
-                  <div className="cx-flex cx-justify-end cx-pt-4 border-top cx-bg-white cx-bottom-0">
-                    <Button
-                      buttonType="secondary"
-                      // tslint:disable-next-line: jsx-no-lambda
-                      onClick={() => {
-                        togglePopout()
-                        setFilterSetName('')
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      buttonType="primary"
-                      className="cx-ml-2"
-                      disabled={!filterSetName}
-                      // tslint:disable-next-line: jsx-no-lambda
-                      onClick={() => {
-                        togglePopout()
-                        onSaveFilterSet()
-                      }}
-                    >
-                      Save
-                    </Button>
-                  </div>
-                </div>
+                <Datepicker
+                  selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
+                  onChange={onSelectDate('startDate', togglePopout)}
+                  dateFormat={DATE_FORMAT}
+                  inline={true}
+                />
               )}
             </PopOut>
-          </li>
-          <li>
-            <div className="cx-flex cx-items-center">
-              <PopOut
-                placement="bottom"
-                closeOnOuterClick={true}
-                closeOnScroll={true}
-                trigger={filterStartDateTrigger}
-              >
-                {togglePopout => (
-                  <Datepicker
-                    selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
-                    onChange={onSelectDate('startDate', togglePopout)}
-                    dateFormat={DATE_FORMAT}
-                    inline={true}
-                  />
-                )}
-              </PopOut>
-              <PopOut
-                placement="bottom"
-                closeOnOuterClick={true}
-                closeOnScroll={true}
-                trigger={filterEndDateTrigger}
-              >
-                {togglePopout => (
-                  <Datepicker
-                    selected={filterDates.endDate}
-                    onChange={onSelectDate('endDate', togglePopout)}
-                    dateFormat={DATE_FORMAT}
-                    inline={true}
-                  />
-                )}
-              </PopOut>
-            </div>
-          </li>
-          <li>
-            <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
-          </li>
-        </ul>
-      </div>
+            <PopOut
+              placement="bottom"
+              closeOnOuterClick={true}
+              closeOnScroll={true}
+              trigger={filterEndDateTrigger}
+            >
+              {togglePopout => (
+                <Datepicker
+                  selected={filterDates.endDate}
+                  onChange={onSelectDate('endDate', togglePopout)}
+                  dateFormat={DATE_FORMAT}
+                  inline={true}
+                />
+              )}
+            </PopOut>
+          </div>
+        </li>
+        <li>
+          <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
+        </li>
+      </ul>
     </div>
   )
 }

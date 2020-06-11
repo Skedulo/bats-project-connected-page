@@ -252,10 +252,10 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
       <div className="cx-sticky cx-px-4 cx-pt-4 cx-top-0 cx-bg-white cx-z-10">
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <h1 className="cx-text-xl cx-font-semibold">Projects</h1>
-          <ul className="menu">
-            <li className="padding-right">
+          <ul className="cx-flex">
+            <li className="cx-pr-4">
               <SearchBox
-                className="searchbox searchbox--w240 cx-mb-0 cx-border"
+                className="cx-px-4 cx-py-0 cx-mb-0 cx-border"
                 onChange={onSearchTextChange}
                 placeholder="projects"
                 clearable={!!filterParams.searchText}

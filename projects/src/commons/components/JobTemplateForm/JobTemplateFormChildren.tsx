@@ -113,7 +113,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
     <>
       <div className="vertical-panel cx-p-4">
         <div className="cx-mb-4">
-          <span className="span-label">Type</span>
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Type</span>
           <FormElementWrapper
             name="jobType"
             validation={{ isValid: submitted ? !errors.jobType : true, error: submitted ? errors.jobType : '' }}
@@ -140,7 +140,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
           isRequired={false}
         />
         <div className="cx-mb-4">
-          <span className="span-label">Job Dependencies</span>
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Job Dependencies</span>
           {displayJobConstraints.map((jobConstraint: IJobConstraint) => (
             <JobTemplateConstraint
               key={jobConstraint.id || jobConstraint.tempId}

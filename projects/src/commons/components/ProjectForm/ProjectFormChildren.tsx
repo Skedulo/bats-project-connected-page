@@ -134,7 +134,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
       >
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Information</h1>}
         <div className="cx-mb-4 click-to-edit-custom">
-          <span className="span-label">Template</span>
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Template</span>
           <FormElementWrapper
             name="templateId"
             validation={{ isValid: submitted ? !errors.templateId : true, error: submitted ? errors.templateId : '' }}
@@ -192,7 +192,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         {isUpdate && (
           <>
             <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
-              <span className="span-label">Start date</span>
+              <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Start date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.startDate ? `${project?.startDate}` : 'No start date'}</span>
                 <span className="cx-ml-1">
@@ -201,7 +201,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               </div>
             </div>
             <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
-              <span className="span-label">End date</span>
+              <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">End date</span>
               <div className="cx-flex cx-items-center hover:cx-bg-neutral-300 cx-pl-2 cx-pr-4 cx-text-neutral-600">
                 <span>{project?.endDate ? `${project?.endDate}` : 'No end date'}</span>
                 <span className="cx-ml-1">{project?.endDate && project?.endTime ? `- ${project?.endTime}` : ''}</span>
@@ -212,7 +212,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Account & Location</h1>}
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
-            <span className="span-label">Account</span>
+            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Account</span>
             <FormElementWrapper
               name="accountId"
               validation={{ isValid: submitted ? !errors.account : true, error: errors.account }}
@@ -250,7 +250,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         </div>
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
-            <span className="span-label">Contact</span>
+            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Contact</span>
             <FormElementWrapper
               name="contactId"
               validation={{ isValid: submitted ? !errors.contactId : true, error: errors.contactId }}
@@ -286,7 +286,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         </div>
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
-            <span className="span-label">Region</span>
+            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Region</span>
             <FormElementWrapper
               name="regionId"
               validation={{ isValid: submitted ? !errors.region : true, error: errors.region }}
@@ -321,7 +321,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         </div>
         <div className="cx-flex">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
-            <span className="span-label">Location</span>
+            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Location</span>
             <FormElementWrapper
               name="locationId"
               validation={{ isValid: submitted ? !errors.locationId : true, error: errors.locationId }}

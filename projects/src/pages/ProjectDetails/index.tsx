@@ -50,23 +50,23 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   }
 
   return (
-    <div className="crud-full-page">
-      <div className="flex flex--vertical">
-        <div className="section-header crud-full-page__header cx-pb-0">
+    <div className="cx-absolute cx-inset-8 cx-shadow">
+      <div className="cx-flex cx-flex-col cx-h-full">
+        <div className="cx-p-8 cx-pb-0">
           <Link to="/" className="cx-flex">
-            <Icon name="chevronLeft" className="breadcrumb__icon" />
-            <span className="breadcrumb__link capitalize">Projects</span>
+            <Icon name="chevronLeft" className="cx-text-primary" />
+            <span className="cx-text-primary cx-capitalize">Projects</span>
           </Link>
           <div>
             <div className="cx-flex cx-justify-between cx-mb-4">
-              <h1 className="cx-text-xl cx-font-semibold" data-sk-name="crud-details-page-title">
+              <h1 className="cx-text-xl cx-font-semibold">
                 {project.projectName}
               </h1>
               {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
                 <Icon name="trash" className="cx-text-neutral-500" />
               </button> */}
             </div>
-            <p className="cx-text-sm cx-text-neutral-700 cx-mb-4" data-sk-name="crud-details-page-title">
+            <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
               {project.projectDescription}
             </p>
           </div>

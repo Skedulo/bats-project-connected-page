@@ -51,19 +51,17 @@ const JobTemplateFilter: React.FC<IJobTemplateFilterProps> = ({ onResetFilter, o
   }, [filterBar])
 
   return (
-    <div className="top-bar cx-border-b-0">
-      <div className="top-bar-left">
-        <ul className="menu">
-          <li onClick={resetFilter}>
-            <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
-              All Job Templates
-            </div>
-          </li>
-          <li>
-            <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
-          </li>
-        </ul>
-      </div>
+    <div className="cx-relative cx-p-2">
+      <ul className="cx-flex cx-items-center">
+        <li onClick={resetFilter}>
+          <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
+            All Job Templates
+          </div>
+        </li>
+        <li>
+          <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
+        </li>
+      </ul>
     </div>
   )
 }
