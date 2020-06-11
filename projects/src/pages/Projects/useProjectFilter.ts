@@ -2,7 +2,7 @@ import * as React from 'react'
 import { AppContext } from '../../App'
 import { cloneDeep } from 'lodash'
 import { IFilter } from '@skedulo/sked-ui/dist/components/filter-bar/interfaces'
-import { fetchRegions, fetchAccounts, fetchContacts, fetchLocations } from '../../Services/DataServices'
+import { fetchGenericOptions } from '../../Services/DataServices'
 import { getLocalFilterSets, setLocalFilterSets } from '../../commons/utils'
 import { ISavedFilterSet } from '../../commons/types'
 
@@ -25,7 +25,7 @@ export const useProjectFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
-        const res = await fetchAccounts(searchTerm)
+        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'Account' })
         return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
@@ -36,7 +36,7 @@ export const useProjectFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
-        const res = await fetchContacts(searchTerm)
+        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'Contact' })
         return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
@@ -47,7 +47,7 @@ export const useProjectFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
-        const res = await fetchRegions(searchTerm)
+        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Region__c' })
         return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
@@ -58,7 +58,7 @@ export const useProjectFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
-        const res = await fetchLocations(searchTerm)
+        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Location__c' })
         return res.map(item => ({ id: item.value, name: item.label }))
       }
     }

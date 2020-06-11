@@ -1,43 +1,32 @@
 import * as React from 'react'
 import classnames from 'classnames'
-import {
-  SkedFormChildren,
-  Button,
-  FormElementWrapper,
-  AsyncSearchSelect,
-  ISelectItem,
-} from '@skedulo/sked-ui'
+import { SkedFormChildren, Button, FormElementWrapper, AsyncSearchSelect } from '@skedulo/sked-ui'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
 import {
-  fetchAccounts,
-  fetchContacts,
-  fetchRegions,
-  fetchLocations,
   fetchTemplates,
+  fetchGenericOptions,
 } from '../../../Services/DataServices'
-import { IProjectDetail } from '../../../commons/types'
+import { IProjectDetail, IGenericSelectItem } from '../../../commons/types'
 import { AppContext } from '../../../App'
 
 interface IProjectFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
   project?: IProjectDetail
-  timeError: string
-  setTimeError: React.Dispatch<string>
 }
 
 const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
   formParams,
   onCancel,
-  project,
-  timeError,
-  setTimeError,
+  project
 }) => {
   const appContext = React.useContext(AppContext)
   const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
   const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
   const shouldReadonly = isUpdate && project?.canEdit === false ? true : isFormReadonly
+
+  const [selectedOption, setSelectedOption] = React.useState<IGenericSelectItem | null>(null)
 
   const handleCancel = React.useCallback(() => {
     if (typeof onCancel === 'function') {
@@ -46,36 +35,102 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
     resetFieldsToInitialValues()
   }, [onCancel])
 
-  const handleFetchTemplate = React.useCallback((searchTerm: string) => {
-    return fetchTemplates(searchTerm, project ? [project.id] : undefined)
-  }, [project])
+  const handleFetchTemplate = React.useCallback(
+    (searchTerm: string) => {
+      return fetchTemplates(searchTerm, project ? [project.id] : undefined)
+    },
+    [project]
+  )
 
-  const handleFetchContacts = React.useCallback((searchTerm: string) => {
-    return fetchContacts(searchTerm, fields.accountId)
-  }, [fields.accountId])
+  const handleFetchAccounts = React.useCallback(
+    (searchTerm: string) => {
+      return fetchGenericOptions({
+        name: searchTerm,
+        sObjectType: 'Account',
+        regionIds: fields.region.id
+      })
+    },
+    [fields.region]
+  )
 
-  const handleFetchLocations = React.useCallback((searchTerm: string) => {
-    return fetchLocations(searchTerm, fields.regionId)
-  }, [fields.regionId])
+  const handleFetchContacts = React.useCallback(
+    (searchTerm: string) => {
+      return fetchGenericOptions({
+        name: searchTerm,
+        sObjectType: 'Contact',
+        accountIds: fields.account.id,
+        regionIds: fields.region.id,
+      })
+    },
+    [fields.account, fields.region]
+  )
+
+  const handleFetchRegions = React.useCallback(
+    (searchTerm: string) => {
+      return fetchGenericOptions({
+        name: searchTerm,
+        sObjectType: 'sked__Region__c',
+        accountIds: fields.account.id
+      })
+    },
+    [fields.account]
+  )
+
+  const handleFetchLocations = React.useCallback(
+    (searchTerm: string) => {
+      return fetchGenericOptions({
+        name: searchTerm,
+        sObjectType: 'sked__Location__c',
+        accountIds: fields.account.id,
+        regionIds: fields.region.id,
+      })
+    },
+    [fields.region, fields.account]
+  )
 
   const onSelectLookupField = React.useCallback(
-    (fieldName: string) => (selectedOption: ISelectItem) => {
-      if (selectedOption) {
-        if (fieldName === 'accountId') {
-          // setTempAccountId(selectedOption.value)
-        }
-        customFieldUpdate(fieldName)(selectedOption.value)
+    (fieldName: string) => (selectedItem: IGenericSelectItem) => {
+      if (selectedItem) {
+        customFieldUpdate(fieldName)({ ...selectedItem, id: selectedItem.value, name: selectedItem.label })
+      } else {
+        customFieldUpdate(fieldName)(null)
       }
+      setSelectedOption({ ...selectedItem, fieldName })
     },
-    [customFieldUpdate]
+    [customFieldUpdate, fields]
   )
+
+  React.useEffect(() => {
+    if (selectedOption?.account && selectedOption?.account !== fields.account && !fields.account) {
+      customFieldUpdate('account')(selectedOption?.account)
+    }
+    if (selectedOption?.region && selectedOption?.region !== fields.region && !fields.region) {
+      customFieldUpdate('region')(selectedOption?.region)
+    }
+
+    if (selectedOption?.fieldName === 'account' && fields.contact?.id) {
+      customFieldUpdate('contact')(null)
+    }
+    if (selectedOption?.fieldName === 'account' &&
+      fields.location?.account?.id &&
+      fields.location?.account?.id !== selectedOption?.value
+    ) {
+      customFieldUpdate('location')(null)
+    }
+    if (selectedOption?.fieldName === 'region' &&
+      fields.location?.region?.id &&
+      fields.location?.region?.id !== selectedOption?.value
+    ) {
+      customFieldUpdate('location')(null)
+    }
+  }, [selectedOption, fields.account, fields.location, fields.contact, fields.region])
 
   return (
     <>
       <div
-        className={
-          classnames('vertical-panel cx-p-4', { 'custom-input-readonly': isUpdate && project?.canEdit === false })
-        }
+        className={classnames('vertical-panel cx-p-4', {
+          'custom-input-readonly': isUpdate && project?.canEdit === false,
+        })}
       >
         {isUpdate && <h1 className="cx-text-base cx-mb-4 cx-font-medium">Information</h1>}
         <div className="cx-mb-4 click-to-edit-custom">
@@ -160,18 +215,19 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             <span className="span-label">Account</span>
             <FormElementWrapper
               name="accountId"
-              validation={{ isValid: submitted ? !errors.accountId : true, error: errors.accountId }}
+              validation={{ isValid: submitted ? !errors.account : true, error: errors.account }}
               readOnlyValue={project?.account?.name || ''}
               isReadOnly={shouldReadonly}
             >
               <AsyncSearchSelect
                 name="accountId"
-                fetchItems={fetchAccounts}
+                fetchItems={handleFetchAccounts}
                 debounceTime={300}
-                onSelectedItemChange={onSelectLookupField('accountId')}
-                initialSelectedItem={
-                  project?.account ? { value: project.account.id, label: project.account.name } : undefined
-                }
+                selectedItem={fields?.account ? { value: fields.account.id, label: fields.account.name } : undefined}
+                onSelectedItemChange={onSelectLookupField('account')}
+                // initialSelectedItem={
+                //   project?.account ? { value: project.account.id, label: project.account.name } : undefined
+                // }
                 useCache={true}
                 placeholder="Search accounts..."
                 icon="chevronDown"
@@ -205,11 +261,9 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 name="contactId"
                 fetchItems={handleFetchContacts}
                 debounceTime={300}
-                key={fields.accountId}
-                onSelectedItemChange={onSelectLookupField('contactId')}
-                initialSelectedItem={
-                  project?.contact ? { value: project.contact.id, label: project.contact.name } : undefined
-                }
+                key={`${fields.account?.id}${fields.contact?.id}`}
+                onSelectedItemChange={onSelectLookupField('contact')}
+                selectedItem={fields?.contact ? { value: fields.contact.id, label: fields.contact.name } : undefined}
                 useCache={false}
                 placeholder="Search contacts..."
                 icon="chevronDown"
@@ -235,19 +289,16 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             <span className="span-label">Region</span>
             <FormElementWrapper
               name="regionId"
-              validation={{ isValid: submitted ? !errors.regionId : true, error: errors.regionId }}
+              validation={{ isValid: submitted ? !errors.region : true, error: errors.region }}
               readOnlyValue={project?.region?.name || ''}
               isReadOnly={shouldReadonly}
             >
               <AsyncSearchSelect
                 name="regionId"
-                fetchItems={fetchRegions}
+                fetchItems={handleFetchRegions}
                 debounceTime={300}
-                onSelectedItemChange={onSelectLookupField('regionId')}
-                initialSelectedItem={
-                  project?.region ? { value: project.region.id, label: project.region.name } : undefined
-                }
-                disabled={false}
+                onSelectedItemChange={onSelectLookupField('region')}
+                selectedItem={fields?.region ? { value: fields.region.id, label: fields.region.name } : undefined}
                 useCache={true}
                 placeholder="Search regions..."
                 icon="chevronDown"
@@ -280,13 +331,10 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               <AsyncSearchSelect
                 name="locationId"
                 fetchItems={handleFetchLocations}
-                key={fields.regionId}
+                key={`${fields.account?.id}${fields.region?.id}${fields.location?.id}`}
                 debounceTime={300}
-                onSelectedItemChange={onSelectLookupField('locationId')}
-                initialSelectedItem={
-                  project?.location ? { value: project.location.id, label: project.location.name } : undefined
-                }
-                disabled={false}
+                onSelectedItemChange={onSelectLookupField('location')}
+                selectedItem={fields?.location ? { value: fields.location.id, label: fields.location.name } : undefined}
                 useCache={false}
                 placeholder="Search locations..."
                 icon="chevronDown"

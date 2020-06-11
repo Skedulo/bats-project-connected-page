@@ -139,36 +139,31 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
           maxLength={255}
           isRequired={false}
         />
-        {totalJobTemplates > 0 && (
-          <div className="cx-mb-4">
-            <span className="span-label">Job Dependencies</span>
-            {displayJobConstraints.map((jobConstraint: IJobConstraint) => (
-              <JobTemplateConstraint
-                key={jobConstraint.id || jobConstraint.tempId}
-                wrapperClassName="cx-mb-4"
-                jobConstraint={jobConstraint}
-                handleChange={handleChangeConstraint}
-                handleDelete={handleDeleteConstraint}
-                projectId={projectId}
-                ignoreJobTemplateIds={ignoreJobTemplateIds}
-              />
-            ))}
-            {
-              totalJobTemplates > ignoreJobTemplateIds.length && (
-                <div className="cx-text-center">
-                  <Button
-                    className="cx-text-primary"
-                    buttonType="transparent"
-                    onClick={handleAddConstraint}
-                    icon="plus"
-                  >
-                    Add job dependency
-                  </Button>
-                </div>
-              )
-            }
+        <div className="cx-mb-4">
+          <span className="span-label">Job Dependencies</span>
+          {displayJobConstraints.map((jobConstraint: IJobConstraint) => (
+            <JobTemplateConstraint
+              key={jobConstraint.id || jobConstraint.tempId}
+              wrapperClassName="cx-mb-4"
+              jobConstraint={jobConstraint}
+              handleChange={handleChangeConstraint}
+              handleDelete={handleDeleteConstraint}
+              projectId={projectId}
+              ignoreJobTemplateIds={[]}
+            />
+          ))}
+          <div className="cx-text-center">
+            <Button
+              className={`${totalJobTemplates > ignoreJobTemplateIds.length ? 'cx-text-primary' : ''}`}
+              buttonType="transparent"
+              onClick={handleAddConstraint}
+              icon="plus"
+              disabled={!totalJobTemplates || totalJobTemplates <= ignoreJobTemplateIds.length}
+            >
+              Add job dependency
+            </Button>
           </div>
-        )}
+        </div>
       </div>
       <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
         <Button buttonType="secondary" onClick={onCancel}>

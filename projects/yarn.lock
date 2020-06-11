@@ -373,9 +373,9 @@
   integrity sha512-9WKaGVpQH905Aqkk+BczFEeLQxS07rl04afFRPUG9IcSlOwmo5EVVuuNu0d4M9LMYucObvK0LoAe+5HfMW2QhQ==
 
 "@skedulo/sked-ui@^13.6.1":
-  version "13.6.1"
-  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-13.6.1.tgz#a037bd8b97860ade12f1c753abb7866a9524dbcf"
-  integrity sha512-0K952YI+HCQvfYO1itSUjNn1OmJZyV/+UTiB9HFIjgYJ2KSB6XaFpAvJElFwS2i8QMuHcStrd8mrmlUSayW76A==
+  version "13.7.0"
+  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-13.7.0.tgz#a9eea3f7bcb02ab2ef945e689b99dd19ca591694"
+  integrity sha512-0QPn+wVeIvN+Ict4dHNp70KbgSPFps1cnMTft62wC5EPJKwl+/l25F+n0lGxtSTU6nu0EaGJc0LIXwEYd852oQ==
   dependencies:
     "@types/react-table" "^7.0.3"
     date-fns "2.14.0"

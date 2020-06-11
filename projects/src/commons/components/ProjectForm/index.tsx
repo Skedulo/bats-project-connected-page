@@ -13,19 +13,23 @@ const ProjectFormConfig = {
     isRequired: 'Name is required'
   },
   projectDescription: {},
-  accountId: {},
+  // accountId: {},
   applyAccountForAllJob: {},
-  contactId: { },
+  // contactId: { },
   applyContactForAllJob: {},
-  regionId: { isRequired: 'Region is required' },
+  // regionId: { isRequired: 'Region is required' },
   applyRegionForAllJob: {},
-  locationId: {},
+  // locationId: {},
   applyLocationForAllJob: {},
   startDate: {},
   startTime: {},
   endDate: {},
   endTime: {},
   isTemplate: {},
+  account: {},
+  contact: {},
+  region: { isRequired: 'Region is required' },
+  location: {}
 }
 
 interface IProjectFormProps {
@@ -45,6 +49,14 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
         ...project,
         ...form.fields,
         isTemplate: !!form.fields.isTemplate,
+        accountId: form.fields.account?.id,
+        contactId: form.fields.contact?.id,
+        regionId: form.fields.region?.id,
+        locationId: form.fields.location?.id,
+        account: { id: form.fields.account?.id, name: form.fields.account?.name },
+        contact: { id: form.fields.contact?.id, name: form.fields.contact?.name },
+        region: { id: form.fields.region?.id, name: form.fields.region?.name },
+        location: { id: form.fields.location?.id, name: form.fields.location?.name },
         applyAccountForAllJob: !!form.fields.applyAccountForAllJob,
         applyContactForAllJob: !!form.fields.applyContactForAllJob,
         applyRegionForAllJob: !!form.fields.applyRegionForAllJob,
@@ -72,8 +84,6 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
           formParams={formParams}
           onCancel={onCancel}
           project={project}
-          timeError={timeError}
-          setTimeError={setTimeError}
         />
       )}
     </SkedFormValidation>

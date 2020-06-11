@@ -17,6 +17,7 @@ import {
   IJobTypeTemplateValue,
   IResourceRequirement,
   IBaseModel,
+  IGenericOptionParams,
 } from '../commons/types'
 
 import { DEFAULT_FILTER } from '../commons/constants'
@@ -67,7 +68,7 @@ export const fetchListProjects = async (filterObj: IFilterParams): Promise<IList
 }
 
 export const fetchProjectById = async (projectId: string): Promise<IProjectDetail> => {
-  const params = { projectId }
+  const params = { id: projectId }
   const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/project', {
     params,
   })
@@ -147,96 +148,15 @@ export const fetchTemplates = async (searchString: string, ignoreIds?: string[])
   return []
 }
 
-export const fetchAccounts = async (searchString: string): Promise<ISelectItem[]> => {
-  const response = await Services.graphQL.fetch<{ accounts: ILookupOption[] }>({
-    query: `
-      query fetchAccounts($filter:  EQLQueryFilterAccounts){
-        accounts(first: 5, filter: $filter){
-          edges {
-            node {
-              UID
-              Name
-            }
-          }
-        }
-      }
-    `,
-    variables: {
-      filter: `Name LIKE '%${searchString}%'`,
-    },
-  })
-
-  return response.accounts.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
-}
-
-export const fetchContacts = async (searchString: string, accountId?: string): Promise<ISelectItem[]> => {
-  const response = await Services.graphQL.fetch<{ contacts: IContactOption[] }>({
-    query: `
-      query fetchContacts($filter:  EQLQueryFilterContacts){
-        contacts(first: 5, filter: $filter){
-          edges {
-            node {
-              UID
-              FullName
-            }
-          }
-        }
-      }
-    `,
-    variables: {
-      filter: accountId
-        ? `FullName LIKE '%${searchString}%' AND AccountId == '${accountId}'`
-        : `FullName LIKE '%${searchString}%'`,
-    },
-  })
-
-  return response.contacts.map((item: IContactOption) => ({ value: item.UID, label: item.FullName }))
-}
-
-export const fetchRegions = async (searchString: string): Promise<ISelectItem[]> => {
-  const response = await Services.graphQL.fetch<{ regions: ILookupOption[] }>({
-    query: `
-      query fetchRegions($filter:  EQLQueryFilterRegions){
-        regions(first: 5, filter: $filter){
-          edges {
-            node {
-              UID
-              Name
-            }
-          }
-        }
-      }
-    `,
-    variables: {
-      filter: `Name LIKE '%${searchString}%'`,
-    },
-  })
-
-  return response.regions.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
-}
-
-export const fetchLocations = async (searchString: string, regionId?: string): Promise<ISelectItem[]> => {
-  const response = await Services.graphQL.fetch<{ locations: ILookupOption[] }>({
-    query: `
-      query fetchLocations($filter:  EQLQueryFilterLocations){
-        locations(first: 5, filter: $filter){
-          edges {
-            node {
-              UID
-              Name
-            }
-          }
-        }
-      }
-    `,
-    variables: {
-      filter: regionId
-        ? `Name LIKE '%${searchString}%' AND RegionId == '${regionId}'`
-        : `Name LIKE '%${searchString}%'`,
-    },
-  })
-
-  return response.locations.map((item: ILookupOption) => ({ value: item.UID, label: item.Name }))
+export const fetchGenericOptions = async (params: IGenericOptionParams): Promise<ISelectItem[]> => {
+  try {
+    const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
+      params,
+    })
+    return response.data.data.results.map((item: IBaseModel) => ({ ...item, value: item.id, label: item.name }))
+  } catch (error) {
+    return []
+  }
 }
 
 /**

@@ -1,3 +1,5 @@
+import { ISelectItem } from '@skedulo/sked-ui'
+
 export interface IObjPermission {
   allowCreate: boolean
   allowDelete: boolean
@@ -52,4 +54,27 @@ export interface IResourceRequirement {
   totalQty: number,
   jobType: string,
   requirements: string
+}
+
+export enum GenericOptionObjects {
+  Account,
+  Contact,
+  sked__Region__c,
+  sked__Location__c
+}
+
+export declare type GenericObjectTypes = keyof typeof GenericOptionObjects
+
+export interface IGenericOptionParams {
+  sObjectType: GenericObjectTypes
+  name: string
+  accountIds?: string
+  regionIds?: string
+}
+
+export interface IGenericSelectItem extends ISelectItem {
+  account?: IBaseModel
+  contact?: IBaseModel
+  region?: IBaseModel
+  fieldName?: string
 }

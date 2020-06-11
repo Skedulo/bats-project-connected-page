@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent } from 'react'
+import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent, useContext } from 'react'
 import { debounce } from 'lodash/fp'
 import { useHistory } from 'react-router-dom'
 import {
@@ -92,14 +92,20 @@ export const projectsTableColumns = (
 
 const ProjectsList: React.FC<IProjectsListProps> = () => {
   const history = useHistory()
-  const appContext = React.useContext(AppContext)
-  const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
+  const appContext = useContext(AppContext)
+  const { objPermissions } = useMemo(() => appContext?.config || {}, [appContext])
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const [openCreateModal, setOpenCreateModal] = useState<boolean>(false)
+
   const [confirmId, setConfirmId] = useState<string | null>(null)
-  const confirmAction = React.useMemo(() => confirmId?.split(',')[0], [confirmId])
+
   const [filterParams, setFilterParams] = useState<IFilterParams>(DEFAULT_FILTER)
+
   const [projects, setProjects] = useState<IListResponse<IProjectListItem>>(DEFAULT_PROJECTS_LIST)
+
+  const confirmAction = useMemo(() => confirmId?.split(',')[0], [confirmId])
 
   const getProjectsList = useCallback(async (params: IFilterParams) => {
     try {
@@ -229,7 +235,6 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('filterParams: ', filterParams)
       debounceGetProjectList(filterParams)
     }
   }, [filterParams])
