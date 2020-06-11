@@ -2,11 +2,11 @@ import * as React from 'react'
 import LoadingContext from './LoadingContext'
 import LoadingOverlay from '../LoadingOverlay'
 
-interface GlobalLoadingProps {
+interface IGlobalLoadingProps {
   children: React.ReactNode,
 }
 
-const  GlobalLoading: React.FC<GlobalLoadingProps> = ({ children }) => {
+const  GlobalLoading: React.FC<IGlobalLoadingProps> = ({ children }) => {
   const [counter, setCounter] = React.useState<number>(0)
 
   const increaseCounter = React.useCallback(() => {

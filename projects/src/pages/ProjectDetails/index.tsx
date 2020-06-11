@@ -33,7 +33,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
       const res = await updateProject(data)
       setProject({ ...res })
     } catch (error) {
-      console.log('error: ', error)
+      throw error
     } finally {
       endGlobalLoading()
     }

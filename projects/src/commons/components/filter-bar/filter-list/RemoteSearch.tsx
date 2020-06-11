@@ -23,7 +23,10 @@ export interface IRemoteSearchState {
 
 export const DEBOUNCE_TIME = 700
 
-export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRemoteSearchProps<T>, IRemoteSearchState> {
+export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<
+  IRemoteSearchProps<T>,
+  IRemoteSearchState
+> {
   private _fetchedItems: T[] = []
 
   private _debouncedSearch = debounce((searchTerm: string, preSelectedItems) => {
@@ -36,7 +39,7 @@ export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRe
 
       this.setState({
         loading: false,
-        searchTerm
+        searchTerm,
       })
     })
   }, DEBOUNCE_TIME)
@@ -46,7 +49,7 @@ export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRe
 
     this.state = {
       loading: false,
-      searchTerm: ''
+      searchTerm: '',
     }
 
     this._fetchedItems = [...props.preSelectedItems]
@@ -61,7 +64,7 @@ export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRe
 
       this.setState({
         loading: false,
-        searchTerm: ''
+        searchTerm: '',
       })
 
       return
@@ -71,7 +74,7 @@ export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRe
     this.setState(
       {
         loading: true,
-        searchTerm: ''
+        searchTerm: '',
       },
       () => {
         this._debouncedSearch(value, this.props.preSelectedItems)
@@ -93,7 +96,11 @@ export class RemoteSearch<T extends IFilterItem> extends React.PureComponent<IRe
           </div>
         )}
 
-        {this.props.children({ fetchedItems: this._fetchedItems, searchTerm: this.state.searchTerm, isFetching: loading })}
+        {this.props.children({
+          fetchedItems: this._fetchedItems,
+          searchTerm: this.state.searchTerm,
+          isFetching: loading,
+        })}
       </>
     )
   }

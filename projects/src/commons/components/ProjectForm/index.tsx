@@ -9,35 +9,20 @@ import { parseTimeValue, parseTimeString } from '../../utils'
 
 const ProjectFormConfig = {
   templateId: {},
-  //templateId: { isRequired: 'Template is required' },
   projectName: {
-    isRequired: 'Name is required',
-    // isMaxLength: {
-    //   length: 80,
-    //   message: 'Max length is 80'
-    // }
+    isRequired: 'Name is required'
   },
-  projectDescription: {
-    // isMaxLength: {
-    //   length: 255,
-    //   message: 'Max length is 255'
-    // }
-  },
+  projectDescription: {},
   accountId: {},
-  // accountId: { isRequired: 'Account is required' },
   applyAccountForAllJob: {},
   contactId: { },
   applyContactForAllJob: {},
   regionId: { isRequired: 'Region is required' },
   applyRegionForAllJob: {},
   locationId: {},
-  // locationId: { isRequired: 'Location is required' },
-  // address: {},
   applyLocationForAllJob: {},
   startDate: {},
   startTime: {},
-  // startDate: { isRequired: 'Start date is required' },
-  // endDate: { isRequired: 'End date is required' },
   endDate: {},
   endTime: {},
   isTemplate: {},

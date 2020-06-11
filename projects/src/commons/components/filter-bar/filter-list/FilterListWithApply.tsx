@@ -18,11 +18,14 @@ interface IFilterListWithApplyState<T extends IFilterItem> {
   selected: T[]
 }
 
-export class FilterListWithApply<T extends IFilterItem> extends React.PureComponent<IFilterListWithApplyProps<T>, IFilterListWithApplyState<T>> {
+export class FilterListWithApply<T extends IFilterItem> extends React.PureComponent<
+  IFilterListWithApplyProps<T>,
+  IFilterListWithApplyState<T>
+> {
   constructor(props: IFilterListWithApplyProps<T>) {
     super(props)
     this.state = {
-      selected: props.preSelectedItems || []
+      selected: props.preSelectedItems || [],
     }
   }
 
@@ -76,12 +79,25 @@ export class FilterListWithApply<T extends IFilterItem> extends React.PureCompon
 
     const disabledClasses = 'disabled:sk-text-blue-200'
     const hoverClasses = 'hover:sk-bg-neutral-250 hover:sk-text-blue-600'
-    const classes = 'sk-w-full sk-flex sk-justify-center sk-bg-white sk-border sk-border-b-0 sk-border-neutral-350 sk-rounded-none sk--mt-px sk-text-blue-600'
+    const classes =
+      'sk-w-full sk-flex sk-justify-center sk-bg-white sk-border sk-border-b-0 sk-border-neutral-350 sk-rounded-none sk--mt-px sk-text-blue-600'
 
     return (
       <>
-        {!isListCollapsed && <FilterList items={items} itemRenderer={this.itemRenderer} scrollableContentClasses={scrollableContentClasses} />}
-        <Button disabled={!selected.length} data-sk-name="sk-filter-apply" className={classnames(classes, disabledClasses, hoverClasses)} onClick={this.applyFilters} buttonType="transparent">
+        {!isListCollapsed && (
+          <FilterList
+            items={items}
+            itemRenderer={this.itemRenderer}
+            scrollableContentClasses={scrollableContentClasses}
+          />
+        )}
+        <Button
+          disabled={!selected.length}
+          data-sk-name="sk-filter-apply"
+          className={classnames(classes, disabledClasses, hoverClasses)}
+          onClick={this.applyFilters}
+          buttonType="transparent"
+        >
           Apply
         </Button>
       </>

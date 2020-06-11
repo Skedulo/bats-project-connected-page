@@ -62,7 +62,7 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
       const submitData = {
         ...jobTemplate,
         ...form.fields,
-        jobConstraints: jobConstraints.map((item) =>
+        jobConstraints: jobConstraints.map(item =>
           omit(['tempId', 'error', 'sObjectType', 'projectJobTemplateId'], item)
         ),
       }

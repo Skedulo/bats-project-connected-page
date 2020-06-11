@@ -1,4 +1,4 @@
-interface GraphQLRequest {
+interface IGraphQLRequest {
   query: string
   variables?: Record<string, any>
   operationName?: string
@@ -6,7 +6,7 @@ interface GraphQLRequest {
   extensions?: Record<string, any>
 }
 
-export interface GraphQLMutationResult {
+export interface IGraphQLMutationResult {
   data: null | { schema: { [operationName: string]: string } }
   errors: null | {
     message: string
@@ -16,30 +16,30 @@ export interface GraphQLMutationResult {
 }
 
 // tslint:disable:no-misused-new
-interface GraphQLError {
+interface IGraphQLError {
   getErrors: () => string[]
-  new(): GraphQLError
+  new(): IGraphQLError
 }
 
 type Model = string
 
-interface IntrospectionField {
+interface IIntrospectionField {
   name: string
   type: {
     name: null | 'Instant' | 'Boolean' | 'BigDecimal' | 'String' | Model
     kind: 'SCALAR' | 'NON_NULL' | 'OBJECT' | 'LIST'
-    ofType: null | IntrospectionField['type']
+    ofType: null | IIntrospectionField['type']
   }
 }
 
-interface IntrospectionModelType {
+interface IIntrospectionModelType {
   __type: {
     name: string
-    fields: IntrospectionField[]
+    fields: IIntrospectionField[]
   }
 }
 
-export interface Vocabulary {
+export interface IVocabulary {
   [schema: string]: {
     [field: string]: {
       value: string,
@@ -48,7 +48,7 @@ export interface Vocabulary {
   }
 }
 
-export interface VocabularyField {
+export interface IVocabularyField {
   controllingField: string,
   label: string,
   controller: string,
@@ -58,37 +58,37 @@ export interface VocabularyField {
   active: boolean
 }
 
-export interface Services {
+export interface IServices {
   graphQL: {
-    fetch<T>(operation: GraphQLRequest, endpoint?: string): Promise<T>
-    mutate(operation: GraphQLRequest, endpoint?: string): Promise<GraphQLMutationResult>
-    fetchMetadataFor(model: string): Promise<IntrospectionModelType>
+    fetch<T>(operation: IGraphQLRequest, endpoint?: string): Promise<T>
+    mutate(operation: IGraphQLRequest, endpoint?: string): Promise<IGraphQLMutationResult>
+    fetchMetadataFor(model: string): Promise<IIntrospectionModelType>
   },
   metadata: {
-    fetchVocabulary(): Promise<Vocabulary>,
-    fetchVocabularyField(object: string, field: string): Promise<VocabularyField[]>
+    fetchVocabulary(): Promise<IVocabulary>,
+    fetchIVocabularyField(object: string, field: string): Promise<IVocabularyField[]>
   },
   errorClasses: {
-    GraphQLNetworkError: GraphQLError,
-    GraphQLExecutionError: GraphQLError
+    GraphQLNetworkError: IGraphQLError,
+    GraphQLExecutionError: IGraphQLError
   },
 }
 
-export interface Profile {
+export interface IProfile {
   tenantId: string
   userId: string
   username: string
   roles: string[]
 }
 
-export interface Credentials {
+export interface ICredentials {
   apiServer: string
   apiAccessToken: string
 
   vendor: { type: 'skedulo', url: string, token: null } | { type: 'salesforce', url: string, token: string }
 }
 
-export interface Navigation {
+export interface INavigation {
   registerRouteHandler: (routeHandler: (routeState: {
     routes: string | string[],
     params: { [paramName: string]: any }
@@ -97,14 +97,14 @@ export interface Navigation {
 }
 
 declare const skedInjected: {
-  Services: Services,
+  Services: IServices,
   context?: {
     referenceUID: string
   },
   params: { [paramName: string]: any }
-  profile: Profile,
-  credentials: Credentials
-  navigation: Navigation,
+  profile: IProfile,
+  credentials: ICredentials
+  navigation: INavigation,
   routes: string[]
 }
 

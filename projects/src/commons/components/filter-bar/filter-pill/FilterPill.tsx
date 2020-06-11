@@ -13,13 +13,14 @@ interface IFilterPillProps {
   className?: string
 }
 
-export type FilterPillProps<T extends IFilterItem> = IFilterPillProps & Omit<IAppliedFilter<T>, 'isReadonly' | 'removable'>
+export type FilterPillProps<T extends IFilterItem> = IFilterPillProps &
+  Omit<IAppliedFilter<T>, 'isReadonly' | 'removable'>
 
 export class FilterPill<T extends IFilterItem> extends React.PureComponent<FilterPillProps<T>, {}> {
   static defaultProps = {
     onRemove: noop,
     onEdit: noop,
-    removable: true
+    removable: true,
   }
 
   renderedSelectedItems = (selected: IFilterItem[]) => {
@@ -30,7 +31,9 @@ export class FilterPill<T extends IFilterItem> extends React.PureComponent<Filte
     return selected.map(item => item.name).join(', ')
   }
 
-  removeFilter = (filterId: string, onRemove: IFilterPillProps['onRemove']) => (e: React.MouseEvent<HTMLButtonElement>) => {
+  removeFilter = (filterId: string, onRemove: IFilterPillProps['onRemove']) => (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
     // stop propogation so that the 'edit' control isn't triggered.
     e.stopPropagation()
     onRemove(filterId)
@@ -42,7 +45,13 @@ export class FilterPill<T extends IFilterItem> extends React.PureComponent<Filte
     }
   }
 
-  renderCloseButton = (name: string, onRemove: IFilterPillProps['onRemove'], selected: IFilterItem[], removable: boolean, isReadonly?: boolean) => {
+  renderCloseButton = (
+    name: string,
+    onRemove: IFilterPillProps['onRemove'],
+    selected: IFilterItem[],
+    removable: boolean,
+    isReadonly?: boolean
+  ) => {
     // if a filter is readonly or we have not selected any items yet, do not render a close option.
     if (isReadonly || !removable || !selected.length) {
       return null
@@ -71,7 +80,11 @@ export class FilterPill<T extends IFilterItem> extends React.PureComponent<Filte
     )
 
     return (
-      <div data-sk-name={`filter-pill-${id}`} className={pillClasses} onClick={this.editFilter(id, onEdit, !!isReadonly)}>
+      <div
+        data-sk-name={`filter-pill-${id}`}
+        className={pillClasses}
+        onClick={this.editFilter(id, onEdit, !!isReadonly)}
+      >
         <span className=" sk-truncate sk-inline-block">
           <span data-sk-name="filter-name">{name}</span>:&nbsp;
           <span data-sk-name="selected-options" className="sk-text-sm sk-font-medium sk-text-neutral-850 sk-max-w-full">

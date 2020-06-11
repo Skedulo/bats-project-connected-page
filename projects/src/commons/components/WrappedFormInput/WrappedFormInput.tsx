@@ -17,7 +17,7 @@ interface IWrappedFormInputProps {
   maxLength?: number
 }
 
-const WrappedFormInput: React.FC<IWrappedFormInputProps> = (props) => {
+const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
   const {
     label,
     name,
@@ -46,13 +46,6 @@ const WrappedFormInput: React.FC<IWrappedFormInputProps> = (props) => {
     () =>
       classNames({
         'cx-whitespace-pre-line': type === 'textarea',
-      }),
-    [type]
-  )
-  const textareaClasses = React.useMemo(
-    () =>
-      classNames('sked-input-textbox', {
-        '': type === 'textarea',
       }),
     [type]
   )

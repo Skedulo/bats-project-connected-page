@@ -1,18 +1,18 @@
 import * as React from 'react'
 import { DynamicModal, Icon } from '@skedulo/sked-ui'
 import ProjectForm from '../../../commons/components/ProjectForm'
-import { IProjectDetail } from '../../../commons/types';
+import { IProjectDetail } from '../../../commons/types'
 
-interface CreateProjectModalProp {
+interface ICreateProjectModalProp {
   onClose: () => void
   onSubmit: (data: IProjectDetail) => void
 }
 
-interface ModalHeaderProp {
+interface IModalHeaderProp {
   onClose: () => void
 }
 
-const ModalHeader: React.FC<ModalHeaderProp> = ({ onClose }) => {
+const ModalHeader: React.FC<IModalHeaderProp> = ({ onClose }) => {
   return (
     <div className="cx-p-4 cx-flex cx-items-center cx-justify-between">
       <h2 className="cx-font-semibold">New Project</h2>
@@ -21,7 +21,7 @@ const ModalHeader: React.FC<ModalHeaderProp> = ({ onClose }) => {
   )
 }
 
-const CreateProjectModal: React.FC<CreateProjectModalProp> = ({ onClose, onSubmit }) => {
+const CreateProjectModal: React.FC<ICreateProjectModalProp> = ({ onClose, onSubmit }) => {
 
   return (
     <DynamicModal

@@ -34,7 +34,7 @@ export class FilterSearch<T extends IFilterItem> extends React.PureComponent<
       })
     }
 
-    const searchedFilters = this.props.items.filter((item) => {
+    const searchedFilters = this.props.items.filter(item => {
       return item.name.toLowerCase().indexOf(value.toLowerCase()) > -1
     })
 

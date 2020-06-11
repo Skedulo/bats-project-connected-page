@@ -230,6 +230,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
 
     // if we have filters to render, display them.
     return (
+      // tslint:disable-next-line: jsx-no-lambda
       <PopOut trigger={this.renderAddFilterButton} popOutContainer={container => container} closeOnOuterClick={true}>
         {toggleDropdown => (
           <div className="sk-shadow sk-mt-1">
@@ -334,8 +335,10 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     return (
       <PopOut
         onClose={this.closeTemporaryPill()}
+        // tslint:disable-next-line: jsx-no-lambda
         trigger={() => temporaryPill}
         key={`${filterName}-${filterId}`}
+        // tslint:disable-next-line: jsx-no-lambda
         popOutContainer={container => container}
         openOnMount={true}
         closeOnOuterClick={true}
@@ -369,6 +372,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
   }
 
   render() {
+    // tslint:disable-next-line: no-this-assignment
     const { renderAddFilterControl, renderTemporaryPill, removeFilter, editFilter, state } = this
     const { appliedFilters, addedFilter, editFilterId } = state
 

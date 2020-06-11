@@ -84,7 +84,7 @@ export const fetchProjectById = async (projectId: string): Promise<IProjectDetai
 }
 
 export const updateProject = async (requestData: IProjectDetail): Promise<IProjectDetail> => {
-  const formattedPayload = mapValues((value) => (value === '' ? null : value), requestData)
+  const formattedPayload = mapValues(value => (value === '' ? null : value), requestData)
   const response: {
     data: ISalesforceResponse
   } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
@@ -93,7 +93,7 @@ export const updateProject = async (requestData: IProjectDetail): Promise<IProje
 }
 
 export const createProject = async (createInput: IProjectDetail): Promise<IListResponse<IProjectListItem>> => {
-  const formattedPayload = mapValues((value) => (value === '' ? null : value), createInput)
+  const formattedPayload = mapValues(value => (value === '' ? null : value), createInput)
 
   const response: {
     data: ISalesforceResponse
@@ -299,7 +299,7 @@ export const fetchJobTemplateOptions = async (
 }
 
 export const createUpdateJobTemplate = async (requestData: IJobTemplate): Promise<boolean> => {
-  const formattedPayload = mapValues((value) => (value === '' ? null : value), requestData)
+  const formattedPayload = mapValues(value => (value === '' ? null : value), requestData)
 
   try {
     const response: {

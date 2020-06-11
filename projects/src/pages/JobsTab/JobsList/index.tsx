@@ -33,7 +33,7 @@ import {
 import { AppContext } from '../../../App'
 import SearchBox from '../../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../../routes'
-import { toastMessage } from '../../../commons/utils';
+import { toastMessage } from '../../../commons/utils'
 
 interface IJobsListProps {
   projectId: string
@@ -144,7 +144,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
         )
         const responses = await Promise.all(promises)
         newJobTypeTemplateValues = { ...newJobTypeTemplateValues, ...keyBy('jobType', responses) }
-        console.log('newJobTypeTemplateValues: ', newJobTypeTemplateValues);
+
         if (setAppConfig) {
           setAppConfig((prev: IConfig) => {
             return ({ ...prev, jobTypeTemplateValues: newJobTypeTemplateValues })
@@ -217,7 +217,6 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   }, [projectId, project])
 
   const onViewJobDetail = useCallback((jobId: string) => {
-    console.log('jobId: ', jobId);
     window.top.window.location.href = jobDetailPath(jobId)
   }, [])
 
@@ -253,7 +252,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
       getRowId: (row: IJobDetail, index) => row.id,
       rowSelectControl: 'allRows',
       onRowSelect,
-      onSortBy: (props) => {
+      onSortBy: props => {
         if (props?.id) {
           onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
         }
@@ -266,7 +265,6 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('filterParams: ', filterParams)
       debounceGetJobList({...filterParams, projectId})
     }
   }, [filterParams, projectId])
