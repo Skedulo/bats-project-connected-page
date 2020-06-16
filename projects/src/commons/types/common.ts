@@ -78,3 +78,8 @@ export interface IGenericSelectItem extends ISelectItem {
   region?: IBaseModel
   fieldName?: string
 }
+
+export interface ITimeOption {
+  stringValue: string
+  numberValue: number
+}

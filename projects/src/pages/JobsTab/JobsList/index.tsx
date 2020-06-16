@@ -75,7 +75,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
         return (
           <div>
             <h1>{row.original.startDate}</h1>
-            <h2 className="cx-text-neutral-700">{row.original.startTime}</h2>
+            <h2 className="cx-text-neutral-700">{row.original.startTimeString}</h2>
           </div>
         )
       },

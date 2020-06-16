@@ -171,8 +171,8 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
         ...res.data.data,
         results: res.data.data.results.map((item: IJobDetail) => ({
           ...item,
-          startTime: parseTimeValue(item.startTime),
-          endTime: parseTimeValue(item.endTime),
+          startTimeString: parseTimeValue(item.startTime),
+          endTimeString: parseTimeValue(item.endTime),
         })),
       }
     }

@@ -1,6 +1,6 @@
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz/fp'
 import { flow } from 'lodash/fp'
-import { padStart, isNumber } from 'lodash'
+import { isNumber } from 'lodash'
 
 export type getTime = (timezone: string, date: Date) => string
 
@@ -64,4 +64,20 @@ export const parseTimeString = (timeStr: string) => {
     mVal = 0
   }
   return hVal * 100 + mVal
+}
+
+/**
+ * parse duration minutes to string value
+ */
+export const parseDurationValue = (duration: number) => {
+  if (!duration) {
+    return ''
+  }
+  const hours = Math.floor(duration / 60)
+  const minutes = duration % 60
+
+  const hUnit = hours === 0 ? '' : hours === 1 ? `${hours} hr` : `${hours} hrs`
+  const mUnit = minutes === 0 ? '' : minutes === 1 ? `${minutes} min` : `${minutes} mins`
+
+  return `${hUnit} ${mUnit}`
 }

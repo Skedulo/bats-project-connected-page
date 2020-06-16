@@ -59,6 +59,10 @@ export interface IJobDetail {
   project: IBaseModel
   projectId?: string
   resourceRequirement?: number
+  duration: number
+  startTimeString?: string,
+  endTimeString?: string,
+  travelTime: number
 }
 
 export declare type JobItem = IJobDetail | IJobTemplate

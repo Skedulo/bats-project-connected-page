@@ -20,12 +20,19 @@ export const DEFAULT_PROJECT = {
 
 export enum PROJECT_TAB_ROUTES {
   DETAILS = 'details',
-  JOBS = 'jobs'
+  JOBS = 'jobs',
+  SCHEDULE = 'schedule'
 }
+
+export const PROJECT_TEMPLATE_TAB_OPTIONS = [
+  { route: PROJECT_TAB_ROUTES.DETAILS, title: 'Details' },
+  { route: PROJECT_TAB_ROUTES.JOBS, title: 'Jobs' }
+]
 
 export const PROJECT_TAB_OPTIONS = [
   { route: PROJECT_TAB_ROUTES.DETAILS, title: 'Details' },
-  { route: PROJECT_TAB_ROUTES.JOBS, title: 'Jobs' }
+  { route: PROJECT_TAB_ROUTES.JOBS, title: 'Jobs' },
+  { route: PROJECT_TAB_ROUTES.SCHEDULE, title: 'Schedule' }
 ]
 
 export const PROJECT_STATUS_COLOR: Record<ProjectStatusKey, LozengeColors>  = {

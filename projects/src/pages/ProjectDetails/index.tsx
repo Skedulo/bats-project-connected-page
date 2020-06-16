@@ -1,12 +1,13 @@
-import React, { useEffect, useState, memo, useCallback } from 'react'
+import React, { useEffect, useState, memo, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { IProjectDetail, IRouterParams, IJobTypeTemplateValue } from '../../commons/types'
 import { fetchProjectById, updateProject } from '../../Services/DataServices'
 import { useGlobalLoading, LoadingTrigger } from '../../commons/components/GlobalLoading'
 import { Icon, Tabs } from '@skedulo/sked-ui'
-import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES } from '../../commons/constants'
+import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES, PROJECT_TEMPLATE_TAB_OPTIONS } from '../../commons/constants'
 import DetailTab from './DetailTab'
 import JobsTab from '../JobsTab'
+import ScheduleTab from '../ScheduleTab'
 
 interface IProjectDetailProps {
   isOpen?: boolean
@@ -14,9 +15,14 @@ interface IProjectDetailProps {
 
 const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   const params = useParams<IRouterParams>()
+
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
-  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
+
+  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.SCHEDULE)
+
   const [project, setProject] = useState<IProjectDetail | null>(null)
+
+  const tabOptions = useMemo(() => project?.isTemplate ? PROJECT_TEMPLATE_TAB_OPTIONS : PROJECT_TAB_OPTIONS, [project])
 
   const getProjectById = useCallback(async (projectId: string) => {
     startGlobalLoading()
@@ -70,12 +76,13 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
               {project.projectDescription}
             </p>
           </div>
-          <Tabs tabs={PROJECT_TAB_OPTIONS} currentActiveRoute={activeTab} onClick={onChangeTab} />
+          <Tabs tabs={tabOptions} currentActiveRoute={activeTab} onClick={onChangeTab} />
         </div>
         {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
         {activeTab === PROJECT_TAB_ROUTES.JOBS && (
           <JobsTab projectId={params.projectId || ''} project={project} />
         )}
+        {activeTab === PROJECT_TAB_ROUTES.SCHEDULE && <ScheduleTab project={project} />}
       </div>
     </div>
   )
