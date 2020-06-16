@@ -1,17 +1,19 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, times, toNumber } from 'lodash/fp'
-import classnames from 'classnames'
+import { debounce, uniq, keyBy, times, toNumber, pickBy } from 'lodash/fp'
 import { format } from 'date-fns-tz'
-import { getDaysInMonth, eachDayOfInterval, add, isToday } from 'date-fns'
+import { getDaysInMonth, add } from 'date-fns'
 import {
   Button,
   CalendarControls,
   RangeType,
   Icon,
   Pagination,
-  Avatar,
+  PopOut,
+  IconButton,
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
+import SwimlaneSetting from './SwimlaneSetting'
+import generateScheduleCell from './generateScheduleCell'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
 import {
   IJobDetail,
@@ -21,148 +23,25 @@ import {
   IJobTypeTemplate,
   IConfig,
   IProjectDetail,
-  ITimeOption,
+  ISwimlaneSettings,
 } from '../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_LIST, SCHEDULE_JOB_STATUS_COLOR, DATE_FORMAT } from '../../commons/constants'
 import {
-  fetchListJobs,
-  fetchJobTypeTemplateValues,
-} from '../../Services/DataServices'
+  DEFAULT_FILTER,
+  DEFAULT_LIST,
+  DATE_FORMAT,
+  DEFAULT_SWIMLANE_SETTINGS,
+  LOCAL_STORAGE_KEY
+} from '../../commons/constants'
+import { fetchListJobs, fetchJobTypeTemplateValues } from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../routes'
-import { getTimePickerOptions, parseDurationValue } from '../../commons/utils'
+import { parseDurationValue, getLocalStorage,  setLocalStorage } from '../../commons/utils'
+
 import './styles.scss'
 
 interface IScheduleTabProps {
   project: IProjectDetail
-}
-
-const SLOT_WIDTH = 50
-
-const getJobsTableCells = (selectedDate: Date, rangeType: RangeType, job?: IJobDetail) => {
-  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
-  const timeCols = getTimePickerOptions(timeGap)
-  const dateRange = eachDayOfInterval({
-    start: selectedDate,
-    end: add(selectedDate, {
-      days: (rangeType === 'day' ? 1 : rangeType === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
-    })
-  })
-  const cols = timeCols.length *  dateRange.length
-  const dateCols: React.ReactElement[] = []
-  let currentTimePosition = null
-
-  dateRange.forEach((date, index) => {
-    const formattedWeekday = rangeType !== 'month' ? format(date, 'EEEE dd') : format(date, 'eee dd')
-    const today = isToday(date)
-    if (today) {
-      const currentDate = new Date()
-      const currentTime = currentDate.getHours() * 60 + currentDate.getMinutes()
-      currentTimePosition = (currentTime / 1440) * SLOT_WIDTH * timeCols.length + index * SLOT_WIDTH * timeCols.length
-    }
-
-    if (!job) {
-      dateCols.push(
-        <div
-          key={formattedWeekday}
-          className={classnames('day cx-w-full cx-uppercase', {
-            'cx-text-primary': !!today
-          })}
-          style={{
-            gridColumnStart: index * timeCols.length + 1,
-            gridColumnEnd: index * timeCols.length + 1 + timeCols.length,
-            justifySelf: 'center',
-          }
-        }>
-          {formattedWeekday}
-        </div>
-      )
-    }
-  })
-
-  if (job || rangeType !== 'month') {
-    times(dateRangeIndex => {
-      timeCols.forEach((item: ITimeOption, indexTime) => {
-        if (!job) {
-          // display schedule timeslot of a day
-          dateCols.push(
-            <div className="timeslot" key={`${item.stringValue}-${dateRangeIndex}`}>
-              {item.stringValue}
-            </div>
-          )
-        } else {
-          // display schedule data
-        const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
-        let matched = formattedDateString === job.startDate && job.startTime >= item.numberValue
-        const resources: React.ReactNode[] = []
-        if (timeCols[indexTime + 1]) {
-          matched = matched && job.startTime < timeCols[indexTime + 1].numberValue
-        }
-        if (matched) {
-          const time = Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement))
-          times(index => {
-            const jobAllocation = job.allocations ? job.allocations[index] : null
-
-            resources.push(
-              <Avatar
-                name={jobAllocation?.resource?.name || ''}
-                key={`resourcerquired-${index}`}
-                className={classnames('cx-ml-1 first:cx-ml-0', {
-                  'cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500': !jobAllocation
-                })}
-                showTooltip={!!jobAllocation?.resource?.name}
-                size="small"
-                preserveName={false}
-              />
-            )
-          }, time > 0 ? time : 1)
-        }
-
-        dateCols.push(
-          <div className="timeslot" key={`${item.stringValue}-${dateRangeIndex}`}>
-            {matched && (
-              <div className="cx-flex cx-items-center cx-absolute" style={{
-                height: '80%',
-                zIndex: 1,
-                left: `${((job.startTime - item.numberValue) / timeGap) * 50}px`,
-              }}>
-                <span className="cx-h-full" style={{
-                  width: `${(job.duration / timeGap) * SLOT_WIDTH}px`,
-                  backgroundColor: SCHEDULE_JOB_STATUS_COLOR[job.status],
-                }} />
-                <span className="cx-flex">
-                  {resources}
-                </span>
-                <span className="cx-pl-2" style={{ width: 'max-content' }}>
-                  {parseDurationValue(job.duration)}
-                </span>
-              </div>
-            ) }
-          </div>
-        )
-        }
-      })
-    }, dateRange.length)
-  }
-
-  return (
-    <>
-      <div className="cx-grid cx-h-full" style={{
-        gridTemplateColumns: `repeat(${cols}, ${SLOT_WIDTH}px)`,
-      }}>
-        {dateCols}
-        {currentTimePosition !== null && (
-          <div
-            className="cx-absolute cx-h-full current-time-indicator"
-            style={{
-              left: `calc(30% + ${currentTimePosition}px)`,
-            }}
-          />
-        )}
-      </div>
-    </>
-  )
 }
 
 const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
@@ -182,7 +61,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
 
-  const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
+  const [swimlandSettings, setSwimlaneSettings] = useState<ISwimlaneSettings>(DEFAULT_SWIMLANE_SETTINGS)
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
@@ -295,6 +174,21 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(date)
   }, [])
 
+  const swimlaneSettingTrigger = useCallback(() => {
+    return (
+      <IconButton
+        icon="settings"
+        buttonType="transparent"
+        tooltipContent="Swimlane Settings"
+      />
+    )
+  }, [])
+
+  const applySwimlaneSetting = (settings: ISwimlaneSettings) => {
+    setSwimlaneSettings(settings)
+    setLocalStorage(LOCAL_STORAGE_KEY.PROJECT_SWIMLANE_SETTINGS, JSON.stringify(settings))
+  }
+
   useEffect(() => {
     if (!isLoading && project?.id) {
       debounceGetJobList({...filterParams, projectId: project?.id })
@@ -310,6 +204,13 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
       endDate: format(endDate, DATE_FORMAT)
     })
   }, [selectedDate, selectedDateRange])
+
+  useEffect(() => {
+    const savedSettings = getLocalStorage(LOCAL_STORAGE_KEY.PROJECT_SWIMLANE_SETTINGS)
+    if (savedSettings) {
+      setSwimlaneSettings(JSON.parse(savedSettings))
+    }
+  }, [])
 
   return (
     <div className="scroll">
@@ -333,6 +234,21 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               selectedRange={selectedDateRange}
               onRangeChange={onDateRangeSelect}
             />
+            <PopOut
+              placement="bottom"
+              closeOnOuterClick={false}
+              closeOnScroll={false}
+              closeOnFirstClick={false}
+              trigger={swimlaneSettingTrigger}
+            >
+              {togglePopout => (
+                <SwimlaneSetting
+                  defaultSetting={swimlandSettings}
+                  hideSetting={togglePopout}
+                  applySetting={applySwimlaneSetting}
+                />
+              )}
+            </PopOut>
           </div>
         </div>
       </div>
@@ -373,7 +289,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               <div className="cx-w-1/3">Job Type</div>
             </div>
             <div className="schedule-item-weekday">
-              {getJobsTableCells(selectedDate, selectedDateRange)}
+              {generateScheduleCell(selectedDate, selectedDateRange, swimlandSettings)}
             </div>
           </div>
           {
@@ -390,7 +306,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
                     </div>
                   </div>
                   <div className="schedule-item-weekday">
-                    {getJobsTableCells(selectedDate, selectedDateRange, job)}
+                    {generateScheduleCell(selectedDate, selectedDateRange, swimlandSettings, job)}
                   </div>
                 </div>
               )

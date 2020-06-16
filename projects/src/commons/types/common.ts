@@ -22,7 +22,7 @@ export interface IBaseModel {
   id: string
 }
 
-export interface IConfig {
+export interface IConfig extends IOrgPreference {
   jobTypes?: IBaseModel[],
   jobStatuses?: IBaseModel[],
   projectStatuses?: IBaseModel[],
@@ -82,4 +82,25 @@ export interface IGenericSelectItem extends ISelectItem {
 export interface ITimeOption {
   stringValue: string
   numberValue: number
+}
+
+export interface IOrgPreference {
+  enableWorkingHours?: boolean
+}
+
+export type WeekDay = 'sunday' | 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday'
+
+export interface IWorkingHours {
+  enabled: boolean,
+  startTime: number,
+  endTime: number
+  days: Record<WeekDay, boolean>
+}
+
+export interface ISwimlaneSettings {
+  // focusTimeConsole?: string
+  snapUnitConsole: number
+  // timeZoomConsole?: string
+  // viewZoomConsole: number
+  workingHours: IWorkingHours
 }

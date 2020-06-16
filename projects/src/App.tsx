@@ -3,7 +3,7 @@ import { Router, Route, Switch } from 'react-router-dom'
 import ListProjectsPage from './pages/Projects'
 import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'
-import { fetchConfig, fetchJobTypeTemplates } from './Services/DataServices'
+import { fetchConfig, fetchJobTypeTemplates, fetchOrgPreference } from './Services/DataServices'
 import * as routes from './pages/routes'
 import { IAppContext, IConfig } from './commons/types'
 import { ToastContainer } from 'react-toastify'
@@ -18,8 +18,12 @@ const App: React.FC = () => {
   const [appConfig, setAppConfig] = React.useState<IConfig>({})
 
   const getConfig = React.useCallback(async () => {
-    const [config, jobTypeTemplates] = await Promise.all([fetchConfig(), fetchJobTypeTemplates()])
-    setAppConfig({ ...config, jobTypeTemplates, jobTypeTemplateValues: {} })
+    const [
+      config,
+      jobTypeTemplates,
+      orgPreference
+  ] = await Promise.all([fetchConfig(), fetchJobTypeTemplates(), fetchOrgPreference()])
+    setAppConfig({ ...config, jobTypeTemplates, jobTypeTemplateValues: {}, ...orgPreference })
   }, [])
 
   React.useEffect(() => {

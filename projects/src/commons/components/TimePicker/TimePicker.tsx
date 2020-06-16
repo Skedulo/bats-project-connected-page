@@ -10,6 +10,7 @@ interface ITimePickerProps {
   defaultSelected?: number | string
   placeholderText?: string
   disabled?: boolean
+  step?: number
 }
 
 const TimePicker: React.FC<ITimePickerProps> = ({
@@ -18,9 +19,10 @@ const TimePicker: React.FC<ITimePickerProps> = ({
   placeholderText,
   defaultSelected,
   disabled,
+  step
 }) => {
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const timeOptions = React.useMemo(() => getTimePickerOptions(15), [])
+  const timeOptions = React.useMemo(() => getTimePickerOptions(step || 15), [])
   const [openLookup, setOpenLookup] = React.useState<boolean>(false)
   const [selectedOption, setSelectedOption] = React.useState<ITimePickerOption | null>(
     timeOptions.find((item) => item.numberValue === defaultSelected || item.stringValue === defaultSelected) || null

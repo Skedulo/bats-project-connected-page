@@ -250,3 +250,16 @@ export const deallocateMutipleJobs = async (jobIds: string): Promise<boolean> =>
     return false
   }
 }
+
+export const fetchOrgPreference = async () => {
+  try {
+    const res = await httpApi.get('/config/org_preference')
+    return {
+      enableWorkingHours: res.data.result?.web?.features.enableWorkingHours || false
+    }
+  } catch (error) {
+    return {
+      enableWorkingHours: false
+    }
+  }
+}
