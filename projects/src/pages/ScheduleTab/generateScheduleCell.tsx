@@ -251,6 +251,7 @@ const generateScheduleCell = (
   const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
   const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
   const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
+  const isMonthWorkingHour = rangeType === 'month' && workingHours.enabled
   // width of 1 cell
   let slotWidth = isWeekdayWorkingHour ? DEFAULT_SLOT_WIDTH * 4 : DEFAULT_SLOT_WIDTH
 
@@ -266,21 +267,20 @@ const generateScheduleCell = (
     })
   })
 
-  if (workingHours?.enabled && rangeType !== 'day') {
-    // if rangeType is day and enable workingHours --> not ignore that date, just disable
-    dateRange = dateRange.filter(date => {
-      const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
-      return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
-    })
-  }
-
-  if (isDayWorkingHour) {
-    // if rangeType === day and enable workingHours --> filter timeCols base on working hours
-    // if rangeType !== day and enable workingHours --> only display custom columns, no need to filter
-    timeCols = timeCols.filter(time => {
-      return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
-    })
-    slotWidth = window.innerWidth * 0.7 / timeCols.length
+  if (workingHours.enabled) {
+    if (rangeType === 'day') {
+      timeCols = timeCols.filter(time => {
+        return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
+      })
+      slotWidth = (window.innerWidth - 48) * 0.7 / timeCols.length
+    } else {
+      // if rangeType is day and enable workingHours --> not ignore that date, just disable
+      dateRange = dateRange.filter(date => {
+        const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
+        return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
+      })
+      slotWidth = (window.innerWidth - 48 - 32) * 0.7 / dateRange.length
+    }
   }
 
   const cols = timeCols.length * dateRange.length
