@@ -130,9 +130,6 @@ const generateScheduleDataCell = (
           if (workingHours.enabled) {
             matched = matched && job.startTime >= workingHours.startTime && job.endTime <= workingHours.endTime
           }
-          if (matched) {
-            console.log('job: ', (job.plannedTravelTime / totalMinutes) * slotWidth);
-          }
 
           dateCols.push(
             <div className="timeslot" key={`${item.stringValue}-${dateRangeIndex}`}>

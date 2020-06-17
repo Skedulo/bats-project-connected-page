@@ -117,7 +117,6 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           ? res.results.map((item: IJobDetail) => {
               return {
                 ...item,
-                plannedTravelTime: 60,
                 resourceRequirement: newJobTypeTemplateValues[item.jobType]
                   ? newJobTypeTemplateValues[item.jobType].totalQty
                   : 1,
