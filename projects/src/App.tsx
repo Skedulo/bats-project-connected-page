@@ -21,8 +21,9 @@ const App: React.FC = () => {
     const [
       config,
       jobTypeTemplates,
-      orgPreference
-  ] = await Promise.all([fetchConfig(), fetchJobTypeTemplates(), fetchOrgPreference()])
+    ] = await Promise.all([fetchConfig(), fetchJobTypeTemplates()])
+
+    const orgPreference = { enableWorkingHours: true }
     setAppConfig({ ...config, jobTypeTemplates, jobTypeTemplateValues: {}, ...orgPreference })
   }, [])
 

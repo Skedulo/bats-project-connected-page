@@ -1,4 +1,4 @@
-import React, { memo, useState, ChangeEvent, useCallback, useMemo } from 'react'
+import React, { memo, useState, ChangeEvent, useCallback, useMemo, useEffect } from 'react'
 import { ISwimlaneSettings, ITimeOption, WeekDay } from '../../commons/types'
 import { FormInputElement, SearchSelect, ISelectItem, Icon, Button } from '@skedulo/sked-ui'
 import TimePicker from '../../commons/components/TimePicker'
@@ -30,69 +30,77 @@ interface ISwimlaneSettingProps {
 
 const SwimlaneSetting: React.FC<ISwimlaneSettingProps> = ({ hideSetting, applySetting, defaultSetting }) => {
   const appContext = React.useContext(AppContext)
+
   const { enableWorkingHours } = React.useMemo(() => appContext?.config || {}, [appContext])
+
   const [settings, setSettings] = useState<ISwimlaneSettings>(defaultSetting)
+
+  const [timeError, setTimeError] = useState<string>('')
+
   const timeSnapUnit = useMemo(() => TIME_SNAP_UNIT.find(item => item.value === settings.snapUnitConsole), [settings])
-  const onSettingChange = (newSettings: ISwimlaneSettings) => {
-    setSettings(newSettings)
-  }
 
   const onEnableOnlyShowWorkingHour = useCallback((e: ChangeEvent) => {
-    onSettingChange({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       workingHours: {
-        ...settings.workingHours,
-        enabled: !settings.workingHours.enabled,
+        ...prev.workingHours,
+        enabled: !prev.workingHours.enabled,
       }
-    })
-  }, [settings])
+    }))
+  }, [])
 
   const onStartTimeSelect = useCallback((selectedTime: ITimeOption) => {
-    onSettingChange({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       workingHours: {
-        ...settings.workingHours,
-        enabled: true,
+        ...prev.workingHours,
         startTime: selectedTime.numberValue,
       }
-    })
-  }, [settings])
+    }))
+  }, [])
 
   const onEndTimeSelect = useCallback((selectedTime: ITimeOption) => {
-    onSettingChange({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       workingHours: {
-        ...settings.workingHours,
-        enabled: true,
+        ...prev.workingHours,
         endTime: selectedTime.numberValue,
       }
-    })
-  }, [settings])
+    }))
+  }, [])
 
   const onWeekdaySelect = useCallback((e: ChangeEvent, day: WeekDay) => {
-    onSettingChange({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       workingHours: {
-        ...settings.workingHours,
+        ...prev.workingHours,
         days: {
-          ...settings.workingHours.days,
-          [day]: !settings.workingHours.days[day]
+          ...prev.workingHours.days,
+          [day]: !prev.workingHours.days[day]
         }
       }
-    })
-  }, [settings])
+    }))
+  }, [])
 
   const onTimeSnapSelect = useCallback((selectItem: ISelectItem) => {
-    onSettingChange({
-      ...settings,
+    setSettings(prev => ({
+      ...prev,
       snapUnitConsole: selectItem.value
-    })
-  }, [settings])
+    }))
+  }, [])
 
   const onApplySetting = useCallback(() => {
     applySetting(settings)
     hideSetting()
   }, [settings])
+
+  useEffect(() => {
+    if (settings.workingHours.startTime >= settings.workingHours.endTime) {
+      setTimeError('Start must be before End.')
+    } else if (!!timeError) {
+      setTimeError('')
+    }
+  }, [settings.workingHours.startTime, settings.workingHours.endTime])
 
   return (
     <div className="cx-bg-white cx-shadow cx-text-neutral-800">
@@ -101,7 +109,7 @@ const SwimlaneSetting: React.FC<ISwimlaneSettingProps> = ({ hideSetting, applySe
         <Icon name="close" className="cx-cursor-pointer" onClick={hideSetting} size={18} />
       </div>
       {enableWorkingHours && (
-        <div className="cx-p-4">
+        <div className="cx-p-4 cx-pb-0">
           <FormInputElement
             type="checkbox"
             inlineLabel="Only show working hours"
@@ -125,7 +133,8 @@ const SwimlaneSetting: React.FC<ISwimlaneSettingProps> = ({ hideSetting, applySe
             defaultSelected={settings.workingHours.endTime}
           />
         </div>
-        <div className="cx-pl-4 cx-mt-4 cx-flex cx-justify-center">
+        {timeError && <p className="cx-pl-4 cx-pt-2 cx-text-red-700">{timeError}</p>}
+        <div className="cx-pl-4 cx-mt-2 cx-flex cx-justify-center">
           {WEEKDAYS.map(item => (
             <div key={item.value} className="cx-flex cx-flex-col cx-mr-2">
               <label className="cx-mb-1">{item.label}</label>
@@ -153,7 +162,7 @@ const SwimlaneSetting: React.FC<ISwimlaneSettingProps> = ({ hideSetting, applySe
         />
       </div>
       <div className="cx-text-right cx-pr-4 cx-pb-4">
-        <Button buttonType="primary" onClick={onApplySetting}>Apply</Button>
+        <Button buttonType="primary" onClick={onApplySetting} disabled={!!timeError}>Apply</Button>
       </div>
     </div>
   )

@@ -239,13 +239,6 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     }
   }, [filterParams])
 
-  useEffect(() => {
-    // isTemplate = true
-    // onViewProject('a103L0000008ZjLQAU')
-    // isTemplate = false
-    // onViewProject('a103L0000008YnsQAE')
-  }, [])
-
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}

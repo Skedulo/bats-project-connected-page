@@ -19,6 +19,52 @@ import {
 const DEFAULT_SLOT_WIDTH = 50
 const SLOT_WIDTH_UNIT = 'px'
 
+interface IScheduledJobProps {
+  job: IJobDetail
+  jobPosition: string
+  travelTimeStyle: Record<string, string>
+  durationStyle: Record<string, string>
+}
+
+const ScheduledJob: React.FC<IScheduledJobProps> = ({ job, jobPosition, travelTimeStyle, durationStyle }) => {
+  const resources: React.ReactNode[] = []
+  const time = Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement))
+  times(index => {
+    const jobAllocation = job.allocations ? job.allocations[index] : null
+
+    resources.push(
+      <Avatar
+        name={jobAllocation?.resource?.name || ''}
+        key={`resourcerquired-${index}`}
+        className={classnames('cx-ml-1 first:cx-ml-0', {
+          'cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500': !jobAllocation
+        })}
+        showTooltip={!!jobAllocation?.resource?.name}
+        size="small"
+        preserveName={false}
+      />
+    )
+  }, time > 0 ? time : 1)
+
+  return (
+    <div className="cx-flex cx-items-center cx-absolute cx-z-1" style={{
+      height: '80%',
+      left: jobPosition,
+    }}>
+      {job.plannedTravelTime && (
+        <span className="cx-bg-neutral-500" style={travelTimeStyle} />
+      )}
+      <span className="cx-h-full" style={durationStyle} />
+      <span className="cx-flex">
+        {resources}
+      </span>
+      <span className="cx-pl-2" style={{ width: 'max-content' }}>
+        {parseDurationValue(job.duration)}
+      </span>
+    </div>
+  )
+}
+
 const generateScheduleDataCell = (
   rangeType: RangeType,
   dateRange: Date[],
@@ -29,7 +75,6 @@ const generateScheduleDataCell = (
   workingHours: IWorkingHours,
   job: IJobDetail,
 ) => {
-  const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
   const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
   const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
 
@@ -37,54 +82,34 @@ const generateScheduleDataCell = (
 
   if (job || rangeType !== 'month') {
     times(dateRangeIndex => {
-      if (rangeType === 'week' && workingHours.enabled || rangeType === 'month' && workingHours.enabled) {
+      const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
+
+      if (['week', 'month'].includes(rangeType) && workingHours.enabled) {
         // display schedule data
-        const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
         const matched = formattedDateString === job.startDate
           && job.startTime >= workingHours.startTime
           && job.endTime <= workingHours.endTime
-        const resources: React.ReactNode[] = []
-
-        if (matched) {
-          const time = Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement))
-          times(index => {
-            const jobAllocation = job.allocations ? job.allocations[index] : null
-
-            resources.push(
-              <Avatar
-                name={jobAllocation?.resource?.name || ''}
-                key={`resourcerquired-${index}`}
-                className={classnames('cx-ml-1 first:cx-ml-0', {
-                  'cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500': !jobAllocation
-                })}
-                showTooltip={!!jobAllocation?.resource?.name}
-                size="small"
-                preserveName={false}
-              />
-            )
-          }, time > 0 ? time : 1)
-        }
 
         dateCols.push(
           <div className="timeslot" key={`${workingHours.startTime}-${dateRangeIndex}`}>
             {matched && (
-              <div className="cx-flex cx-items-center cx-absolute" style={{
-                height: '80%',
-                zIndex: 1,
-                left: `${(parseDurationFromTimeValueRange(workingHours.startTime, job.startTime) / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
-              }}>
-                <span className="cx-h-full" style={{
-                  width: `${(job.duration / totalMinutes) * slotWidth}px`,
+              <ScheduledJob
+                job={job}
+                jobPosition={
+                  parseDurationFromTimeValueRange(workingHours.startTime, job.startTime) / totalMinutes * slotWidth
+                  + SLOT_WIDTH_UNIT
+                }
+                travelTimeStyle={{
+                  height: '2px',
+                  width: `${(job.plannedTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
+                  marginLeft: `-${(job.plannedTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`
+                }}
+                durationStyle={{
+                  width: `${(job.duration / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
                   backgroundColor: SCHEDULE_JOB_STATUS_COLOR[job.status],
-                }} />
-                <span className="cx-flex">
-                  {resources}
-                </span>
-                <span className="cx-pl-2" style={{ width: 'max-content' }}>
-                  {parseDurationValue(job.duration)}
-                </span>
-              </div>
-            ) }
+                }}
+              />
+            )}
           </div>
         )
       } else if (isDayWorkingHour && excludeDays.includes(format(dateRange[dateRangeIndex], 'EEEE').toLowerCase())) {
@@ -98,9 +123,7 @@ const generateScheduleDataCell = (
         // display normal cell data
         timeCols.forEach((item: ITimeOption, indexTime) => {
           // display schedule data
-          const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
           let matched = formattedDateString === job.startDate && job.startTime >= item.numberValue
-          const resources: React.ReactNode[] = []
           if (timeCols[indexTime + 1]) {
             matched = matched && job.startTime < timeCols[indexTime + 1].numberValue
           }
@@ -108,44 +131,28 @@ const generateScheduleDataCell = (
             matched = matched && job.startTime >= workingHours.startTime && job.endTime <= workingHours.endTime
           }
           if (matched) {
-            const time = Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement))
-            times(index => {
-              const jobAllocation = job.allocations ? job.allocations[index] : null
-
-              resources.push(
-                <Avatar
-                  name={jobAllocation?.resource?.name || ''}
-                  key={`resourcerquired-${index}`}
-                  className={classnames('cx-ml-1 first:cx-ml-0', {
-                    'cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500': !jobAllocation
-                  })}
-                  showTooltip={!!jobAllocation?.resource?.name}
-                  size="small"
-                  preserveName={false}
-                />
-              )
-            }, time > 0 ? time : 1)
+            console.log('job: ', (job.plannedTravelTime / totalMinutes) * slotWidth);
           }
 
           dateCols.push(
             <div className="timeslot" key={`${item.stringValue}-${dateRangeIndex}`}>
               {matched && (
-                <div className="cx-flex cx-items-center cx-absolute" style={{
-                  height: '80%',
-                  zIndex: 1,
-                  left: `${(parseDurationFromTimeValueRange(item.numberValue, job.startTime) / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
-                }}>
-                  <span className="cx-h-full" style={{
+                <ScheduledJob
+                  job={job}
+                  jobPosition={
+                    parseDurationFromTimeValueRange(item.numberValue, job.startTime) / timeGap * slotWidth
+                    + SLOT_WIDTH_UNIT
+                  }
+                  travelTimeStyle={{
+                    height: '2px',
+                    width: `${(job.plannedTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
+                    marginLeft: `-${(job.plannedTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`
+                  }}
+                  durationStyle={{
                     width: `${(job.duration / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
                     backgroundColor: SCHEDULE_JOB_STATUS_COLOR[job.status],
-                  }} />
-                  <span className="cx-flex">
-                    {resources}
-                  </span>
-                  <span className="cx-pl-2" style={{ width: 'max-content' }}>
-                    {parseDurationValue(job.duration)}
-                  </span>
-                </div>
+                  }}
+                />
               ) }
             </div>
           )

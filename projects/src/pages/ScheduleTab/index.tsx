@@ -10,6 +10,7 @@ import {
   Pagination,
   PopOut,
   IconButton,
+  Tooltip,
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import SwimlaneSetting from './SwimlaneSetting'
@@ -77,8 +78,8 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         if (job.duration) {
           totalDuration += job.duration
         }
-        if (job.travelTime) {
-          totalTravelTime += job.travelTime
+        if (job.plannedTravelTime) {
+          totalTravelTime += job.plannedTravelTime
         }
       })
       avgTravelTime = totalTravelTime / jobs.results.length
@@ -116,6 +117,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           ? res.results.map((item: IJobDetail) => {
               return {
                 ...item,
+                plannedTravelTime: 60,
                 resourceRequirement: newJobTypeTemplateValues[item.jobType]
                   ? newJobTypeTemplateValues[item.jobType].totalQty
                   : 1,
@@ -266,18 +268,30 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           </div>
           <div className="general-info-item cx-p-4 cx-flex cx-justify-between cx-border-l-0">
             <div className="cx-flex">
-              <Icon name="time" />
-              <span className="cx-px-2">
-                {totalCount.totalTravelTime > 0 ? parseDurationValue(totalCount.totalTravelTime) : '-'}
-              </span>
-              <Icon name="calendar" />
-              <span className="cx-px-2">
-                {totalCount.totalDuration > 0 ? parseDurationValue(totalCount.totalDuration) : '-'}
-              </span>
-              <Icon name="location" />
-              <span className="cx-px-2">
-                {totalCount.avgTravelTime > 0 ? parseDurationValue(totalCount.avgTravelTime) : '-'}
-              </span>
+              <Tooltip content="Total Travel Time" position="top">
+                <div className="cx-flex">
+                  <Icon name="time" />
+                  <span className="cx-px-2">
+                    {totalCount.totalTravelTime > 0 ? parseDurationValue(totalCount.totalTravelTime) : '--'}
+                  </span>
+                </div>
+              </Tooltip>
+              <Tooltip content="Total Scheduled Time" position="top">
+                <div className="cx-flex">
+                  <Icon name="calendar" />
+                  <span className="cx-px-2">
+                    {totalCount.totalDuration > 0 ? parseDurationValue(totalCount.totalDuration) : '--'}
+                  </span>
+                </div>
+              </Tooltip>
+              <Tooltip content="Average Travel Time" position="top">
+                <div className="cx-flex">
+                  <Icon name="location" />
+                  <span className="cx-px-2">
+                    {totalCount.avgTravelTime > 0 ? parseDurationValue(totalCount.avgTravelTime) : '--'}
+                  </span>
+                </div>
+              </Tooltip>
             </div>
             {/* <div>Thame Valley</div> */}
           </div>

@@ -17,7 +17,7 @@ interface IWrappedFormInputProps {
   maxLength?: number
 }
 
-const WrappedFormInput: React.FC<IWrappedFormInputProps> = (props) => {
+const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
   const {
     label,
     name,

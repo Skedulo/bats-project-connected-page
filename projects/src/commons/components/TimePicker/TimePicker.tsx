@@ -25,7 +25,7 @@ const TimePicker: React.FC<ITimePickerProps> = ({
   const timeOptions = React.useMemo(() => getTimePickerOptions(step || 15), [])
   const [openLookup, setOpenLookup] = React.useState<boolean>(false)
   const [selectedOption, setSelectedOption] = React.useState<ITimePickerOption | null>(
-    timeOptions.find((item) => item.numberValue === defaultSelected || item.stringValue === defaultSelected) || null
+    timeOptions.find(item => item.numberValue === defaultSelected || item.stringValue === defaultSelected) || null
   )
 
   const handleOpenLookup = React.useCallback(() => {

@@ -44,8 +44,6 @@ const JobFilter: React.FC<IJobFilterProps> = ({ onResetFilter, onFilterChange, f
 
   // revoked once applying filter from filter bar
   const onFilter = useCallback((params: any) => {
-    console.log('params: ', params);
-
     const selectedParams: any = {}
     filterBar.forEach((item: any) => {
       const matchedItem = params.find((paramItem: any) => paramItem.id === item.id)

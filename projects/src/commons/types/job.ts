@@ -63,6 +63,7 @@ export interface IJobDetail {
   startTimeString?: string,
   endTimeString?: string,
   travelTime: number
+  plannedTravelTime: number
 }
 
 export declare type JobItem = IJobDetail | IJobTemplate
