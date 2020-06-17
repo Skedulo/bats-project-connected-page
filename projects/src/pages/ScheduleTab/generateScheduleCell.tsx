@@ -17,32 +17,27 @@ import {
 } from '../../commons/utils'
 
 const DEFAULT_SLOT_WIDTH = 50
+const SLOT_WIDTH_UNIT = 'px'
 
 const generateScheduleDataCell = (
   rangeType: RangeType,
   dateRange: Date[],
   totalMinutes: number,
   slotWidth: number,
+  timeGap: number,
   timeCols: ITimeOption[],
   workingHours: IWorkingHours,
-  job: IJobDetail
+  job: IJobDetail,
 ) => {
-  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
   const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
-
-  if (workingHours?.enabled && rangeType !== 'day') {
-    // if rangeType is day and enable workingHours --> not ignore that date, just disable
-    dateRange = dateRange.filter(date => {
-      const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
-      return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
-    })
-  }
+  const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
+  const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
 
   const dateCols: React.ReactElement[] = []
 
   if (job || rangeType !== 'month') {
     times(dateRangeIndex => {
-      if (isWeekdayWorkingHour) {
+      if (rangeType === 'week' && workingHours.enabled || rangeType === 'month' && workingHours.enabled) {
         // display schedule data
         const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
         const matched = formattedDateString === job.startDate
@@ -76,7 +71,7 @@ const generateScheduleDataCell = (
               <div className="cx-flex cx-items-center cx-absolute" style={{
                 height: '80%',
                 zIndex: 1,
-                left: `${(parseDurationFromTimeValueRange(workingHours.startTime, job.startTime) / totalMinutes) * slotWidth}px`,
+                left: `${(parseDurationFromTimeValueRange(workingHours.startTime, job.startTime) / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
               }}>
                 <span className="cx-h-full" style={{
                   width: `${(job.duration / totalMinutes) * slotWidth}px`,
@@ -92,7 +87,15 @@ const generateScheduleDataCell = (
             ) }
           </div>
         )
+      } else if (isDayWorkingHour && excludeDays.includes(format(dateRange[dateRangeIndex], 'EEEE').toLowerCase())) {
+        // display disabled cell data
+        timeCols.forEach((item: ITimeOption, indexTime) => {
+          dateCols.push(
+            <div className="timeslot cx-bg-neutral-350" key={`${item.stringValue}-${dateRangeIndex}`} />
+          )
+        })
       } else {
+        // display normal cell data
         timeCols.forEach((item: ITimeOption, indexTime) => {
           // display schedule data
           const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
@@ -130,10 +133,10 @@ const generateScheduleDataCell = (
                 <div className="cx-flex cx-items-center cx-absolute" style={{
                   height: '80%',
                   zIndex: 1,
-                  left: `${((job.startTime - item.numberValue) / timeGap) * 50}px`,
+                  left: `${(parseDurationFromTimeValueRange(item.numberValue, job.startTime) / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
                 }}>
                   <span className="cx-h-full" style={{
-                    width: `${(job.duration / timeGap) * DEFAULT_SLOT_WIDTH}px`,
+                    width: `${(job.duration / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
                     backgroundColor: SCHEDULE_JOB_STATUS_COLOR[job.status],
                   }} />
                   <span className="cx-flex">
@@ -180,9 +183,12 @@ const generateScheduleHeaderCell = (
       if (!workingHours.enabled ||
         (workingHours.enabled &&
         currentTimeValue >= workingHours.startTime &&
-        currentTimeValue <= workingHours.startTime)
+        currentTimeValue <= workingHours.endTime)
       ) {
-        currentTimeIndicatorPosition = (currentTimeInMinute / totalMinutes) * slotWidth * timeCols.length
+        const ignoredTime = workingHours.enabled ? parseDurationFromTimeValueRange(0, workingHours.startTime) : 0
+
+        currentTimeIndicatorPosition = (
+          (currentTimeInMinute - ignoredTime) / totalMinutes) * slotWidth * timeCols.length
           + index * slotWidth * timeCols.length
       }
     }
@@ -234,14 +240,18 @@ const generateScheduleCell = (
   job?: IJobDetail
 ) => {
   const workingHours = swimlaneSettings.workingHours
-  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
-  const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
-  const slotWidth = isWeekdayWorkingHour ? DEFAULT_SLOT_WIDTH * 4 : DEFAULT_SLOT_WIDTH
   // total minutes in 1 days
-  const totalMinutes = isWeekdayWorkingHour ?
+  const totalMinutes = workingHours.enabled ?
     parseDurationFromTimeValueRange(workingHours.startTime, workingHours.endTime) :
     1440
-  const timeCols = isWeekdayWorkingHour ?
+  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
+  const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
+  const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
+  // width of 1 cell
+  let slotWidth = isWeekdayWorkingHour ? DEFAULT_SLOT_WIDTH * 4 : DEFAULT_SLOT_WIDTH
+
+  // number of time columns
+  let timeCols = isWeekdayWorkingHour ?
     [{ stringValue: parseTimeValue(workingHours.startTime), numberValue: workingHours.startTime }] :
     getTimePickerOptions(timeGap)
 
@@ -258,6 +268,15 @@ const generateScheduleCell = (
       const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
       return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
     })
+  }
+
+  if (isDayWorkingHour) {
+    // if rangeType === day and enable workingHours --> filter timeCols base on working hours
+    // if rangeType !== day and enable workingHours --> only display custom columns, no need to filter
+    timeCols = timeCols.filter(time => {
+      return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
+    })
+    slotWidth = window.innerWidth * 0.7 / timeCols.length
   }
 
   const cols = timeCols.length * dateRange.length
@@ -281,15 +300,17 @@ const generateScheduleCell = (
       dateRange,
       totalMinutes,
       slotWidth,
+      timeGap,
       timeCols,
       workingHours,
       job
     )
   }
+
   return (
     <>
       <div className="cx-grid cx-h-full" style={{
-        gridTemplateColumns: `repeat(${cols}, ${slotWidth}px)`,
+        gridTemplateColumns: `repeat(${cols}, ${slotWidth}${SLOT_WIDTH_UNIT})`,
       }}>
         {cells}
         {currentTimePosition !== null && (
