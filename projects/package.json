@@ -37,7 +37,7 @@
     "webpack-dev-server": "^3.8.0"
   },
   "dependencies": {
-    "@skedulo/sked-ui": "^13.6.1",
+    "@skedulo/sked-ui": "^13.9.0",
     "@types/axios": "^0.14.0",
     "@types/classnames": "^2.2.10",
     "@types/history": "^4.7.6",

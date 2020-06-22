@@ -3,7 +3,7 @@ import { times, toNumber, pickBy } from 'lodash/fp'
 import classnames from 'classnames'
 import { format } from 'date-fns-tz'
 import { getDaysInMonth, eachDayOfInterval, add, isToday } from 'date-fns'
-import { RangeType, Avatar } from '@skedulo/sked-ui'
+import { RangeType, Avatar, GroupAvatars, Tooltip } from '@skedulo/sked-ui'
 import { IJobDetail, ITimeOption, ISwimlaneSettings, IWorkingHours } from '../../commons/types'
 import {
   SCHEDULE_JOB_STATUS_COLOR,
@@ -24,10 +24,17 @@ interface IScheduledJobProps {
   jobPosition: string
   travelTimeStyle: Record<string, string>
   durationStyle: Record<string, string>
+  travelTime: number
 }
 
-const ScheduledJob: React.FC<IScheduledJobProps> = ({ job, jobPosition, travelTimeStyle, durationStyle }) => {
-  const resources: React.ReactNode[] = []
+const ScheduledJob: React.FC<IScheduledJobProps> = ({
+  job,
+  jobPosition,
+  travelTime,
+  travelTimeStyle,
+  durationStyle
+}) => {
+  const resources: any = []
   const time = Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement))
   times(index => {
     const jobAllocation = job.allocations ? job.allocations[index] : null
@@ -51,12 +58,18 @@ const ScheduledJob: React.FC<IScheduledJobProps> = ({ job, jobPosition, travelTi
       height: '80%',
       left: jobPosition,
     }}>
-      {job.plannedTravelTime && (
+      {travelTime > 0 && (
         <span className="cx-bg-neutral-500" style={travelTimeStyle} />
       )}
       <span className="cx-h-full" style={durationStyle} />
       <span className="cx-flex">
         {resources}
+        {/* <GroupAvatars
+          totalSlots={time > 0 ? time : 1}
+          maxVisibleSlots={5}
+          avatarInfo={resources}
+          size="medium"
+        /> */}
       </span>
       <span className="cx-pl-2" style={{ width: 'max-content' }}>
         {parseDurationValue(job.duration)}
@@ -81,9 +94,13 @@ const generateScheduleDataCell = (
   const dateCols: React.ReactElement[] = []
 
   if (job || rangeType !== 'month') {
+    const resourceTravelTime = job.allocations ? job.allocations.filter(item => !!item.plannedTravelTime) : []
+    const maxTravelTime = resourceTravelTime.length ?
+      Math.max(...resourceTravelTime.map(item => item.plannedTravelTime)) :
+      0
+
     times(dateRangeIndex => {
       const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
-
       if (['week', 'month'].includes(rangeType) && workingHours.enabled) {
         // display schedule data
         const matched = formattedDateString === job.startDate
@@ -99,10 +116,11 @@ const generateScheduleDataCell = (
                   parseDurationFromTimeValueRange(workingHours.startTime, job.startTime) / totalMinutes * slotWidth
                   + SLOT_WIDTH_UNIT
                 }
+                travelTime={maxTravelTime}
                 travelTimeStyle={{
                   height: '2px',
-                  width: `${(job.plannedTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
-                  marginLeft: `-${(job.plannedTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`
+                  width: `${(maxTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
+                  marginLeft: `-${(maxTravelTime / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`
                 }}
                 durationStyle={{
                   width: `${(job.duration / totalMinutes) * slotWidth}${SLOT_WIDTH_UNIT}`,
@@ -140,10 +158,11 @@ const generateScheduleDataCell = (
                     parseDurationFromTimeValueRange(item.numberValue, job.startTime) / timeGap * slotWidth
                     + SLOT_WIDTH_UNIT
                   }
+                  travelTime={maxTravelTime}
                   travelTimeStyle={{
                     height: '2px',
-                    width: `${(job.plannedTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
-                    marginLeft: `-${(job.plannedTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`
+                    width: `${(maxTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
+                    marginLeft: `-${(maxTravelTime / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`
                   }}
                   durationStyle={{
                     width: `${(job.duration / timeGap) * slotWidth}${SLOT_WIDTH_UNIT}`,
@@ -248,10 +267,9 @@ const generateScheduleCell = (
   const totalMinutes = workingHours.enabled ?
     parseDurationFromTimeValueRange(workingHours.startTime, workingHours.endTime) :
     1440
-  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 240 : 1440
+  const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 360 : 1440
   const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
-  const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
-  const isMonthWorkingHour = rangeType === 'month' && workingHours.enabled
+
   // width of 1 cell
   let slotWidth = isWeekdayWorkingHour ? DEFAULT_SLOT_WIDTH * 4 : DEFAULT_SLOT_WIDTH
 
@@ -319,7 +337,7 @@ const generateScheduleCell = (
         {cells}
         {currentTimePosition !== null && (
           <div
-            className="cx-absolute cx-h-full current-time-indicator"
+            className="cx-absolute cx-h-full current-time-indicator cx-z-1"
             style={{
               left: `calc(30% + ${currentTimePosition}px)`,
             }}

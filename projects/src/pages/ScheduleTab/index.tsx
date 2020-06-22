@@ -72,17 +72,23 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     let totalDuration = 0
     let totalTravelTime = 0
     let avgTravelTime = 0
+    const totalAllocations = jobs.results.length || 0
 
     if (jobs.results.length) {
       jobs.results.forEach(job => {
         if (job.duration) {
           totalDuration += job.duration
         }
-        if (job.plannedTravelTime) {
-          totalTravelTime += job.plannedTravelTime
+        if (job.allocations) {
+          job.allocations.forEach(allocation => {
+            // totalAllocations += 1
+            if (allocation.plannedTravelTime) {
+              totalTravelTime += allocation.plannedTravelTime
+            }
+          })
         }
       })
-      avgTravelTime = totalTravelTime / jobs.results.length
+      avgTravelTime = Math.round(totalTravelTime / totalAllocations)
     }
     return { totalDuration, totalTravelTime, avgTravelTime }
   }, [jobs.results])
@@ -175,6 +181,10 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(date)
   }, [])
 
+  const onTodayClick = useCallback(() => {
+    setSelectedDate(new Date())
+  }, [])
+
   const swimlaneSettingTrigger = useCallback(() => {
     return (
       <IconButton
@@ -234,6 +244,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               onDateSelect={onDateSelect}
               selectedRange={selectedDateRange}
               onRangeChange={onDateRangeSelect}
+              onTodayClick={onTodayClick}
             />
             <PopOut
               placement="bottom"

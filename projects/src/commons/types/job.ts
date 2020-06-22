@@ -18,6 +18,7 @@ export interface IJobAllocation {
   name: string
   travelTime: string
   resource: IBaseModel
+  plannedTravelTime: number
 }
 
 export interface IJobConstraint {
@@ -63,7 +64,7 @@ export interface IJobDetail {
   startTimeString?: string,
   endTimeString?: string,
   travelTime: number
-  plannedTravelTime: number
+  plannedTravelTime?: number
 }
 
 export declare type JobItem = IJobDetail | IJobTemplate
