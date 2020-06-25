@@ -1,7 +1,5 @@
 import * as React from 'react'
 import { Router, Route, Switch } from 'react-router-dom'
-import { HTML5Backend } from 'react-dnd-html5-backend'
-import { DndProvider } from 'react-dnd'
 import ListProjectsPage from './pages/Projects'
 import ProjectDetailPage from './pages/ProjectDetails'
 import { withGlobalLoading } from './commons/components/GlobalLoading'

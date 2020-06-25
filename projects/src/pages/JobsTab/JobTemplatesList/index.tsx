@@ -219,14 +219,14 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-px-4 cx-pt-4 cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-sticky cx-p-2 cx-top-0 cx-bg-white cx-z-10">
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJobTemplate} icon="plus">
             New Job
           </Button>
           <SearchBox
-            className="searchbox searchbox--w240 cx-mb-0 cx-border"
+            className="searchbox searchbox--w240 cx-mb-0 cx-border cx-mr-2"
             onChange={onSearchTextChange}
             placeholder="jobs"
             clearable={!!filterParams.searchText}
@@ -235,18 +235,16 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
           />
         </div>
       </div>
-      <div className="cx-p-4">
-        <DynamicTable {...jobsTableConfig} />
-        {jobTemplates.totalItems > 0 && (
-          <Pagination
-            itemsTotal={jobTemplates.totalItems}
-            itemsPerPage={filterParams.pageSize || 0}
-            currentPage={filterParams.pageNumber || 1}
-            onPageChange={onPageChange}
-            className="cx-static"
-          />
-        )}
-      </div>
+      <DynamicTable {...jobsTableConfig} />
+      {jobTemplates.totalItems > 0 && (
+        <Pagination
+          itemsTotal={jobTemplates.totalItems}
+          itemsPerPage={filterParams.pageSize || 0}
+          currentPage={filterParams.pageNumber || 1}
+          onPageChange={onPageChange}
+          className="cx-static"
+        />
+      )}
       {openJobTemplateModal && (
         <JobTemplateModal
           onSubmit={onSaveJobTemplate}

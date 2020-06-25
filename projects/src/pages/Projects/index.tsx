@@ -42,6 +42,10 @@ export const projectsTableColumns = (
       Header: 'Name',
       accessor: 'projectName',
       width: '20%',
+      Cell: ({ cell, row }: { cell: { value: string }; row: { original: IProjectDetail } }) => {
+        const viewProject = () => onViewProject(row.original.id)
+        return <span className="cx-cursor-pointer" onClick={viewProject}>{cell.value}</span>
+      },
     },
     {
       Header: 'Description',
@@ -242,8 +246,8 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-px-4 cx-pt-4 cx-top-0 cx-bg-white cx-z-10">
-        <div className="cx-flex cx-aligns-center cx-justify-between">
+      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
+        <div className="cx-flex cx-aligns-center cx-justify-between cx-px-4 cx-pt-4">
           <h1 className="cx-text-xl cx-font-semibold">Projects</h1>
           <ul className="cx-flex">
             <li className="cx-pr-4">
@@ -267,18 +271,16 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
         </div>
         <ProjectFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
       </div>
-      <div className="cx-p-4">
-        <DynamicTable {...projectsTableConfig} />
-        {projects.totalItems > 0 && (
-          <Pagination
-            itemsTotal={projects.totalItems}
-            itemsPerPage={filterParams.pageSize || 0}
-            currentPage={filterParams.pageNumber || 1}
-            onPageChange={onPageChange}
-            className="cx-static"
-          />
-        )}
-      </div>
+      <DynamicTable {...projectsTableConfig} />
+      {projects.totalItems > 0 && (
+        <Pagination
+          itemsTotal={projects.totalItems}
+          itemsPerPage={filterParams.pageSize || 0}
+          currentPage={filterParams.pageNumber || 1}
+          onPageChange={onPageChange}
+          className="cx-static"
+        />
+      )}
       {openCreateModal && <CreateProjectModal onClose={toggleCreateModal} onSubmit={onSaveProject} />}
       {!!confirmAction && (
         <ConfirmationModal

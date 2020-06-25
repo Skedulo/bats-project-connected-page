@@ -207,7 +207,7 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
   }, [])
 
   return (
-    <div className="cx-relative cx-p-2 cx-border-b cx-border-neutral-300">
+    <div className="cx-relative cx-p-4 cx-border-b cx-border-neutral-300">
       <ul className="cx-flex cx-items-center">
         <li>
           <PopOut

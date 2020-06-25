@@ -5,14 +5,13 @@ import JobsList from './JobsList'
 import { IProjectDetail } from '../../commons/types'
 
 interface IJobsTabProps {
-  projectId: string
   project: IProjectDetail
 }
 
-const JobsTab: React.FC<IJobsTabProps> = ({ projectId, project }) => {
+const JobsTab: React.FC<IJobsTabProps> = ({ project }) => {
   if (project.isTemplate) {
-    return <JobTemplatesList projectId={projectId} isTemplate={project.isTemplate} />
+    return <JobTemplatesList projectId={project.id} isTemplate={project.isTemplate} />
   }
-  return <JobsList projectId={projectId} project={project} />
+  return <JobsList project={project} />
 }
 export default memo(JobsTab)

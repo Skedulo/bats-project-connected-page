@@ -18,7 +18,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
-  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.SCHEDULE)
+  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
 
   const [project, setProject] = useState<IProjectDetail | null>(null)
 
@@ -56,34 +56,30 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
   }
 
   return (
-    <div className="cx-absolute cx-inset-8 cx-shadow">
-      <div className="cx-flex cx-flex-col cx-h-full">
-        <div className="cx-p-8 cx-pb-0">
-          <Link to="/" className="cx-flex">
-            <Icon name="chevronLeft" className="cx-text-primary" />
-            <span className="cx-text-primary cx-capitalize">Projects</span>
-          </Link>
-          <div>
-            <div className="cx-flex cx-justify-between cx-mb-4">
-              <h1 className="cx-text-xl cx-font-semibold">
-                {project.projectName}
-              </h1>
-              {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
-                <Icon name="trash" className="cx-text-neutral-500" />
-              </button> */}
-            </div>
-            <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
-              {project.projectDescription}
-            </p>
+    <div className="cx-flex cx-flex-col cx-h-full">
+      <div className="cx-p-8 cx-pb-0">
+        <Link to="/" className="cx-flex">
+          <Icon name="chevronLeft" className="cx-text-primary" />
+          <span className="cx-text-primary cx-capitalize">Projects</span>
+        </Link>
+        <div>
+          <div className="cx-flex cx-justify-between cx-mb-4">
+            <h1 className="cx-text-xl cx-font-semibold">
+              {project.projectName}
+            </h1>
+            {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
+              <Icon name="trash" className="cx-text-neutral-500" />
+            </button> */}
           </div>
-          <Tabs tabs={tabOptions} currentActiveRoute={activeTab} onClick={onChangeTab} />
+          <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
+            {project.projectDescription}
+          </p>
         </div>
-        {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
-        {activeTab === PROJECT_TAB_ROUTES.JOBS && (
-          <JobsTab projectId={params.projectId || ''} project={project} />
-        )}
-        {activeTab === PROJECT_TAB_ROUTES.SCHEDULE && <ScheduleTab project={project} />}
       </div>
+      <Tabs tabs={tabOptions} currentActiveRoute={activeTab} onClick={onChangeTab} />
+      {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
+      {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab project={project} />}
+      {activeTab === PROJECT_TAB_ROUTES.SCHEDULE && <ScheduleTab project={project} />}
     </div>
   )
 }

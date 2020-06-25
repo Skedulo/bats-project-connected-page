@@ -300,7 +300,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-px-8 cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
         <JobFilter
           onResetFilter={onResetFilter}
           onFilterChange={onFilterChange}
@@ -311,7 +311,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           <Button buttonType="transparent" onClick={onCreateJob} icon="plus">
             New Job
           </Button>
-          <div className="cx-flex cx-aligns-center">
+          <div className="cx-flex cx-aligns-center cx-pr-4">
             <CalendarControls
               rangeOptions={['day', 'week', 'month']}
               selected={selectedDate}

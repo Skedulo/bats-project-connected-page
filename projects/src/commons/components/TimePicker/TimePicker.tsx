@@ -2,11 +2,11 @@ import * as React from 'react'
 import classNames from 'classnames'
 import { FormInputElement, Icon, Menu, MenuItem, Loading } from '@skedulo/sked-ui'
 import { getTimePickerOptions } from '../../utils'
-import { ITimePickerOption } from '../../types'
+import { ITimeOption } from '../../types'
 
 interface ITimePickerProps {
   className?: string
-  onSelect: (item: ITimePickerOption) => void
+  onSelect: (item: ITimeOption) => void
   defaultSelected?: number | string
   placeholderText?: string
   disabled?: boolean
@@ -24,7 +24,7 @@ const TimePicker: React.FC<ITimePickerProps> = ({
   const inputRef = React.useRef<HTMLInputElement>(null)
   const timeOptions = React.useMemo(() => getTimePickerOptions(step || 15), [])
   const [openLookup, setOpenLookup] = React.useState<boolean>(false)
-  const [selectedOption, setSelectedOption] = React.useState<ITimePickerOption | null>(
+  const [selectedOption, setSelectedOption] = React.useState<ITimeOption | null>(
     timeOptions.find(item => item.numberValue === defaultSelected || item.stringValue === defaultSelected) || null
   )
 
@@ -42,7 +42,7 @@ const TimePicker: React.FC<ITimePickerProps> = ({
     }
   }, [openLookup])
 
-  const handleSelect = React.useCallback((item: ITimePickerOption) => {
+  const handleSelect = React.useCallback((item: ITimeOption) => {
     setSelectedOption(item)
     onSelect(item)
     setOpenLookup(false)
@@ -52,7 +52,7 @@ const TimePicker: React.FC<ITimePickerProps> = ({
     if (!timeOptions.length) {
       return <MenuItem>No data found.</MenuItem>
     }
-    return timeOptions.map((item: ITimePickerOption) => {
+    return timeOptions.map((item: ITimeOption) => {
       const handleClickItem = () => handleSelect(item)
       return (
         <MenuItem key={item.numberValue} onClick={handleClickItem}>

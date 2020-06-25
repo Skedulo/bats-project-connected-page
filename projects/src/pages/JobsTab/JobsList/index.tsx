@@ -36,7 +36,6 @@ import { createJobPath, jobDetailPath } from '../../routes'
 import { toastMessage } from '../../../commons/utils'
 
 interface IJobsListProps {
-  projectId: string
   project: IProjectDetail
 }
 
@@ -113,7 +112,8 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
 const ALLOWED_DEALLOCATE_STATUS = ['Dispatched', 'Pending Dispatch']
 const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
 
-const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
+const JobsList: React.FC<IJobsListProps> = ({ project }) => {
+  const projectId = project.id
   const appContext = React.useContext(AppContext)
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = React.useMemo(() => appContext?.config || {}, [
     appContext,
@@ -214,7 +214,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
       preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
     }
     window.top.window.location.href = `${createJobPath()}?${preFillStr}`
-  }, [projectId, project])
+  }, [project, projectId])
 
   const onViewJobDetail = useCallback((jobId: string) => {
     window.top.window.location.href = jobDetailPath(jobId)
@@ -290,7 +290,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-px-4 cx-pt-4 cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-sticky cx-p-2 cx-top-0 cx-bg-white cx-z-10">
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJob} icon="plus">
@@ -308,7 +308,7 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
               </ButtonGroup>
             )}
             <SearchBox
-              className="searchbox searchbox--w240 cx-mb-0 cx-border"
+              className="searchbox searchbox--w240 cx-mb-0 cx-border cx-mr-2"
               onChange={onSearchTextChange}
               placeholder="jobs"
               clearable={!!filterParams.searchText}
@@ -318,18 +318,16 @@ const JobsList: React.FC<IJobsListProps> = ({ projectId, project }) => {
           </div>
         </div>
       </div>
-      <div className="cx-p-4">
-        <DynamicTable {...jobsTableConfig} />
-        {jobs.totalItems > 0 && (
-          <Pagination
-            itemsTotal={jobs.totalItems}
-            itemsPerPage={filterParams.pageSize || 0}
-            currentPage={filterParams.pageNumber || 1}
-            onPageChange={onPageChange}
-            className="cx-static"
-          />
-        )}
-      </div>
+      <DynamicTable {...jobsTableConfig} />
+      {jobs.totalItems > 0 && (
+        <Pagination
+          itemsTotal={jobs.totalItems}
+          itemsPerPage={filterParams.pageSize || 0}
+          currentPage={filterParams.pageNumber || 1}
+          onPageChange={onPageChange}
+          className="cx-static"
+        />
+      )}
     </div>
   )
 }

@@ -12,11 +12,6 @@ export interface IAppContext {
   setAppConfig?: React.Dispatch<React.SetStateAction<IConfig>>
 }
 
-export interface ITimePickerOption {
-  stringValue: string,
-  numberValue: number
-}
-
 export interface IBaseModel {
   name: string
   id: string

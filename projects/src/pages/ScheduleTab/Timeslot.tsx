@@ -1,13 +1,5 @@
 import React, { memo, useCallback } from 'react'
-import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd'
-import { times, toNumber } from 'lodash/fp'
 import classnames from 'classnames'
-
-import { Avatar } from '@skedulo/sked-ui'
-import { parseDurationValue } from '../../commons/utils'
-import { IJobDetail } from '../../commons/types'
-import { DraggableItemTypes } from '../../commons/constants';
-import ScheduledCard from './ScheduledCard';
 
 interface ITimeslotProps {
   className?: string
