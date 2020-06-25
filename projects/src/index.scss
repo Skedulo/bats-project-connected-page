@@ -22,4 +22,8 @@ body {
     background: #fff;
     border-left: 2px solid #f10b0b;
   }
+  &.Toastify__toast--info {
+    background: #fff;
+    border-left: 2px solid #007ee6;
+  }
 }

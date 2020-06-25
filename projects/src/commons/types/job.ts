@@ -65,6 +65,35 @@ export interface IJobDetail {
   endTimeString?: string,
   travelTime: number
   plannedTravelTime?: number
+  region: IBaseModel
+  timezoneSid: string
 }
 
-export declare type JobItem = IJobDetail | IJobTemplate
+export interface IJobSuggestion {
+  duration: number,
+  start: string,
+  travelTime: number
+  jobId: string
+  startTime: number
+  endTime: number
+  startTimeString: string
+  startDate: string
+}
+
+export interface IJobTime {
+  id: string
+  startDate: string
+  startTime: number
+  duration: number
+  timezoneSid: string
+}
+
+export enum ResourceSortType {
+  BestFit = 'bestFit',
+  Name = 'name',
+  Rating = 'rating',
+  Tags = 'tags',
+  TravelDistanceFromHome = 'travelDistanceFromHome',
+  TravelDurationFromHome = 'travelDurationFromHome',
+  Utilised = 'utilized'
+}

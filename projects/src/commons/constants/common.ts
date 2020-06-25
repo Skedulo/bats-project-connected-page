@@ -30,3 +30,8 @@ export const DEFAULT_SWIMLANE_SETTINGS = {
     }
   }
 }
+
+export const DraggableItemTypes = {
+  JOB: 'job',
+  SUGGESTION: 'suggestion'
+}

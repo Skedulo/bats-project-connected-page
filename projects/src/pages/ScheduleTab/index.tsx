@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, times, toNumber, pickBy } from 'lodash/fp'
-import { format } from 'date-fns-tz'
-import { getDaysInMonth, add } from 'date-fns'
+import { debounce, uniq, keyBy, truncate, toNumber, fill } from 'lodash/fp'
+import classnames from 'classnames'
+import { format, zonedTimeToUtc } from 'date-fns-tz'
+import { getDaysInMonth, add, formatISO, set } from 'date-fns'
 import {
   Button,
   CalendarControls,
@@ -14,7 +15,8 @@ import {
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import SwimlaneSetting from './SwimlaneSetting'
-import generateScheduleCell from './generateScheduleCell'
+import AllocationModal from './AllocationModal'
+import ScheduleTimeslots from './ScheduleTimeslots'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
 import {
   IJobDetail,
@@ -25,6 +27,7 @@ import {
   IConfig,
   IProjectDetail,
   ISwimlaneSettings,
+  IJobSuggestion,
 } from '../../commons/types'
 import {
   DEFAULT_FILTER,
@@ -33,16 +36,30 @@ import {
   DEFAULT_SWIMLANE_SETTINGS,
   LOCAL_STORAGE_KEY
 } from '../../commons/constants'
-import { fetchListJobs, fetchJobTypeTemplateValues } from '../../Services/DataServices'
+import { fetchListJobs, fetchJobTypeTemplateValues, getJobSuggestion, updateJobTime } from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../routes'
-import { parseDurationValue, getLocalStorage,  setLocalStorage } from '../../commons/utils'
+import { parseDurationValue, getLocalStorage,  setLocalStorage, parseTimeValue } from '../../commons/utils'
 
 import './styles.scss'
 
 interface IScheduleTabProps {
   project: IProjectDetail
+}
+
+interface IAllocationModal {
+  isOpen: boolean
+  job: IJobDetail | null
+  suggestDate: string
+  suggestTime: number
+}
+
+const DEFAULT_ALLOCATION_MODAL = {
+  isOpen: false,
+  job: null,
+  suggestDate: '',
+  suggestTime: 0
 }
 
 const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
@@ -58,15 +75,25 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
+  const [allocationModal, setAllocationModal] = useState<IAllocationModal>(DEFAULT_ALLOCATION_MODAL)
+
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
 
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
 
-  const [swimlandSettings, setSwimlaneSettings] = useState<ISwimlaneSettings>(DEFAULT_SWIMLANE_SETTINGS)
+  const [swimlaneSettings, setSwimlaneSettings] = useState<ISwimlaneSettings>(DEFAULT_SWIMLANE_SETTINGS)
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
-  const [selectedDateRange, setSelectedDateRange] = useState<RangeType>('week')
+  const [selectedDateRange, setSelectedDateRange] = useState<RangeType>('day')
+
+  const [suggestions, setSuggestions] = useState<IJobSuggestion[]>([])
+
+  const endDate = useMemo(() => {
+    return add(selectedDate, {
+      days: (selectedDateRange === 'day' ? 1 : selectedDateRange === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
+    })
+  }, [selectedDate, selectedDateRange])
 
   const totalCount = useMemo(() => {
     let totalDuration = 0
@@ -134,6 +161,21 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setIsLoading(false)
   }, [])
 
+  const getSuggestions = useCallback(async (job: IJobDetail, hasSuggestions: boolean) => {
+    if (hasSuggestions) {
+      setSuggestions(suggestions.filter(suggestion => suggestion.jobId !== job.id))
+      return
+    }
+    const start = set(selectedDate, { hours: 0, minutes: 0, seconds: 0 })
+    const end = set(endDate, { hours: 23, minutes: 59, seconds: 59 })
+    const scheduleStart = zonedTimeToUtc(start, project.timezoneSid).toISOString()
+    const scheduleEnd = zonedTimeToUtc(end, project.timezoneSid).toISOString()
+    setIsLoading(true)
+    const res = await getJobSuggestion(job.id, job.region.id, scheduleStart, scheduleEnd, project.timezoneSid)
+    setSuggestions(prev => ([...prev, ...res]))
+    setIsLoading(false)
+  }, [project, selectedDate, endDate, suggestions])
+
   const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
 
   const onPageChange = useCallback((page: number) => {
@@ -185,6 +227,48 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(new Date())
   }, [])
 
+  const openAllocationModal = useCallback((job: IJobDetail, suggestDate: string, suggestTime: number) => {
+    setAllocationModal({
+      isOpen: true,
+      job,
+      suggestDate,
+      suggestTime
+    })
+  }, [])
+
+  const closeAllocationModal = useCallback(() => {
+    setAllocationModal(DEFAULT_ALLOCATION_MODAL)
+  }, [])
+
+  const navigateToJob = useCallback((startDate: Date) => {
+    onDateSelect(startDate)
+  }, [])
+
+  const handleDragJob = useCallback(async (job: IJobDetail, newDate: string, newTime: number) => {
+    setIsLoading(true)
+    const success = await updateJobTime({
+      id: job.id,
+      startDate: newDate,
+      startTime: newTime,
+      duration: job.duration,
+      timezoneSid: job.timezoneSid
+    })
+
+    if (success) {
+      const jobIndex = jobs.results.findIndex(item => item.id === job.id)
+      setJobs(prev => ({
+        ...prev,
+        results: fill(jobIndex, jobIndex + 1, {
+          ...prev.results[jobIndex],
+          startDate: newDate,
+          startTime: newTime,
+          startTimeString: parseTimeValue(newTime)
+        }, prev.results)
+      }))
+    }
+    setIsLoading(false)
+  }, [jobs])
+
   const swimlaneSettingTrigger = useCallback(() => {
     return (
       <IconButton
@@ -205,16 +289,6 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
       debounceGetJobList({...filterParams, projectId: project?.id })
     }
   }, [filterParams, project])
-
-  useEffect(() => {
-    const endDate = add(selectedDate, {
-      days: (selectedDateRange === 'day' ? 1 : selectedDateRange === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
-    })
-    onFilterChange({
-      startDate: format(selectedDate, DATE_FORMAT),
-      endDate: format(endDate, DATE_FORMAT)
-    })
-  }, [selectedDate, selectedDateRange])
 
   useEffect(() => {
     const savedSettings = getLocalStorage(LOCAL_STORAGE_KEY.PROJECT_SWIMLANE_SETTINGS)
@@ -255,7 +329,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
             >
               {togglePopout => (
                 <SwimlaneSetting
-                  defaultSetting={swimlandSettings}
+                  defaultSetting={swimlaneSettings}
                   hideSetting={togglePopout}
                   applySetting={applySwimlaneSetting}
                 />
@@ -303,7 +377,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
                 </div>
               </Tooltip>
             </div>
-            {/* <div>Thame Valley</div> */}
+            <div>{`${project.region?.name} ${format(new Date(), 'zzz', { timeZone: project.timezoneSid })}`}</div>
           </div>
         </div>
         <div className="cx-text-neutral-700 cx-overflow-x-scroll schedule-table cx-relative">
@@ -313,24 +387,53 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               <div className="cx-w-1/3">Job Type</div>
             </div>
             <div className="schedule-item-weekday">
-              {generateScheduleCell(selectedDate, selectedDateRange, swimlandSettings)}
+              <ScheduleTimeslots
+                selectedDate={selectedDate}
+                rangeType={selectedDateRange}
+                swimlaneSettings={swimlaneSettings}
+              />
             </div>
           </div>
           {
             jobs.results.map(job => {
+              const jobSuggestions = suggestions.filter(suggestion => suggestion.jobId === job.id)
+              const hasSuggestions = jobSuggestions.length > 0
               return (
                 <div key={job.id} className="schedule-row">
                   <div className="cx-flex schedule-item-job cx-text-neutral-900">
                     <div className="cx-w-2/3">
                       <p>{job.name}</p>
-                      <p>{job.description}</p>
+                      <p>
+                        {truncate({ length: 50 }, job.description)}
+                      </p>
                     </div>
                     <div className="cx-w-1/3">
                       <p>{job.jobType}</p>
                     </div>
+                    <div className="cx-min-w-36px">
+                      {!job.startDate && (
+                        <IconButton
+                          buttonType="transparent"
+                          icon="suggest"
+                          tooltipContent={hasSuggestions ? 'Hide suggestions' : 'Show suggestions'}
+                          active={hasSuggestions}
+                          // tslint:disable-next-line: jsx-no-lambda
+                          onClick={() => getSuggestions(job, hasSuggestions)}
+                        />
+                      )}
+                    </div>
                   </div>
                   <div className="schedule-item-weekday">
-                    {generateScheduleCell(selectedDate, selectedDateRange, swimlandSettings, job)}
+                    <ScheduleTimeslots
+                      selectedDate={selectedDate}
+                      rangeType={selectedDateRange}
+                      swimlaneSettings={swimlaneSettings}
+                      openAllocationModal={openAllocationModal}
+                      job={job}
+                      navigateToJob={navigateToJob}
+                      suggestions={jobSuggestions}
+                      dragJob={handleDragJob}
+                    />
                   </div>
                 </div>
               )
@@ -339,7 +442,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         </div>
 
         {!jobs.results.length && (
-            <div className="cx-text-center cx-p-4">No job found.</div>
+          <div className="cx-text-center cx-p-4">No job found.</div>
         )}
 
         {jobs.totalItems > 0 && (
@@ -352,6 +455,12 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           />
         )}
       </div>
+      {allocationModal.isOpen && allocationModal.job && (
+        <AllocationModal
+          onClose={closeAllocationModal}
+          job={allocationModal.job}
+        />
+      )}
     </div>
   )
 }

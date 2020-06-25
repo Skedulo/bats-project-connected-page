@@ -16,11 +16,21 @@ export const getTimePickerOptions = (step = 30, is24hFormat = false) => {
     const timeVal = hour * 100 + minute
     timeOptions.push({
       numberValue: timeVal,
-      stringValue: parseTimeValue(timeVal, is24hFormat)
+      stringValue: parseTimeValue(timeVal, is24hFormat),
+      boundValue: addTimeValue(timeVal, step)
     })
     optionHour += step
   }
   return timeOptions
+}
+
+export const addTimeValue = (timeValue: number, duration: number) => {
+  if (isValidTimeVal(timeValue)) {
+    const timeValueInMinutes = timeValue * 60 / 100 + timeValue % 100
+    const newVal = timeValueInMinutes + duration
+    return Math.floor(newVal / 60) * 100 + newVal % 60
+  }
+  return timeValue
 }
 
 /**
@@ -84,7 +94,7 @@ export const parseDurationValue = (duration: number) => {
 /**
  * parse time value (number from 0 - 2400) range to duration (minutes)
  */
-export const parseDurationFromTimeValueRange = (startTime: number, endTime: number) => {
+export const parseDurationFromTimeRange = (startTime: number, endTime: number) => {
   const timeValParser = /^([0-1][0-9]|2[0-4])([0-5][0-9])$/
   if (isValidTimeVal(startTime) && isValidTimeVal(endTime)) {
     const parsedStartTimeVal = timeValParser.exec(('0000' + startTime).substr(-4))

@@ -1,5 +1,5 @@
 import { LozengeColors } from '@skedulo/sked-ui'
-import { JobStatusKey } from '../types'
+import { JobStatusKey, ResourceSortType } from '../types'
 
 export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors>  = {
   'Queued': 'neutral-light',
@@ -26,3 +26,12 @@ export const SCHEDULE_JOB_STATUS_COLOR: Record<JobStatusKey, string>  = {
   'Complete': '#50A463',
   'Cancelled': '#C0362B',
 }
+
+export const RESOURCE_SORT_OPTIONS = [
+  { value: ResourceSortType.TravelDistanceFromHome, label: 'Travel Distance from home' },
+  { value: ResourceSortType.TravelDurationFromHome, label: 'Travel Duration from home' },
+  { value: ResourceSortType.BestFit, label: 'Best Fit' },
+  { value: ResourceSortType.Name, label: 'Name' },
+  { value: ResourceSortType.Rating, label: 'Highest Rating' },
+  { value: ResourceSortType.Utilised, label: 'Least Utilised' }
+]

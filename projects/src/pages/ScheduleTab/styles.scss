@@ -27,6 +27,16 @@
       z-index: 2;
     }
     .schedule-item-weekday {
+      .navigate-btn-tooltip {
+        position: absolute;
+        top: 50%;
+      }
+      .navigate-btn {
+        top: 50%;
+        transform: translateY(-50%);
+        position: absolute;
+        cursor: pointer;
+      }
       .day {
         height: 100%;
         margin: 0;
@@ -34,7 +44,6 @@
         border: 1px solid #E5E7EE;
         border-top: none;
         border-left: none;
-        margin-left: -1px;
         text-align: center;
       }
       .timeslot {
@@ -48,6 +57,7 @@
   .current-time-indicator {
     background-color: #D53C30;
     width: 1px;
+    top: 0;
     &::before {
       position: absolute;
       content: '';

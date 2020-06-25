@@ -18,7 +18,7 @@ const ProjectDetail: React.FC<IProjectDetailProps> = () => {
 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
-  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.DETAILS)
+  const [activeTab, setActiveTab] = useState<string>(PROJECT_TAB_ROUTES.SCHEDULE)
 
   const [project, setProject] = useState<IProjectDetail | null>(null)
 

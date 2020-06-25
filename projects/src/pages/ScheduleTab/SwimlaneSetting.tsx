@@ -15,8 +15,8 @@ const WEEKDAYS = [
 ]
 
 const TIME_SNAP_UNIT = [
-  { value: 1, label: '1 minute' },
-  { value: 5, label: '5 minutes' },
+  // { value: 1, label: '1 minute' },
+  // { value: 5, label: '5 minutes' },
   { value: 15, label: '15 minutes' },
   { value: 30, label: '30 minutes' },
   { value: 60, label: '1 hour' },

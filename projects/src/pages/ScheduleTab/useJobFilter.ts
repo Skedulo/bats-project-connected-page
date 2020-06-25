@@ -44,17 +44,17 @@ const useJobFilter = () => {
         return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
-    {
-      id: 'regionIds',
-      name: 'Region',
-      items: [],
-      selectedIds: [],
-      inputType: 'radio',
-      useFetch: async (searchTerm: string) => {
-        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Region__c' })
-        return res.map(item => ({ id: item.value, name: item.label }))
-      }
-    },
+    // {
+    //   id: 'regionIds',
+    //   name: 'Region',
+    //   items: [],
+    //   selectedIds: [],
+    //   inputType: 'radio',
+    //   useFetch: async (searchTerm: string) => {
+    //     const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Region__c' })
+    //     return res.map(item => ({ id: item.value, name: item.label }))
+    //   }
+    // },
     {
       id: 'locationIds',
       name: 'Location',

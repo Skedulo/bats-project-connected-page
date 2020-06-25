@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mapValues, isNumber } from 'lodash/fp'
+import { mapValues, isNumber, chunk, isEmpty, values, flatten } from 'lodash/fp'
 import { Services, credentials } from './Services'
 import {
   IProjectListItem,
@@ -18,11 +18,15 @@ import {
   IResourceRequirement,
   IBaseModel,
   IGenericOptionParams,
+  IResource,
+  IJobTime
 } from '../commons/types'
 
-import { DEFAULT_FILTER } from '../commons/constants'
-import { parseTimeValue, toastMessage } from '../commons/utils'
-import { ISelectItem } from '@skedulo/sked-ui'
+import { DEFAULT_FILTER, DATETIME_FORMAT, TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
+import { parseTimeValue, toastMessage, parseTimeString } from '../commons/utils'
+import { ISelectItem, } from '@skedulo/sked-ui'
+import { format, utcToZonedTime } from 'date-fns-tz'
+import { parseISO, add } from 'date-fns'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -251,6 +255,16 @@ export const deallocateMutipleJobs = async (jobIds: string): Promise<boolean> =>
   }
 }
 
+export const updateJobTime = async (job: IJobTime): Promise<boolean> => {
+  try {
+    const res = await salesforceApi.post(`/services/apexrest/sked/job`, job)
+    return res.data.success
+  } catch (error) {
+    toastMessage.error('Something went wrong!')
+    return false
+  }
+}
+
 export const fetchOrgPreference = async () => {
   try {
     const res = await httpApi.get('/config/org_preference')
@@ -263,3 +277,89 @@ export const fetchOrgPreference = async () => {
     }
   }
 }
+
+export const fetchResourcesByRegion = async (regionId: string): Promise<IResource[]> => {
+  try {
+    const res = await Services.graphQL.fetch<{ resources: IResource[] }>({
+      query: ResourcesByRegionQuery,
+      variables: {
+        filter: `PrimaryRegionId == '${regionId}'`
+      }
+    })
+    return res.resources
+  } catch (error) {
+    return []
+  }
+}
+
+export const getJobSuggestion = async (
+  jobId: string,
+  regionId: string,
+  scheduleStart: string,
+  scheduleEnd: string,
+  timezone: string
+  // schedulingOptions: Record<string, string>
+) => {
+  try {
+    const CHUNK_SIZE = 50
+    const resourcesByRegion = await fetchResourcesByRegion(regionId)
+    const resourceIds = chunk(CHUNK_SIZE, resourcesByRegion.map(item => item.UID))
+    const promises = resourceIds.map(resources => httpApi.post('/planr/optimize/suggest', {
+      suggestForNode: jobId,
+      resourceIds: resources,
+      scheduleStart,
+      scheduleEnd,
+      schedulingOptions: {
+        balanceWorkload: false,
+        ignoreTravelTimeFirstJob: false,
+        ignoreTravelTimeLastJob: false,
+        ignoreTravelTimes: false,
+        jobTimeAsTimeConstraint: true,
+        minimizeResources: false,
+        padding: 0,
+        preferJobTimeOverTimeConstraint: true,
+        respectSchedule: true,
+        snapUnit: 0
+      }
+    }))
+    const responses = await Promise.all(promises)
+    const suggestions = flatten(responses.map(r => values(r.data.result.routes)).filter(suggest => !isEmpty(suggest)))
+
+    return suggestions.map(item => {
+      const parsedDate = utcToZonedTime(new Date(item.route.start), timezone)
+
+      return {
+        ...item,
+        ...item.route,
+        startDate: format(parsedDate, DATE_FORMAT),
+        startTimeString: format(parsedDate, TIME_FORMAT),
+        startTime: parseTimeString(format(parsedDate, TIME_FORMAT)),
+        endTime: parseTimeString(format(add(parsedDate, { minutes: item.route.duration }), TIME_FORMAT))
+      }
+    })
+  } catch (error) {
+    toastMessage.info('No valid suggestions')
+    return []
+  }
+}
+
+const ResourcesByRegionQuery = `
+  query fetchResourcesByRegion($filter: EQLQueryFilterResources!) {
+    resources(filter: $filter) {
+      edges {
+        node {
+          UID
+          Name
+        }
+      }
+    }
+  }
+`
+
+const UpdateJobMutation = `
+  mutation updateJob($updateInput: UpdateJobs!) {
+    schema {
+      updateJobs(input: $updateInput)
+    }
+  }
+`

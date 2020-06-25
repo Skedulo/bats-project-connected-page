@@ -82,6 +82,7 @@ export interface IGenericSelectItem extends ISelectItem {
 export interface ITimeOption {
   stringValue: string
   numberValue: number
+  boundValue: number
 }
 
 export interface IOrgPreference {
@@ -103,4 +104,9 @@ export interface ISwimlaneSettings {
   // timeZoomConsole?: string
   // viewZoomConsole: number
   workingHours: IWorkingHours
+}
+
+export interface IResource {
+  UID: string
+  Name: string
 }
