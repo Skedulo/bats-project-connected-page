@@ -9,11 +9,7 @@ import DetailTab from './DetailTab'
 import JobsTab from '../JobsTab'
 import ScheduleTab from '../ScheduleTab'
 
-interface IProjectDetailProps {
-  isOpen?: boolean
-}
-
-const ProjectDetail: React.FC<IProjectDetailProps> = () => {
+const ProjectDetail: React.FC = () => {
   const params = useParams<IRouterParams>()
 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()

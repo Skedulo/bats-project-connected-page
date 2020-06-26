@@ -19,8 +19,6 @@ import {
   parseTimeString,
   addTimeValue
 } from '../../commons/utils'
-import { updateJobTime } from '../../Services/DataServices';
-import { useGlobalLoading } from '../../commons/components/GlobalLoading';
 
 const DEFAULT_SLOT_WIDTH = 50
 const SLOT_WIDTH_UNIT = 'px'
@@ -112,8 +110,8 @@ const generateScheduleDataCell = (
   swimlaneSettings: ISwimlaneSettings,
   job: IJobDetail,
   suggestions?: IJobSuggestion[],
-  handleDragJob?: (newDate: string, newTime: number) => void,
-  handleAllocation?: (newDate: string, newTime: number) => void,
+  handleDragJob?: (newZonedDate: string, newZonedTime: number) => void,
+  handleAllocation?: (zonedDate: string, zonedTime: number) => void,
 ) => {
   const { workingHours, snapUnitConsole } = swimlaneSettings
   const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
@@ -133,7 +131,12 @@ const generateScheduleDataCell = (
     if (isDayWorkingHour && excludeDays.includes(format(dateRange[dateRangeIndex], 'EEEE').toLowerCase())) {
       timeCols.forEach((item: ITimeOption, indexTime) => {
         dateCols.push(
-          <Timeslot className="cx-bg-neutral-350" key={`${item.stringValue}-${dateRangeIndex}`} />
+          <Timeslot
+            className="cx-bg-neutral-350"
+            key={`${item.stringValue}-${dateRangeIndex}`}
+            slotDate={formattedDateString}
+            slotTime={item.numberValue}
+          />
         )
       })
     } else {
@@ -155,6 +158,9 @@ const generateScheduleDataCell = (
         dateCols.push(
           <Timeslot
             key={`${item.stringValue}-${dateRangeIndex}`}
+            handleClick={isUnscheduled ? handleAllocation : undefined}
+            slotDate={formattedDateString}
+            slotTime={item.numberValue}
           >
             {isMatchedJob && (
               <ScheduledCard
@@ -210,7 +216,7 @@ interface IScheduleTimeslotsProps {
   selectedDate: Date,
   rangeType: RangeType,
   swimlaneSettings: ISwimlaneSettings,
-  openAllocationModal?: (job: IJobDetail, suggestDate: string, suggestTime: number) => void,
+  openAllocationModal?: (job: IJobDetail, zonedDate: string, zonedTime: number) => void,
   job?: IJobDetail,
   navigateToJob?: (startDate: Date) => void,
   suggestions?: IJobSuggestion[]
@@ -227,7 +233,6 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
   suggestions,
   dragJob
 }) => {
-  const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const { workingHours } = swimlaneSettings
   // total minutes in 1 days
   const totalMinutes = workingHours.enabled ?
@@ -254,7 +259,8 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
       timeCols = timeCols.filter(time => {
         return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
       })
-      slotWidth = (window.innerWidth - 48) * 0.7 / timeCols.length
+      // 32 is schedule table padding
+      slotWidth = (window.innerWidth - 32) * 0.7 / timeCols.length
     } else {
       // if rangeType is day and enable workingHours --> not ignore that date, just disable
       dateRange = dateRange.filter(date => {
@@ -266,7 +272,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
         stringValue: parseTimeValue(workingHours.startTime),
         boundValue: addTimeValue(workingHours.startTime, totalMinutes)
       }]
-      slotWidth = (window.innerWidth - 48 - 32) * 0.7 / dateRange.length
+      slotWidth = (window.innerWidth - 32) * 0.7 / dateRange.length
     }
   }
   const cols = timeCols.length * dateRange.length
@@ -285,9 +291,9 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
     }
   }, [job])
 
-  const handleAllocation = useCallback((newDate: string, newTime: number) => {
+  const handleAllocation = useCallback((zonedDate: string, zonedTime: number) => {
     if (typeof openAllocationModal === 'function' && job) {
-      openAllocationModal(job, newDate, newTime)
+      openAllocationModal(job, zonedDate, zonedTime)
     }
   }, [job])
 

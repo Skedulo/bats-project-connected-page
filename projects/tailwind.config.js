@@ -259,6 +259,7 @@ module.exports = {
     },
     boxShadow: {
       default: '0 5px 10px 0 rgba(28, 46, 72,0.17)',
+      sm: '0 0 5px 1px rgba(0,0,0,.1)',
       md: '0 4px 8px 0 rgba(28, 46, 72,0.10), 0 2px 4px 0 rgba(28, 46, 72,0.08)',
       lg: '0 15px 30px 0 rgba(28, 46, 72,0.10), 0 5px 15px 0 rgba(28, 46, 72,0.08)',
       inner: 'inset 0 2px 4px 0 rgba(28, 46, 72,0.06)',
@@ -357,7 +358,8 @@ module.exports = {
     }),
     maxHeight: {
       full: '100%',
-      screen: '100vh'
+      screen: '100vh',
+      '300px': '300px'
     },
     maxWidth: {
       xs: '20rem',

@@ -8,7 +8,7 @@ interface ISuggestionCardProps {
   travelTimeStyle: Record<string, string>
   durationStyle: Record<string, string>
   travelTime: number
-  handleClick?: (newDate: string, newTime: number) => void
+  handleClick?: (zonedDate: string, zonedTime: number) => void
   slotUnit: string
 }
 

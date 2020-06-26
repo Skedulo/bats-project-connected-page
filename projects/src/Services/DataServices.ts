@@ -5,8 +5,6 @@ import {
   IProjectListItem,
   IProjectDetail,
   IListResponse,
-  ILookupOption,
-  IContactOption,
   ISalesforceResponse,
   IFilterParams,
   IJobDetail,
@@ -22,11 +20,11 @@ import {
   IJobTime
 } from '../commons/types'
 
-import { DEFAULT_FILTER, DATETIME_FORMAT, TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
+import { DEFAULT_FILTER, TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
 import { parseTimeValue, toastMessage, parseTimeString } from '../commons/utils'
 import { ISelectItem, } from '@skedulo/sked-ui'
-import { format, utcToZonedTime } from 'date-fns-tz'
-import { parseISO, add } from 'date-fns'
+import { format, utcToZonedTime, zonedTimeToUtc} from 'date-fns-tz'
+import { parseISO, add, parse, addMinutes } from 'date-fns'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -265,33 +263,6 @@ export const updateJobTime = async (job: IJobTime): Promise<boolean> => {
   }
 }
 
-export const fetchOrgPreference = async () => {
-  try {
-    const res = await httpApi.get('/config/org_preference')
-    return {
-      enableWorkingHours: res.data.result?.web?.features.enableWorkingHours || false
-    }
-  } catch (error) {
-    return {
-      enableWorkingHours: false
-    }
-  }
-}
-
-export const fetchResourcesByRegion = async (regionId: string): Promise<IResource[]> => {
-  try {
-    const res = await Services.graphQL.fetch<{ resources: IResource[] }>({
-      query: ResourcesByRegionQuery,
-      variables: {
-        filter: `PrimaryRegionId == '${regionId}'`
-      }
-    })
-    return res.resources
-  } catch (error) {
-    return []
-  }
-}
-
 export const getJobSuggestion = async (
   jobId: string,
   regionId: string,
@@ -302,8 +273,8 @@ export const getJobSuggestion = async (
 ) => {
   try {
     const CHUNK_SIZE = 50
-    const resourcesByRegion = await fetchResourcesByRegion(regionId)
-    const resourceIds = chunk(CHUNK_SIZE, resourcesByRegion.map(item => item.UID))
+    const resourcesByRegion = await fetchResourcesByRegion(regionId, scheduleStart, scheduleEnd, timezone)
+    const resourceIds = chunk(CHUNK_SIZE, resourcesByRegion.map(item => item.id))
     const promises = resourceIds.map(resources => httpApi.post('/planr/optimize/suggest', {
       suggestForNode: jobId,
       resourceIds: resources,
@@ -343,23 +314,151 @@ export const getJobSuggestion = async (
   }
 }
 
-const ResourcesByRegionQuery = `
-  query fetchResourcesByRegion($filter: EQLQueryFilterResources!) {
-    resources(filter: $filter) {
-      edges {
-        node {
-          UID
-          Name
-        }
-      }
-    }
-  }
-`
+/**
+ * RESOURCES
+ */
 
-const UpdateJobMutation = `
-  mutation updateJob($updateInput: UpdateJobs!) {
-    schema {
-      updateJobs(input: $updateInput)
-    }
+export const allocationResources = async (jobId: string, resourceIds: string[]): Promise<boolean> => {
+  if (!resourceIds.length) {
+    return true
   }
-`
+  try {
+    let queries = ''
+    resourceIds.forEach((id, index) => {
+      queries += `_j${index}: insertJobAllocations(input: {
+        JobId: "${jobId}",
+        ResourceId: "${id}",
+        Status: "Pending Dispatch"
+      })\n`
+    })
+    await Services.graphQL.fetch<{ resources: IResource[] }>({
+      query: `
+        mutation createJobAllocations {
+          schema {
+            ${queries}
+          }
+        }
+      `
+    })
+
+    return true
+  } catch (error) {
+    toastMessage.error('Allocated unsuccessfully!')
+    return false
+  }
+}
+
+export const fetchResourcesByRegion = async (
+  regionIds: string,
+  scheduleStart: string,
+  scheduleEnd: string,
+  timezone: string
+  ): Promise<IResource[]> => {
+  try {
+    const zonedStartDate = utcToZonedTime(new Date(scheduleStart), timezone)
+    const zonedEndDate = utcToZonedTime(new Date(scheduleEnd), timezone)
+    const res = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
+      regionIds,
+      timezoneSid: timezone,
+      startDate: format(zonedStartDate, DATE_FORMAT),
+      startTime: parseTimeString(format(zonedStartDate, TIME_FORMAT)),
+      endDate: format(zonedEndDate, DATE_FORMAT),
+      endTime: parseTimeString(format(zonedEndDate, TIME_FORMAT))
+    } })
+
+    return res.data.data.results
+  } catch (error) {
+    return []
+  }
+}
+
+export const getResourceAvailabilities = async (
+  resourceIds: string[],
+  scheduleStart: string,
+  scheduleEnd: string
+) => {
+  try {
+    const CHUNK_SIZE = 200
+    const chunkedResourceIds = chunk(CHUNK_SIZE, resourceIds)
+    const promises = chunkedResourceIds.map(ids => httpApi.post('/availability/resources', {
+      resourceIds: ids,
+      start: scheduleStart,
+      end: scheduleEnd,
+      availability: true
+    }))
+    const responses = await Promise.all(promises)
+    const availabilities: Record<string, { start: string, end: string }[]> = {}
+    responses.forEach(r => {
+      const result = r.data.result
+      Object.keys(result).forEach(id => {
+        availabilities[id] = result[id].available
+      })
+    })
+    return availabilities
+  } catch (error) {
+    return {}
+  }
+}
+
+export const getResourceSuggestions = async (
+  jobId: string,
+  resources: Record<string, { start: string, end: string }[]>,
+  scheduleStart: string,
+  scheduleEnd: string
+) => {
+  try {
+    const response = await httpApi.post('/planr/optimize/resource_suggestions', {
+      jobId,
+      resources,
+      scheduleStart,
+      scheduleEnd,
+      schedulingOptions: {
+        balanceWorkload: false,
+        ignoreTravelTimeFirstJob: false,
+        ignoreTravelTimeLastJob: false,
+        ignoreTravelTimes: false,
+        jobTimeAsTimeConstraint: true,
+        minimizeResources: false,
+        padding: 0,
+        preferJobTimeOverTimeConstraint: true,
+        respectSchedule: true,
+        snapUnit: 0,
+      }
+    })
+    return response.data.result
+  } catch (error) {
+    return {}
+  }
+}
+
+export const fetchAvailableResources = async (
+  job: IJobDetail,
+  regionId: string,
+  zonedStartDate: string,
+  zonedStartTime: number
+) => {
+  try {
+    const scheduleStart = parse(
+      `${zonedStartDate} ${parseTimeValue(zonedStartTime)}`,
+      `${DATE_FORMAT} ${TIME_FORMAT}`,
+      new Date()
+    )
+    const scheduleEnd = addMinutes(scheduleStart, job.duration)
+    const scheduleStartUtc = zonedTimeToUtc(scheduleStart, job.timezoneSid).toISOString()
+    const scheduleEndUtc = zonedTimeToUtc(scheduleEnd, job.timezoneSid).toISOString()
+    const resourcesByRegion = await fetchResourcesByRegion(regionId, scheduleStartUtc, scheduleEndUtc, job.timezoneSid)
+    const resourceIds = resourcesByRegion.map(item => item.id)
+    const availabilities = await getResourceAvailabilities(resourceIds, scheduleStartUtc, scheduleEndUtc)
+    const suggestedResources = await getResourceSuggestions(job.id, availabilities, scheduleStartUtc, scheduleEndUtc)
+
+    return resourcesByRegion.map(item => {
+      return {
+        ...item,
+        suggestion: suggestedResources[item.id],
+        isSuggested: !!suggestedResources[item.id]
+      }
+    })
+  } catch (error) {
+    return []
+  }
+}

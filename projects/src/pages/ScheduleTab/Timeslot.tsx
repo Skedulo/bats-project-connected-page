@@ -3,27 +3,31 @@ import classnames from 'classnames'
 
 interface ITimeslotProps {
   className?: string
-  onClick?: () => void
+  handleClick?: (zonedDate: string, zonedTime: number) => void
   children?: React.ReactNode
+  slotDate: string
+  slotTime: number
 }
 
 const Timeslot: React.FC<ITimeslotProps> = ({
   className,
   children,
-  onClick
+  handleClick,
+  slotDate,
+  slotTime
 }) => {
-  const handleClick = useCallback(() => {
-    if (typeof onClick === 'function') {
-      onClick()
+  const onSlotClick = () => {
+    if (typeof handleClick === 'function') {
+      handleClick(slotDate, slotTime)
     }
-  }, [onClick])
+  }
 
   return (
     <div
       className={classnames('timeslot', className, {
-        'cx-cursor-pointer': !!onClick,
+        'cx-cursor-pointer': !!handleClick,
       })}
-      onClick={handleClick}
+      onClick={onSlotClick}
     >
       {children}
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, truncate, toNumber, fill } from 'lodash/fp'
+import { debounce, uniq, keyBy, truncate, xor, fill } from 'lodash/fp'
 import classnames from 'classnames'
 import { format, zonedTimeToUtc } from 'date-fns-tz'
 import { getDaysInMonth, add, formatISO, set } from 'date-fns'
@@ -36,7 +36,7 @@ import {
   DEFAULT_SWIMLANE_SETTINGS,
   LOCAL_STORAGE_KEY
 } from '../../commons/constants'
-import { fetchListJobs, fetchJobTypeTemplateValues, getJobSuggestion, updateJobTime } from '../../Services/DataServices'
+import { fetchListJobs, fetchJobTypeTemplateValues, getJobSuggestion, updateJobTime, allocationResources } from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../routes'
@@ -51,15 +51,15 @@ interface IScheduleTabProps {
 interface IAllocationModal {
   isOpen: boolean
   job: IJobDetail | null
-  suggestDate: string
-  suggestTime: number
+  zonedDate: string
+  zonedTime: number
 }
 
 const DEFAULT_ALLOCATION_MODAL = {
   isOpen: false,
   job: null,
-  suggestDate: '',
-  suggestTime: 0
+  zonedDate: '',
+  zonedTime: 0
 }
 
 const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
@@ -227,17 +227,17 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(new Date())
   }, [])
 
-  const openAllocationModal = useCallback((job: IJobDetail, suggestDate: string, suggestTime: number) => {
+  const openAllocationModal = useCallback((job: IJobDetail, zonedDate: string, zonedTime: number) => {
     setAllocationModal({
       isOpen: true,
       job,
-      suggestDate,
-      suggestTime
+      zonedDate,
+      zonedTime
     })
   }, [])
 
   const closeAllocationModal = useCallback(() => {
-    setAllocationModal(DEFAULT_ALLOCATION_MODAL)
+    setAllocationModal(prev => ({ ...prev, isOpen: false }))
   }, [])
 
   const navigateToJob = useCallback((startDate: Date) => {
@@ -269,6 +269,33 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setIsLoading(false)
   }, [jobs])
 
+  const handleAllocation = useCallback(async (
+    job: IJobDetail,
+    newDate: string,
+    newTime: number,
+    resourceIds: string[]
+  ) => {
+    setIsLoading(true)
+    const allocatedResourceIds = allocationModal.job?.allocations?.map(item => item.resource.id) || []
+    const needingAllocationResources = xor(allocatedResourceIds, resourceIds)
+    const [isUpdateTimeSuccess, isAllocationSuccess] = await Promise.all([
+      updateJobTime({
+        id: job.id,
+        timezoneSid: job.timezoneSid,
+        duration: job.duration,
+        startDate: newDate,
+        startTime: newTime,
+      }),
+      allocationResources(job.id, needingAllocationResources)
+    ])
+    closeAllocationModal()
+    setIsLoading(false)
+    if (isUpdateTimeSuccess || isAllocationSuccess) {
+      getJobsList({...filterParams, projectId: project.id })
+      getSuggestions(job, true)
+    }
+  }, [filterParams, project.id, allocationModal.job])
+
   const swimlaneSettingTrigger = useCallback(() => {
     return (
       <IconButton
@@ -285,8 +312,8 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   }
 
   useEffect(() => {
-    if (!isLoading && project?.id) {
-      debounceGetJobList({...filterParams, projectId: project?.id })
+    if (!isLoading && project.id) {
+      debounceGetJobList({...filterParams, projectId: project.id })
     }
   }, [filterParams, project])
 
@@ -455,10 +482,14 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           />
         )}
       </div>
-      {allocationModal.isOpen && allocationModal.job && (
+      {allocationModal.job && (
         <AllocationModal
+          isOpen={allocationModal.isOpen}
           onClose={closeAllocationModal}
           job={allocationModal.job}
+          zonedDate={allocationModal.zonedDate}
+          zonedTime={allocationModal.zonedTime}
+          handleAllocation={handleAllocation}
         />
       )}
     </div>

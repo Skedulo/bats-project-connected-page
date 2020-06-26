@@ -101,7 +101,27 @@ export interface ISwimlaneSettings {
   workingHours: IWorkingHours
 }
 
+export interface IUser {
+  SmallPhotoUrl: string
+}
+
+export interface IResourceSuggestion {
+  score: {
+    soft: number
+  }
+  travel: {
+    distanceFromHome: number
+    durationFromHome: number
+  }
+  currentCapacityInSeconds: number
+}
+
 export interface IResource {
-  UID: string
-  Name: string
+  id: string
+  name: string
+  rating?: number
+  category?: string
+  avatarUrl?: string
+  suggestion?: IResourceSuggestion
+  isSuggested: boolean
 }
