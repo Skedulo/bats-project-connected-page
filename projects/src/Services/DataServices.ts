@@ -296,6 +296,10 @@ export const getJobSuggestion = async (
     const responses = await Promise.all(promises)
     const suggestions = flatten(responses.map(r => values(r.data.result.routes)).filter(suggest => !isEmpty(suggest)))
 
+    if (!suggestions.length) {
+      toastMessage.info('No valid suggestions')
+      return []
+    }
     return suggestions.map(item => {
       const parsedDate = utcToZonedTime(new Date(item.route.start), timezone)
 

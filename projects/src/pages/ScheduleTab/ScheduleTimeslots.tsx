@@ -114,12 +114,13 @@ const generateScheduleDataCell = (
   handleAllocation?: (zonedDate: string, zonedTime: number) => void,
 ) => {
   const { workingHours, snapUnitConsole } = swimlaneSettings
-  const isDayWorkingHour = rangeType === 'day' && workingHours.enabled
+  const enableWorkingHourDay = rangeType === 'day' && workingHours.enabled
+  const enableWorkingHourWeekMonth = ['month', 'week'].includes(rangeType) && workingHours.enabled
   const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
   const dateCols: React.ReactElement[] = []
 
   const isUnscheduled = !job.startDate || !job.startTime
-  const minutesPerBlock = workingHours.enabled && ['month', 'week'].includes(rangeType) ? totalMinutes : timeGap
+  const minutesPerBlock = enableWorkingHourWeekMonth ? totalMinutes : timeGap
   const resourceTravelTime = job.allocations ? job.allocations.filter(item => !!item.plannedTravelTime) : []
   const maxTravelTime = resourceTravelTime.length ?
     Math.max(...resourceTravelTime.map(item => item.plannedTravelTime)) :
@@ -128,14 +129,14 @@ const generateScheduleDataCell = (
   times(dateRangeIndex => {
     const formattedDateString = format(dateRange[dateRangeIndex], DATE_FORMAT)
     // display disabled cell data
-    if (isDayWorkingHour && excludeDays.includes(format(dateRange[dateRangeIndex], 'EEEE').toLowerCase())) {
+    if (enableWorkingHourDay && excludeDays.includes(format(dateRange[dateRangeIndex], 'EEEE').toLowerCase())) {
       timeCols.forEach((item: ITimeOption, indexTime) => {
         dateCols.push(
           <Timeslot
             className="cx-bg-neutral-350"
             key={`${item.stringValue}-${dateRangeIndex}`}
             slotDate={formattedDateString}
-            slotTime={item.numberValue}
+            slotTime={item}
           />
         )
       })
@@ -160,13 +161,17 @@ const generateScheduleDataCell = (
             key={`${item.stringValue}-${dateRangeIndex}`}
             handleClick={isUnscheduled ? handleAllocation : undefined}
             slotDate={formattedDateString}
-            slotTime={item.numberValue}
+            slotTime={item}
           >
             {isMatchedJob && (
               <ScheduledCard
                 job={job}
                 key={`${job.startDate}-${job.startTime}`}
                 widthPerMin={widthPerMin}
+                enableWorkingHourWeekMonth={enableWorkingHourWeekMonth}
+                dateRange={dateRange}
+                dateRangeIndex={dateRangeIndex}
+                slotTime={item}
                 slotUnit={SLOT_WIDTH_UNIT}
                 snapUnit={snapUnitConsole}
                 cardPosition={parseDurationFromTimeRange(item.numberValue, job.startTime) * widthPerMin}

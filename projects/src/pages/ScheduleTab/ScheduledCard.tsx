@@ -4,10 +4,10 @@ import { times, toNumber } from 'lodash/fp'
 import classnames from 'classnames'
 
 import { Avatar } from '@skedulo/sked-ui'
-import { parseDurationValue, parseTimeString } from '../../commons/utils'
-import { IJobDetail } from '../../commons/types'
+import { parseDurationValue, parseTimeString, addTimeValue } from '../../commons/utils'
+import { IJobDetail, ITimeOption } from '../../commons/types'
 import { DraggableItemTypes, DATE_FORMAT, TIME_FORMAT } from '../../commons/constants'
-import { addMinutes, format, parse } from 'date-fns'
+import { addMinutes, format, parse, add } from 'date-fns'
 
 interface IScheduledCardProps {
   job: IJobDetail
@@ -21,6 +21,10 @@ interface IScheduledCardProps {
   slotUnit: string
   widthPerMin: number
   snapUnit?: number
+  slotTime: ITimeOption
+  enableWorkingHourWeekMonth: boolean
+  dateRange: Date[]
+  dateRangeIndex: number
 }
 
 const ScheduledCard: React.FC<IScheduledCardProps> = props => {
@@ -35,7 +39,11 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
     slotUnit,
     draggable,
     widthPerMin,
-    snapUnit
+    snapUnit,
+    slotTime,
+    enableWorkingHourWeekMonth,
+    dateRange,
+    dateRangeIndex
   } = props
   const [jobPos, setJobPos] = React.useState<number>(cardPosition)
   const dragGrid = widthPerMin * toNumber(snapUnit)
@@ -47,15 +55,29 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
   const onStopDrag = (e: DraggableEvent, data: DraggableData) => {
     setJobPos(prev => --prev)
     if (typeof handleDrag === 'function' && snapUnit && job) {
-      const draggedMinutes = (data.lastX / dragGrid) * snapUnit
+      const draggedMinutes = (Math.round(data.lastX / dragGrid)) * snapUnit
       const currentDate = parse(
-        `${job?.startDate} ${job?.startTimeString}`,
+        `${job.startDate} ${job.startTimeString}`,
         `${DATE_FORMAT} ${TIME_FORMAT}`,
         new Date()
       )
-      const newDatetime = addMinutes(currentDate, draggedMinutes)
-      const newDate = format(newDatetime, DATE_FORMAT)
-      const newTime = toNumber(parseTimeString(format(newDatetime, TIME_FORMAT)))
+      let newDate = job.startDate
+      let newTime = job.startTime
+      // specific for case enable working hour with range is 'month' and 'week'
+      if (enableWorkingHourWeekMonth) {
+        let newColIndex = dateRangeIndex
+        newTime = addTimeValue(newTime, draggedMinutes)
+        const interval = newTime < slotTime.numberValue ? -1 : 1
+        while (newTime >= slotTime.boundValue || newTime < slotTime.numberValue) {
+          newColIndex += interval
+          newTime = (slotTime.numberValue - slotTime.boundValue) * interval + newTime
+        }
+        newDate = format(dateRange[newColIndex], DATE_FORMAT)
+      } else {
+        const newDatetime = addMinutes(currentDate, draggedMinutes)
+        newDate = format(newDatetime, DATE_FORMAT)
+        newTime = toNumber(parseTimeString(format(newDatetime, TIME_FORMAT)))
+      }
       if (newDate !== job.startDate || newTime !== job.startTime) {
         handleDrag(newDate, newTime)
       }

@@ -1,12 +1,13 @@
 import React, { memo, useCallback } from 'react'
 import classnames from 'classnames'
+import { ITimeOption } from '../../commons/types'
 
 interface ITimeslotProps {
   className?: string
   handleClick?: (zonedDate: string, zonedTime: number) => void
   children?: React.ReactNode
   slotDate: string
-  slotTime: number
+  slotTime: ITimeOption
 }
 
 const Timeslot: React.FC<ITimeslotProps> = ({
@@ -18,7 +19,7 @@ const Timeslot: React.FC<ITimeslotProps> = ({
 }) => {
   const onSlotClick = () => {
     if (typeof handleClick === 'function') {
-      handleClick(slotDate, slotTime)
+      handleClick(slotDate, slotTime.numberValue)
     }
   }
 
