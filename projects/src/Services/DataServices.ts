@@ -378,6 +378,7 @@ export const fetchResourcesByRegion = async (
 
 export const getResourceAvailabilities = async (
   resourceIds: string[],
+  regionIds: string[],
   scheduleStart: string,
   scheduleEnd: string
 ) => {
@@ -386,6 +387,7 @@ export const getResourceAvailabilities = async (
     const chunkedResourceIds = chunk(CHUNK_SIZE, resourceIds)
     const promises = chunkedResourceIds.map(ids => httpApi.post('/availability/resources', {
       resourceIds: ids,
+      regionIds,
       start: scheduleStart,
       end: scheduleEnd,
       availability: true
@@ -448,13 +450,27 @@ export const fetchAvailableResources = async (
       new Date()
     )
     const scheduleEnd = addMinutes(scheduleStart, job.duration)
+
     const scheduleStartUtc = zonedTimeToUtc(scheduleStart, job.timezoneSid).toISOString()
     const scheduleEndUtc = zonedTimeToUtc(scheduleEnd, job.timezoneSid).toISOString()
+
     const resourcesByRegion = await fetchResourcesByRegion(regionId, scheduleStartUtc, scheduleEndUtc, job.timezoneSid)
     const resourceIds = resourcesByRegion.map(item => item.id)
-    const availabilities = await getResourceAvailabilities(resourceIds, scheduleStartUtc, scheduleEndUtc)
-    const suggestedResources = await getResourceSuggestions(job.id, availabilities, scheduleStartUtc, scheduleEndUtc)
+    const availabilities = await getResourceAvailabilities(resourceIds, [regionId], scheduleStartUtc, scheduleEndUtc)
 
+    // HARD CODE to be same with web app version, will investigate later
+
+    const scheduleStartTemp = parse(`${zonedStartDate} 00:00:00`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    const scheduleEndTemp = parse(`${zonedStartDate} 23:59:59`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    const scheduleStartUtcTemp = zonedTimeToUtc(scheduleStartTemp, job.timezoneSid).toISOString()
+    const scheduleEndUtcTemp = zonedTimeToUtc(scheduleEndTemp, job.timezoneSid).toISOString()
+
+    const suggestedResources = await getResourceSuggestions(
+      job.id,
+      availabilities,
+      scheduleStartUtcTemp,
+      scheduleEndUtcTemp
+    )
     return resourcesByRegion.map(item => {
       return {
         ...item,

@@ -1,9 +1,9 @@
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useState, useEffect } from 'react'
 import { times, toNumber, pickBy } from 'lodash/fp'
 import classnames from 'classnames'
-import { format } from 'date-fns-tz'
-import { getDaysInMonth, eachDayOfInterval, add, isToday } from 'date-fns'
-import { RangeType, Avatar, GroupAvatars, Tooltip, Icon } from '@skedulo/sked-ui'
+import { format, utcToZonedTime } from 'date-fns-tz'
+import { getDaysInMonth, eachDayOfInterval, add, isToday, toDate } from 'date-fns'
+import { RangeType, Avatar, GroupAvatars, Tooltip, Icon, IconButton } from '@skedulo/sked-ui'
 import { IJobDetail, ITimeOption, ISwimlaneSettings, IWorkingHours, IJobSuggestion } from '../../commons/types'
 import ScheduledCard from './ScheduledCard'
 import SuggestionCard from './SuggestionCard'
@@ -25,6 +25,7 @@ const SLOT_WIDTH_UNIT = 'px'
 const DRAGGABLE_JOB_STATUS = ['Pending Allocation', 'Pending Dispatch', 'Dispatched']
 
 const generateScheduleHeaderCell = (
+  timezone: string,
   rangeType: RangeType,
   dateRange: Date[],
   totalMinutes: number,
@@ -40,7 +41,7 @@ const generateScheduleHeaderCell = (
     const today = isToday(date)
     if (today) {
       // get current time indicator
-      const currentDate = new Date()
+      const currentDate = utcToZonedTime(new Date((new Date().toISOString())), timezone)
       const currentHours = currentDate.getHours()
       const currentMinutes = currentDate.getMinutes()
       // parse to minutes
@@ -159,7 +160,7 @@ const generateScheduleDataCell = (
         dateCols.push(
           <Timeslot
             key={`${item.stringValue}-${dateRangeIndex}`}
-            handleClick={isUnscheduled ? handleAllocation : undefined}
+            handleClick={isUnscheduled && !suggestions?.length ? handleAllocation : undefined}
             slotDate={formattedDateString}
             slotTime={item}
           >
@@ -218,7 +219,8 @@ const generateScheduleDataCell = (
 }
 
 interface IScheduleTimeslotsProps {
-  selectedDate: Date,
+  projectTimezone: string,
+  dateRange: Date[],
   rangeType: RangeType,
   swimlaneSettings: ISwimlaneSettings,
   openAllocationModal?: (job: IJobDetail, zonedDate: string, zonedTime: number) => void,
@@ -229,7 +231,8 @@ interface IScheduleTimeslotsProps {
 }
 
 const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
-  selectedDate,
+  projectTimezone,
+  dateRange,
   rangeType,
   swimlaneSettings,
   openAllocationModal,
@@ -238,6 +241,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
   suggestions,
   dragJob
 }) => {
+  const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
   const { workingHours } = swimlaneSettings
   // total minutes in 1 days
   const totalMinutes = workingHours.enabled ?
@@ -252,32 +256,20 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
   // number of time columns
   let timeCols = useMemo(() => getTimePickerOptions(timeGap), [timeGap])
 
-  let dateRange = useMemo(() => eachDayOfInterval({
-    start: selectedDate,
-    end: add(selectedDate, {
-      days: (rangeType === 'day' ? 1 : rangeType === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
-    })
-  }), [selectedDate, rangeType])
-
   if (workingHours.enabled) {
     if (rangeType === 'day') {
       timeCols = timeCols.filter(time => {
         return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
       })
       // 32 is schedule table padding
-      slotWidth = (window.innerWidth - 32) * 0.7 / timeCols.length
+      slotWidth = (windowWidth - 32) * 0.7 / timeCols.length
     } else {
-      // if rangeType is day and enable workingHours --> not ignore that date, just disable
-      dateRange = dateRange.filter(date => {
-        const excludeDays = Object.keys(pickBy(value => !value, workingHours.days))
-        return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
-      })
       timeCols = [{
         numberValue: workingHours.startTime,
         stringValue: parseTimeValue(workingHours.startTime),
         boundValue: addTimeValue(workingHours.startTime, totalMinutes)
       }]
-      slotWidth = (window.innerWidth - 32) * 0.7 / dateRange.length
+      slotWidth = (windowWidth - 32) * 0.7 / dateRange.length
     }
   }
   const cols = timeCols.length * dateRange.length
@@ -308,6 +300,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
 
   if (!job) {
     const { dateCols, currentTimeIndicatorPosition } = generateScheduleHeaderCell(
+      projectTimezone,
       rangeType,
       dateRange,
       totalMinutes,
@@ -334,6 +327,17 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
       handleAllocation
     )
   }
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   return (
     <>

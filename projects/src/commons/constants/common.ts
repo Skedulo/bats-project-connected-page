@@ -14,7 +14,7 @@ export const DEFAULT_LIST = {
 }
 
 export const DEFAULT_SWIMLANE_SETTINGS = {
-  snapUnitConsole: 5,
+  snapUnitConsole: 30,
   workingHours: {
     enabled: false,
     startTime: 800,

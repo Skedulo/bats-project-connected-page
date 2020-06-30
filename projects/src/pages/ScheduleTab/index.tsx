@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, truncate, xor, fill } from 'lodash/fp'
+import { debounce, uniq, keyBy, truncate, xor, fill, pickBy } from 'lodash/fp'
 import classnames from 'classnames'
-import { format, zonedTimeToUtc } from 'date-fns-tz'
-import { getDaysInMonth, add, formatISO, set } from 'date-fns'
+import { format, zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz'
+import { getDaysInMonth, add, isAfter, set, eachDayOfInterval, isBefore, isEqual } from 'date-fns'
 import {
   Button,
   CalendarControls,
@@ -40,7 +40,7 @@ import { fetchListJobs, fetchJobTypeTemplateValues, getJobSuggestion, updateJobT
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
 import { createJobPath, jobDetailPath } from '../routes'
-import { parseDurationValue, getLocalStorage,  setLocalStorage, parseTimeValue } from '../../commons/utils'
+import { parseDurationValue, getLocalStorage,  setLocalStorage, parseTimeValue, extractTimeValue } from '../../commons/utils'
 
 import './styles.scss'
 
@@ -85,15 +85,32 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
 
-  const [selectedDateRange, setSelectedDateRange] = useState<RangeType>('day')
+  const [selectedRangeType, setSelectedRangeType] = useState<RangeType>('day')
 
   const [suggestions, setSuggestions] = useState<IJobSuggestion[]>([])
 
-  const endDate = useMemo(() => {
-    return add(selectedDate, {
-      days: (selectedDateRange === 'day' ? 1 : selectedDateRange === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
+  const dateRange = useMemo(() => {
+    let range = eachDayOfInterval({
+      start: selectedDate,
+      end: add(selectedDate, {
+        days: (selectedRangeType === 'day' ? 1 : selectedRangeType === 'week' ? 7 : getDaysInMonth(selectedDate)) - 1
+      })
     })
-  }, [selectedDate, selectedDateRange])
+    if (swimlaneSettings.workingHours.enabled && ['week', 'month'].includes(selectedRangeType)) {
+      range = range.filter(date => {
+        const excludeDays = Object.keys(pickBy(value => !value, swimlaneSettings.workingHours.days))
+        return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
+      })
+    }
+    return range
+  }, [selectedDate, selectedRangeType, swimlaneSettings])
+
+  const shouldSuggest = useMemo(() => {
+    const currentDate = format(new Date(), DATE_FORMAT)
+    const minDate = format(dateRange[0], DATE_FORMAT)
+    const maxDate = format(dateRange[dateRange.length - 1], DATE_FORMAT)
+    return (minDate >= currentDate || maxDate >= currentDate)
+  }, [dateRange])
 
   const totalCount = useMemo(() => {
     let totalDuration = 0
@@ -166,15 +183,30 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
       setSuggestions(suggestions.filter(suggestion => suggestion.jobId !== job.id))
       return
     }
-    const start = set(selectedDate, { hours: 0, minutes: 0, seconds: 0 })
-    const end = set(endDate, { hours: 23, minutes: 59, seconds: 59 })
-    const scheduleStart = zonedTimeToUtc(start, project.timezoneSid).toISOString()
-    const scheduleEnd = zonedTimeToUtc(end, project.timezoneSid).toISOString()
+    let startTime = { hours: 0, minutes: 0, seconds: 0 }
+    let endTime = { hours: 23, minutes: 59, seconds: 59 }
+    if (swimlaneSettings.workingHours.enabled) {
+      startTime = extractTimeValue(swimlaneSettings.workingHours.startTime)
+      endTime = extractTimeValue(swimlaneSettings.workingHours.endTime)
+    }
+    let startDate = set(dateRange[0], startTime)
+    const currentDate = utcToZonedTime(new Date((new Date().toISOString())), project.timezoneSid)
+    if (isAfter(currentDate, startDate)) {
+      startDate = currentDate
+    }
+    const endDate = set(dateRange[dateRange.length - 1], endTime)
+
     setIsLoading(true)
-    const res = await getJobSuggestion(job.id, job.region.id, scheduleStart, scheduleEnd, project.timezoneSid)
+    const res = await getJobSuggestion(
+      job.id,
+      job.region.id,
+      zonedTimeToUtc(startDate, project.timezoneSid).toISOString(),
+      zonedTimeToUtc(endDate, project.timezoneSid).toISOString(),
+      project.timezoneSid
+    )
     setSuggestions(prev => ([...prev, ...res]))
     setIsLoading(false)
-  }, [project, selectedDate, endDate, suggestions])
+  }, [project, dateRange, suggestions, swimlaneSettings.workingHours])
 
   const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
 
@@ -216,7 +248,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   }, [])
 
   const onDateRangeSelect = useCallback((range: RangeType) => {
-    setSelectedDateRange(range)
+    setSelectedRangeType(range)
   }, [])
 
   const onDateSelect = useCallback((date: Date) => {
@@ -227,7 +259,8 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(new Date())
   }, [])
 
-  const openAllocationModal = useCallback((job: IJobDetail, zonedDate: string, zonedTime: number) => {
+  const openAllocationModal = useCallback(async (job: IJobDetail, zonedDate: string, zonedTime: number) => {
+    // await handleDragJob(job, zonedDate, zonedTime)
     setAllocationModal({
       isOpen: true,
       job,
@@ -278,7 +311,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setIsLoading(true)
     const allocatedResourceIds = allocationModal.job?.allocations?.map(item => item.resource.id) || []
     const needingAllocationResources = xor(allocatedResourceIds, resourceIds)
-    const [isUpdateTimeSuccess, isAllocationSuccess] = await Promise.all([
+    const [isUpdateJob, isAllocationSuccess] = await Promise.all([
       updateJobTime({
         id: job.id,
         timezoneSid: job.timezoneSid,
@@ -290,7 +323,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     ])
     closeAllocationModal()
     setIsLoading(false)
-    if (isUpdateTimeSuccess || isAllocationSuccess) {
+    if (isAllocationSuccess || isUpdateJob) {
       getJobsList({...filterParams, projectId: project.id })
       getSuggestions(job, true)
     }
@@ -343,7 +376,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               rangeOptions={['day', 'week', 'month']}
               selected={selectedDate}
               onDateSelect={onDateSelect}
-              selectedRange={selectedDateRange}
+              selectedRange={selectedRangeType}
               onRangeChange={onDateRangeSelect}
               onTodayClick={onTodayClick}
             />
@@ -415,8 +448,9 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
             </div>
             <div className="schedule-item-weekday">
               <ScheduleTimeslots
-                selectedDate={selectedDate}
-                rangeType={selectedDateRange}
+                projectTimezone={project.timezoneSid}
+                dateRange={dateRange}
+                rangeType={selectedRangeType}
                 swimlaneSettings={swimlaneSettings}
               />
             </div>
@@ -438,7 +472,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
                       <p>{job.jobType}</p>
                     </div>
                     <div className="cx-min-w-36px">
-                      {!job.startDate && (
+                      {!job.startDate && shouldSuggest && (
                         <IconButton
                           buttonType="transparent"
                           icon="suggest"
@@ -452,8 +486,9 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
                   </div>
                   <div className="schedule-item-weekday">
                     <ScheduleTimeslots
-                      selectedDate={selectedDate}
-                      rangeType={selectedDateRange}
+                      projectTimezone={project.timezoneSid}
+                      dateRange={dateRange}
+                      rangeType={selectedRangeType}
                       swimlaneSettings={swimlaneSettings}
                       openAllocationModal={openAllocationModal}
                       job={job}

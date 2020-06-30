@@ -50,10 +50,7 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   zonedTime,
   handleAllocation
 }) => {
-  const [selectedRegion, setSelectedRegion] = useState<ISelectItem>({
-    value: '',
-    label: ''
-  })
+  const [selectedRegion, setSelectedRegion] = useState<ISelectItem>({ label: '', value: '' })
   const [sortType, setSortType] = useState<ISelectItem>(RESOURCE_SORT_OPTIONS[0])
   const [searchText, setSearchText] = useState<string>('')
   const [sortedResources, setSortedResources] = useState<IResource[]>([])
@@ -68,6 +65,7 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
     zonedStartDate: string,
     zonedStartTime: number
   ) => {
+    console.log('targetJob: ', targetJob);
     setIsLoading(true)
     const res = await fetchAvailableResources(targetJob, regionId, zonedStartDate, zonedStartTime)
     const sortedList = handleSort(res, sortType.value)
@@ -142,12 +140,6 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   }, [selectedResources, job, zonedDate, zonedTime])
 
   useEffect(() => {
-    if (job && job.region.id !== selectedRegion.value) {
-      setSelectedRegion({ label: job.region.name, value: job.region.id })
-    }
-  }, [job, selectedRegion])
-
-  useEffect(() => {
     setDisplayResources(sortedResources)
   }, [sortedResources])
 
@@ -155,15 +147,18 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
     if (selectedRegion.value) {
       getAvailableResources(job, selectedRegion.value, zonedDate, zonedTime)
     }
-  }, [selectedRegion.value, zonedDate, zonedTime])
+  }, [selectedRegion.value, job, zonedDate, zonedTime])
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedResources([])
-    } else if (job.allocations) {
-      setSelectedResources(job.allocations.map(item => ({ ...item.resource, isSuggested: false })))
+    } else {
+      setSelectedRegion({ label: job.region.name, value: job.region.id })
+      if (job.allocations) {
+        setSelectedResources(job.allocations.map(item => ({ ...item.resource, isSuggested: false })))
+      }
     }
-  }, [isOpen, job.allocations])
+  }, [isOpen, job])
 
   if (!isOpen) {
     return null
@@ -216,33 +211,35 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
             />
           </div>
           {isLoading && <LoadingSpinner color="#008CFF" />}
-          <div className="scroll cx-max-h-300px">
-            {!!displayResources.length && displayResources.map(item => {
-              return (
-                <div className="cx-flex cx-items-center cx-my-2 cx-w-1/2" key={item.id}>
-                  <FormInputElement
-                    id={item.id}
-                    className="cx-mr-4"
-                    type="checkbox"
-                    checked={selectedResources.some(({ id }) => id === item.id)}
-                    onChange={onSelectResource(item)}
-                  />
-                  <div className={classnames('cx-flex cx-items-center cx-p-2 cx-shadow-sm cx-w-full', {
-                    'cx-bg-neutral-200': !item.isSuggested
-                  })}>
-                    <Avatar name={item.name} imageUrl={item.avatarUrl || ''} />
-                    <div className="cx-pl-4">
-                      <div>{item.name}</div>
-                      <div className="cx-text-neutral-700">{item.category}</div>
+          {!isLoading && (
+            <div className="scroll cx-max-h-300px">
+              {!!displayResources.length && displayResources.map(item => {
+                return (
+                  <div className="cx-flex cx-items-center cx-my-2 cx-w-1/2" key={item.id}>
+                    <FormInputElement
+                      id={item.id}
+                      className="cx-mr-4"
+                      type="checkbox"
+                      checked={selectedResources.some(({ id }) => id === item.id)}
+                      onChange={onSelectResource(item)}
+                    />
+                    <div className={classnames('cx-flex cx-items-center cx-p-2 cx-shadow-sm cx-w-full', {
+                      'cx-bg-neutral-200': !item.isSuggested
+                    })}>
+                      <Avatar name={item.name} imageUrl={item.avatarUrl || ''} />
+                      <div className="cx-pl-4">
+                        <div>{item.name}</div>
+                        <div className="cx-text-neutral-700">{item.category}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-            {!isLoading && !displayResources.length && (
-              <div className="cx-py-2">No resources found.</div>
-            )}
-          </div>
+                )
+              })}
+              {!isLoading && !displayResources.length && (
+                <div className="cx-py-2">No resources found.</div>
+              )}
+            </div>
+          )}
         </div>
         <div className="cx-px-2 cx-pt-4 cx-pb-1 cx-border-t cx-border-neutral-300 cx-flex cx-items-center">
           <Icon name="resource" className="cx-text-neutral-700 cx-mr-4" />
