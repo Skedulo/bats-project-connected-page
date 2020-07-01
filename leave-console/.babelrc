@@ -1,0 +1,34 @@
+{
+  "presets": ["@babel/preset-env", "@babel/preset-react", "@babel/preset-typescript"],
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    "@babel/proposal-object-rest-spread",
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-proposal-optional-chaining",
+    [
+      "inline-react-svg",
+      {
+        "ignorePattern": "assets\/",
+        "svgo": {
+          "plugins": [
+            {
+              "removeAttrs": { "attrs": ["class", "fill", "mask"] },
+            },
+            {
+                "removeStyleElement": true
+            },
+            {
+                "removeXMLNS": true
+            },
+            {
+                "cleanupIDs": true
+            },
+            {
+              "removeTitle": true
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

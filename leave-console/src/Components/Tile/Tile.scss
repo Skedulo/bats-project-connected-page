@@ -1,0 +1,41 @@
+@import 'src/variables.scss';
+
+.tile {
+  align-items: center;
+  background: $white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem;
+  text-align: center;
+
+  &__icon {
+    align-items: center;
+    background-color: rgba($blue, .06);
+    border-radius: 50%;
+    color: $blue;
+    display: flex;
+    height: 40px;
+    justify-content: center;
+    width: 40px;
+
+    &--warning {
+      background-color: rgba($red, .06);
+      color: $red;
+    }
+  }
+
+  &__title {
+    color: $navy-lighter;
+    font-size: .875rem;
+    letter-spacing: .23px;
+  }
+
+  &__amount {
+    color: $navy;
+    font-size: 1.125rem;
+    font-size: 1.125rem;
+    letter-spacing: -.06px;
+    line-height: .72;
+  }
+}

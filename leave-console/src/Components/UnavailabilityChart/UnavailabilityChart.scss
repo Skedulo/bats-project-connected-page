@@ -1,0 +1,73 @@
+@import 'src/variables.scss';
+
+.unavailability-chart {
+  background-color: $white;
+  padding: 3rem 4rem 3rem 2.5rem;
+
+  &__title {
+    color: $navy;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  &__chart-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2.5rem;
+  }
+
+  .tooltip {
+    background-color: $white;
+    border-radius: 3px;
+    box-shadow: $box-shadow-big;
+    padding: 6px 8px;
+    position: absolute;
+
+    p {
+      font-size: .75rem;
+      white-space: nowrap;
+    }
+
+    &::after {
+      background-color: $white;
+      bottom: -8px;
+      box-shadow: $box-shadow-big;
+      content: '';
+      display: block;
+      height: 10px;
+      left: 50%;
+      position: absolute;
+      transform: rotate(45deg) translateX(-50%);
+      width: 10px;
+    }
+
+    &__percent {
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    &__no-data {
+      color: $navy-lighter;
+      font-size: .75rem;
+    }
+  }
+
+  .legend {
+    color: $navy-lighter;
+    font-size: .75rem;
+    margin-right: 2.5rem;
+    text-transform: capitalize;
+
+    &__item {
+      font-size: .875rem;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    &__bullet {
+      font-size: 1.5rem;
+      line-height: 1.2;
+      margin-right: 10px;
+    }
+  }
+}

@@ -1,0 +1,25 @@
+@import 'src/variables.scss';
+
+.resource-cell {
+  align-items: center;
+  display: flex;
+
+  &__avatar {
+    height: 26px;
+    margin-right: 12px;
+    width: 26px;
+  }
+
+  &__name {
+    color: $navy;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  &__category {
+    color: $navy-lighter;
+    font-size: 13px;
+  }
+}

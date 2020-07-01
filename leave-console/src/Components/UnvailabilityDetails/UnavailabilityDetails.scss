@@ -1,0 +1,8 @@
+@import 'src/variables.scss';
+
+.unavailability-details {
+  border: 1px solid $grey-lighter;
+  display: flex;
+  justify-content: space-evenly;
+  padding: 48px 0;
+}

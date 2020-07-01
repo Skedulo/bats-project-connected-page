@@ -1,0 +1,83 @@
+@import 'src/variables.scss';
+
+.details-header {
+  &__nav {
+    color: $blue;
+    font-size: 14px;
+    text-decoration: none;
+  }
+
+  &__resource {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px 0 48px 0;
+  }
+
+  &__user-info-wrapper {
+    align-items: center;
+    display: flex;
+  }
+
+  &__avatar {
+    height: 72px;
+    position: relative;
+    width: 72px;
+
+    img {
+      border-radius: 50%;
+    }
+  }
+
+  &__status {
+    background-color: $navy-lightest;
+    border-radius: 50%;
+    border: 2px solid $white;
+    bottom: 0;
+    height: 16px;
+    position: absolute;
+    right: 0;
+    width: 15px;
+
+    &--active {
+      background-color: $green;
+    }
+  }
+
+  &__main-info {
+    margin-left: 24px;
+  }
+
+  &__name {
+    color: $navy;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  &__details {
+    color: $navy-lighter;
+    display: flex;
+    font-size: 14px;
+
+    svg {
+      margin-right: 8px;
+    }
+
+    > div {
+      &:not(:last-child) {
+        margin-right: 16px;
+      }
+    }
+  }
+
+  &__buttons {
+    align-items: flex-start;
+    display: flex;
+
+    button {
+      &:first-child {
+        margin-right: 12px;
+      }
+    }
+  }
+}

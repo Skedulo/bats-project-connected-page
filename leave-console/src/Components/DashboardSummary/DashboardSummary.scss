@@ -1,0 +1,42 @@
+@import 'src/variables.scss';
+
+.dashboard-summary {
+  display: grid;
+  grid-gap: 12px;
+  grid-template-areas:
+  "tile-1 tile-2 tile-3 tile-4 unavailability-chart"
+  "absence-chart absence-chart absence-chart absence-chart unavailability-chart";
+  grid-template-columns: repeat(4, 1fr) 3fr;
+  grid-template-rows: 150px 240px;
+  padding: 1.5rem;
+
+  > * {
+    box-shadow: $box-shadow-small;
+  }
+
+  &__tile {
+    &:first-child {
+      grid-area: tile-1;
+    }
+
+    &:nth-child(2) {
+      grid-area: tile-2;
+    }
+
+    &:nth-child(3) {
+      grid-area: tile-3;
+    }
+
+    &:nth-child(4) {
+      grid-area: tile-4;
+    }
+  }
+
+  &__absence-chart {
+    grid-area: absence-chart;
+  }
+
+  &__unavailability-chart {
+    grid-area: unavailability-chart;
+  }
+}

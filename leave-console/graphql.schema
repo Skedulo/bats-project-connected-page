@@ -1,0 +1,2398 @@
+type AccountResourceScores {
+  Account: Accounts!
+  Blacklisted: Boolean!
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Resource: Resources!
+  UID: ID!
+  Whitelisted: Boolean!
+}
+
+type AccountResourceScoresConnection {
+  edges: [AccountResourceScoresEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AccountResourceScoresEdge {
+  cursor: Base64!
+  node: AccountResourceScores!
+  offset: Int!
+}
+
+type Accounts {
+  BillingCity: String
+  BillingPostalCode: String
+  BillingState: String
+  BillingStreet: String
+  Contacts(filter: EQLQueryFilterContacts, orderBy: EQLOrderByClauseContacts): [Contacts!]!
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  Fax: String
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Locations(filter: EQLQueryFilterLocations, orderBy: EQLOrderByClauseLocations): [Locations!]!
+  Name: String!
+  Phone: String
+  Rank: Int
+  RequiresWhitelist: Boolean!
+  ResourceScores(filter: EQLQueryFilterAccountResourceScores, orderBy: EQLOrderByClauseAccountResourceScores): [AccountResourceScores!]!
+  ShippingCity: String
+  ShippingPostalCode: String
+  ShippingState: String
+  ShippingStreet: String
+  UID: ID!
+}
+
+type AccountsConnection {
+  edges: [AccountsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AccountsEdge {
+  cursor: Base64!
+  node: Accounts!
+  offset: Int!
+}
+
+type Activities {
+  ActivityResources(filter: EQLQueryFilterActivityResources, orderBy: EQLOrderByClauseActivityResources): [ActivityResources!]!
+  Address: String
+  End: Instant!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Location: Locations
+  Name: String!
+  Notes: String
+  Quantity: Int
+  Resource: Resources
+  Start: Instant!
+  Timezone: String
+  Type: String
+  UID: ID!
+}
+
+type ActivitiesConnection {
+  edges: [ActivitiesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ActivitiesEdge {
+  cursor: Base64!
+  node: Activities!
+  offset: Int!
+}
+
+type ActivityResources {
+  Activity: Activities!
+  Resource: Resources!
+  UID: ID!
+}
+
+type ActivityResourcesConnection {
+  edges: [ActivityResourcesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ActivityResourcesEdge {
+  cursor: Base64!
+  node: ActivityResources!
+  offset: Int!
+}
+
+type Availabilities {
+  CreatedDate: Instant!
+  Finish: Instant!
+  IsAvailable: Boolean!
+  Notes: String
+  Resource: Resources!
+  Start: Instant!
+  Status: AvailabilityStatus
+  Type: String
+  UID: ID!
+}
+
+type AvailabilitiesConnection {
+  edges: [AvailabilitiesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AvailabilitiesEdge {
+  cursor: Base64!
+  node: Availabilities!
+  offset: Int!
+}
+
+"Valid values are (Pending, Approved, Declined)"
+scalar AvailabilityStatus
+
+type AvailabilityTemplateEntries {
+  AvailabilityTemplate: AvailabilityTemplates!
+  FinishTime: Int!
+  IsAvailable: Boolean!
+  StartTime: Int!
+  UID: ID!
+  Weekday: Weekday!
+}
+
+type AvailabilityTemplateEntriesConnection {
+  edges: [AvailabilityTemplateEntriesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AvailabilityTemplateEntriesEdge {
+  cursor: Base64!
+  node: AvailabilityTemplateEntries!
+  offset: Int!
+}
+
+type AvailabilityTemplateResources {
+  AvailabilityTemplate: AvailabilityTemplates!
+  Resource: Resources!
+  UID: ID!
+}
+
+type AvailabilityTemplateResourcesConnection {
+  edges: [AvailabilityTemplateResourcesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AvailabilityTemplateResourcesEdge {
+  cursor: Base64!
+  node: AvailabilityTemplateResources!
+  offset: Int!
+}
+
+type AvailabilityTemplates {
+  AvailabilityTemplateEntries(filter: EQLQueryFilterAvailabilityTemplateEntries, orderBy: EQLOrderByClauseAvailabilityTemplateEntries): [AvailabilityTemplateEntries!]!
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  Finish: LocalDate
+  Global: Boolean!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Name: String!
+  Resources(filter: EQLQueryFilterAvailabilityTemplateResources, orderBy: EQLOrderByClauseAvailabilityTemplateResources): [AvailabilityTemplateResources!]!
+  Start: LocalDate
+  UID: ID!
+}
+
+type AvailabilityTemplatesConnection {
+  edges: [AvailabilityTemplatesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type AvailabilityTemplatesEdge {
+  cursor: Base64!
+  node: AvailabilityTemplates!
+  offset: Int!
+}
+
+"A base64 encoded string"
+scalar Base64
+
+type Contacts {
+  Account: Accounts
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  Email: String
+  FirstName: String
+  FullName: String!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  LastName: String!
+  MailingCity: String
+  MailingPostalCode: String
+  MailingState: String
+  MailingStreet: String
+  MobilePhone: String
+  OtherCity: String
+  OtherPostalCode: String
+  OtherState: String
+  OtherStreet: String
+  Phone: String
+  Region: Regions
+  Title: String
+  UID: ID!
+}
+
+type ContactsConnection {
+  edges: [ContactsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ContactsEdge {
+  cursor: Base64!
+  node: Contacts!
+  offset: Int!
+}
+
+"Valid values are (Pending, Confirmed, Declined, Error)"
+scalar CustomerConfirmationStatus
+
+"The duration in minutes between two instants in time"
+scalar Duration
+
+"EQL order by clause for object type AccountResourceScores"
+scalar EQLOrderByClauseAccountResourceScores
+
+"EQL order by clause for object type Accounts"
+scalar EQLOrderByClauseAccounts
+
+"EQL order by clause for object type Activities"
+scalar EQLOrderByClauseActivities
+
+"EQL order by clause for object type ActivityResources"
+scalar EQLOrderByClauseActivityResources
+
+"EQL order by clause for object type Availabilities"
+scalar EQLOrderByClauseAvailabilities
+
+"EQL order by clause for object type AvailabilityTemplateEntries"
+scalar EQLOrderByClauseAvailabilityTemplateEntries
+
+"EQL order by clause for object type AvailabilityTemplateResources"
+scalar EQLOrderByClauseAvailabilityTemplateResources
+
+"EQL order by clause for object type AvailabilityTemplates"
+scalar EQLOrderByClauseAvailabilityTemplates
+
+"EQL order by clause for object type Contacts"
+scalar EQLOrderByClauseContacts
+
+"EQL order by clause for object type HolidayRegions"
+scalar EQLOrderByClauseHolidayRegions
+
+"EQL order by clause for object type Holidays"
+scalar EQLOrderByClauseHolidays
+
+"EQL order by clause for object type JobAllocations"
+scalar EQLOrderByClauseJobAllocations
+
+"EQL order by clause for object type JobOffers"
+scalar EQLOrderByClauseJobOffers
+
+"EQL order by clause for object type JobProducts"
+scalar EQLOrderByClauseJobProducts
+
+"EQL order by clause for object type JobTags"
+scalar EQLOrderByClauseJobTags
+
+"EQL order by clause for object type JobTasks"
+scalar EQLOrderByClauseJobTasks
+
+"EQL order by clause for object type JobTimeConstraints"
+scalar EQLOrderByClauseJobTimeConstraints
+
+"EQL order by clause for object type Jobs"
+scalar EQLOrderByClauseJobs
+
+"EQL order by clause for object type LocationResourceScores"
+scalar EQLOrderByClauseLocationResourceScores
+
+"EQL order by clause for object type Locations"
+scalar EQLOrderByClauseLocations
+
+"EQL order by clause for object type Products"
+scalar EQLOrderByClauseProducts
+
+"EQL order by clause for object type RecurringSchedules"
+scalar EQLOrderByClauseRecurringSchedules
+
+"EQL order by clause for object type Regions"
+scalar EQLOrderByClauseRegions
+
+"EQL order by clause for object type ResourceJobOffers"
+scalar EQLOrderByClauseResourceJobOffers
+
+"EQL order by clause for object type ResourceOverrideRegions"
+scalar EQLOrderByClauseResourceOverrideRegions
+
+"EQL order by clause for object type ResourceOverrides"
+scalar EQLOrderByClauseResourceOverrides
+
+"EQL order by clause for object type ResourceRegions"
+scalar EQLOrderByClauseResourceRegions
+
+"EQL order by clause for object type ResourceRequirementTags"
+scalar EQLOrderByClauseResourceRequirementTags
+
+"EQL order by clause for object type ResourceRequirements"
+scalar EQLOrderByClauseResourceRequirements
+
+"EQL order by clause for object type ResourceShiftBreaks"
+scalar EQLOrderByClauseResourceShiftBreaks
+
+"EQL order by clause for object type ResourceShifts"
+scalar EQLOrderByClauseResourceShifts
+
+"EQL order by clause for object type ResourceTags"
+scalar EQLOrderByClauseResourceTags
+
+"EQL order by clause for object type Resources"
+scalar EQLOrderByClauseResources
+
+"EQL order by clause for object type ShiftTags"
+scalar EQLOrderByClauseShiftTags
+
+"EQL order by clause for object type Shifts"
+scalar EQLOrderByClauseShifts
+
+"EQL order by clause for object type Tags"
+scalar EQLOrderByClauseTags
+
+"EQL order by clause for object type Users"
+scalar EQLOrderByClauseUsers
+
+"EQL query filter for object type AccountResourceScores"
+scalar EQLQueryFilterAccountResourceScores
+
+"EQL query filter for object type Accounts"
+scalar EQLQueryFilterAccounts
+
+"EQL query filter for object type Activities"
+scalar EQLQueryFilterActivities
+
+"EQL query filter for object type ActivityResources"
+scalar EQLQueryFilterActivityResources
+
+"EQL query filter for object type Availabilities"
+scalar EQLQueryFilterAvailabilities
+
+"EQL query filter for object type AvailabilityTemplateEntries"
+scalar EQLQueryFilterAvailabilityTemplateEntries
+
+"EQL query filter for object type AvailabilityTemplateResources"
+scalar EQLQueryFilterAvailabilityTemplateResources
+
+"EQL query filter for object type AvailabilityTemplates"
+scalar EQLQueryFilterAvailabilityTemplates
+
+"EQL query filter for object type Contacts"
+scalar EQLQueryFilterContacts
+
+"EQL query filter for object type HolidayRegions"
+scalar EQLQueryFilterHolidayRegions
+
+"EQL query filter for object type Holidays"
+scalar EQLQueryFilterHolidays
+
+"EQL query filter for object type JobAllocations"
+scalar EQLQueryFilterJobAllocations
+
+"EQL query filter for object type JobOffers"
+scalar EQLQueryFilterJobOffers
+
+"EQL query filter for object type JobProducts"
+scalar EQLQueryFilterJobProducts
+
+"EQL query filter for object type JobTags"
+scalar EQLQueryFilterJobTags
+
+"EQL query filter for object type JobTasks"
+scalar EQLQueryFilterJobTasks
+
+"EQL query filter for object type JobTimeConstraints"
+scalar EQLQueryFilterJobTimeConstraints
+
+"EQL query filter for object type Jobs"
+scalar EQLQueryFilterJobs
+
+"EQL query filter for object type LocationResourceScores"
+scalar EQLQueryFilterLocationResourceScores
+
+"EQL query filter for object type Locations"
+scalar EQLQueryFilterLocations
+
+"EQL query filter for object type Products"
+scalar EQLQueryFilterProducts
+
+"EQL query filter for object type RecurringSchedules"
+scalar EQLQueryFilterRecurringSchedules
+
+"EQL query filter for object type Regions"
+scalar EQLQueryFilterRegions
+
+"EQL query filter for object type ResourceJobOffers"
+scalar EQLQueryFilterResourceJobOffers
+
+"EQL query filter for object type ResourceOverrideRegions"
+scalar EQLQueryFilterResourceOverrideRegions
+
+"EQL query filter for object type ResourceOverrides"
+scalar EQLQueryFilterResourceOverrides
+
+"EQL query filter for object type ResourceRegions"
+scalar EQLQueryFilterResourceRegions
+
+"EQL query filter for object type ResourceRequirementTags"
+scalar EQLQueryFilterResourceRequirementTags
+
+"EQL query filter for object type ResourceRequirements"
+scalar EQLQueryFilterResourceRequirements
+
+"EQL query filter for object type ResourceShiftBreaks"
+scalar EQLQueryFilterResourceShiftBreaks
+
+"EQL query filter for object type ResourceShifts"
+scalar EQLQueryFilterResourceShifts
+
+"EQL query filter for object type ResourceTags"
+scalar EQLQueryFilterResourceTags
+
+"EQL query filter for object type Resources"
+scalar EQLQueryFilterResources
+
+"EQL query filter for object type ShiftTags"
+scalar EQLQueryFilterShiftTags
+
+"EQL query filter for object type Shifts"
+scalar EQLQueryFilterShifts
+
+"EQL query filter for object type Tags"
+scalar EQLQueryFilterTags
+
+"EQL query filter for object type Users"
+scalar EQLQueryFilterUsers
+
+"EQL record filter for object type Activities"
+scalar EQLRecordFilterActivities
+
+"EQL record filter for object type Availabilities"
+scalar EQLRecordFilterAvailabilities
+
+"EQL record filter for object type JobAllocations"
+scalar EQLRecordFilterJobAllocations
+
+"EQL record filter for object type Jobs"
+scalar EQLRecordFilterJobs
+
+"EQL record filter for object type Shifts"
+scalar EQLRecordFilterShifts
+
+type HolidayRegions {
+  Holiday: Holidays!
+  Region: Regions!
+  UID: ID!
+}
+
+type HolidayRegionsConnection {
+  edges: [HolidayRegionsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type HolidayRegionsEdge {
+  cursor: Base64!
+  node: HolidayRegions!
+  offset: Int!
+}
+
+type Holidays {
+  EndDate: LocalDate!
+  Global: Boolean!
+  HolidayRegions(filter: EQLQueryFilterHolidayRegions, orderBy: EQLOrderByClauseHolidayRegions): [HolidayRegions!]!
+  Name: String!
+  StartDate: LocalDate!
+  UID: ID!
+}
+
+type HolidaysConnection {
+  edges: [HolidaysEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type HolidaysEdge {
+  cursor: Base64!
+  node: Holidays!
+  offset: Int!
+}
+
+"An instantaneous point on the time-line"
+scalar Instant
+
+"Valid values are (Pending Dispatch, Dispatched, Confirmed, En Route, Checked In, In Progress, Complete, Deleted, Declined)"
+scalar JobAllocationStatus
+
+type JobAllocations {
+  DeclineDescription: String
+  DeclineReason: String
+  Duration: Duration
+  End: Instant
+  EstimatedTravelDistance: BigDecimal
+  EstimatedTravelTime: Duration
+  GeoCheckedInLatitude: BigDecimal
+  GeoCheckedInLongitude: BigDecimal
+  GeoCompletedLatitude: BigDecimal
+  GeoCompletedLongitude: BigDecimal
+  GeoInProgressLatitude: BigDecimal
+  GeoInProgressLongitude: BigDecimal
+  GeoStartTravelLatitude: BigDecimal
+  GeoStartTravelLongitude: BigDecimal
+  Job: Jobs!
+  Name: String!
+  NotificationType: String
+  PhoneResponse: String
+  Resource: Resources!
+  ResourceRequirement: ResourceRequirements
+  Start: Instant
+  Status: JobAllocationStatus!
+  TeamLeader: Boolean!
+  TimeCheckedIn: Instant
+  TimeCompleted: Instant
+  TimeInProgress: Instant
+  TimePublished: Instant
+  TimeResponded: Instant
+  TimeStartTravel: Instant
+  TravelDistance: BigDecimal
+  TravelTime: Duration
+  UID: ID!
+}
+
+type JobAllocationsConnection {
+  edges: [JobAllocationsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobAllocationsEdge {
+  cursor: Base64!
+  node: JobAllocations!
+  offset: Int!
+}
+
+type JobOffers {
+  Job: Jobs!
+  ResourceJobOffers(filter: EQLQueryFilterResourceJobOffers, orderBy: EQLOrderByClauseResourceJobOffers): [ResourceJobOffers!]!
+  ResourceRequirement: ResourceRequirements
+  Status: OfferStatus!
+  UID: ID!
+}
+
+type JobOffersConnection {
+  edges: [JobOffersEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobOffersEdge {
+  cursor: Base64!
+  node: JobOffers!
+  offset: Int!
+}
+
+type JobProducts {
+  Job: Jobs!
+  Name: String!
+  Product: Products
+  ProductName: String
+  Qty: BigDecimal!
+  UID: ID!
+}
+
+type JobProductsConnection {
+  edges: [JobProductsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobProductsEdge {
+  cursor: Base64!
+  node: JobProducts!
+  offset: Int!
+}
+
+"Valid values are (Queued, Pending Allocation, Pending Dispatch, Dispatched, Ready, En Route, On Site, In Progress, Complete, Cancelled)"
+scalar JobStatus
+
+type JobTags {
+  Job: Jobs!
+  Required: Boolean!
+  Tag: Tags!
+  UID: ID!
+  Weighting: Int
+}
+
+type JobTagsConnection {
+  edges: [JobTagsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobTagsEdge {
+  cursor: Base64!
+  node: JobTags!
+  offset: Int!
+}
+
+type JobTasks {
+  Completed: Boolean!
+  Description: String
+  Job: Jobs!
+  Name: String!
+  Seq: Int!
+  UID: ID!
+}
+
+type JobTasksConnection {
+  edges: [JobTasksEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobTasksEdge {
+  cursor: Base64!
+  node: JobTasks!
+  offset: Int!
+}
+
+"Valid values are (SLA, Timeslot)"
+scalar JobTimeConstraintType
+
+type JobTimeConstraints {
+  EndBefore: Instant
+  Job: Jobs!
+  Required: Boolean!
+  StartAfter: Instant
+  StartBefore: Instant
+  Type: JobTimeConstraintType!
+  UID: ID!
+}
+
+type JobTimeConstraintsConnection {
+  edges: [JobTimeConstraintsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobTimeConstraintsEdge {
+  cursor: Base64!
+  node: JobTimeConstraints!
+  offset: Int!
+}
+
+type Jobs {
+  AbortReason: String
+  Account: Accounts
+  ActualEnd: Instant
+  ActualStart: Instant
+  Address: String
+  AutoSchedule: Boolean!
+  CanBeDeclined: Boolean!
+  CompletionNotes: String
+  Contact: Contacts
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  CustomerConfirmationStatus: CustomerConfirmationStatus
+  Description: String
+  Duration: Duration!
+  End: Instant
+  EstimatedEnd: Instant
+  EstimatedStart: Instant
+  FollowupReason: String
+  Followups(filter: EQLQueryFilterJobs, orderBy: EQLOrderByClauseJobs): [Jobs!]!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  JobAllocationCount: Int!
+  JobAllocationTimeSource: Boolean!
+  JobAllocations(filter: EQLQueryFilterJobAllocations, orderBy: EQLOrderByClauseJobAllocations): [JobAllocations!]!
+  JobOffers(filter: EQLQueryFilterJobOffers, orderBy: EQLOrderByClauseJobOffers): [JobOffers!]!
+  JobProducts(filter: EQLQueryFilterJobProducts, orderBy: EQLOrderByClauseJobProducts): [JobProducts!]!
+  JobStatus: JobStatus!
+  JobTags(filter: EQLQueryFilterJobTags, orderBy: EQLOrderByClauseJobTags): [JobTags!]!
+  JobTasks(filter: EQLQueryFilterJobTasks, orderBy: EQLOrderByClauseJobTasks): [JobTasks!]!
+  JobTimeConstraints(filter: EQLQueryFilterJobTimeConstraints, orderBy: EQLOrderByClauseJobTimeConstraints): [JobTimeConstraints!]!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Location: Locations
+  Locked: Boolean!
+  Name: String!
+  NotesComments: String
+  NotifyBy: Instant
+  NotifyPeriod: Int
+  Parent: Jobs
+  Quantity: Int
+  RecurringSchedule: RecurringSchedules
+  Region: Regions!
+  ResourceRequirements(filter: EQLQueryFilterResourceRequirements, orderBy: EQLOrderByClauseResourceRequirements): [ResourceRequirements!]!
+  Start: Instant
+  Timezone: String!
+  Type: String
+  UID: ID!
+  Urgency: String
+}
+
+type JobsConnection {
+  edges: [JobsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type JobsEdge {
+  cursor: Base64!
+  node: Jobs!
+  offset: Int!
+}
+
+"A date without a time-zone in the ISO-8601 calendar system"
+scalar LocalDate
+
+"A time without a time-zone in the ISO-8601 calendar system"
+scalar LocalTime
+
+type LocationResourceScores {
+  Blacklisted: Boolean!
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Location: Locations!
+  Resource: Resources!
+  UID: ID!
+  Whitelisted: Boolean!
+}
+
+type LocationResourceScoresConnection {
+  edges: [LocationResourceScoresEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type LocationResourceScoresEdge {
+  cursor: Base64!
+  node: LocationResourceScores!
+  offset: Int!
+}
+
+type Locations {
+  Account: Accounts
+  Address: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String!
+  Region: Regions
+  RequiresWhitelist: Boolean!
+  ResourceScores(filter: EQLQueryFilterLocationResourceScores, orderBy: EQLOrderByClauseLocationResourceScores): [LocationResourceScores!]!
+  Type: String
+  UID: ID!
+}
+
+type LocationsConnection {
+  edges: [LocationsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type LocationsEdge {
+  cursor: Base64!
+  node: Locations!
+  offset: Int!
+}
+
+type Mutation {
+  schema: SchemaMutation!
+}
+
+input NewAccountResourceScores {
+  AccountId: ID!
+  Blacklisted: Boolean
+  ResourceId: ID!
+  Whitelisted: Boolean
+}
+
+input NewAccounts {
+  BillingCity: String
+  BillingPostalCode: String
+  BillingState: String
+  BillingStreet: String
+  Fax: String
+  Name: String!
+  Phone: String
+  Rank: Int
+  RequiresWhitelist: Boolean
+  ShippingCity: String
+  ShippingPostalCode: String
+  ShippingState: String
+  ShippingStreet: String
+}
+
+input NewActivities {
+  Address: String
+  End: Instant!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  LocationId: ID
+  Notes: String
+  Quantity: Int
+  ResourceId: ID
+  Start: Instant!
+  Timezone: String
+  Type: String
+}
+
+input NewActivityResources {
+  ActivityId: ID!
+  ResourceId: ID!
+}
+
+input NewAvailabilities {
+  Finish: Instant!
+  IsAvailable: Boolean
+  Notes: String
+  ResourceId: ID!
+  Start: Instant!
+  Status: AvailabilityStatus
+  Type: String
+}
+
+input NewAvailabilityTemplateEntries {
+  AvailabilityTemplateId: ID!
+  FinishTime: Int!
+  IsAvailable: Boolean
+  StartTime: Int!
+  Weekday: Weekday!
+}
+
+input NewAvailabilityTemplateResources {
+  AvailabilityTemplateId: ID!
+  ResourceId: ID!
+}
+
+input NewAvailabilityTemplates {
+  Finish: LocalDate
+  Global: Boolean
+  Name: String
+  Start: LocalDate
+}
+
+input NewContacts {
+  AccountId: ID
+  Email: String
+  FirstName: String
+  LastName: String!
+  MailingCity: String
+  MailingPostalCode: String
+  MailingState: String
+  MailingStreet: String
+  MobilePhone: String
+  OtherCity: String
+  OtherPostalCode: String
+  OtherState: String
+  OtherStreet: String
+  Phone: String
+  RegionId: ID
+  Title: String
+}
+
+input NewHolidayRegions {
+  HolidayId: ID!
+  RegionId: ID!
+}
+
+input NewHolidays {
+  EndDate: LocalDate!
+  Global: Boolean
+  Name: String!
+  StartDate: LocalDate!
+}
+
+input NewJobAllocations {
+  DeclineDescription: String
+  DeclineReason: String
+  Duration: Duration
+  End: Instant
+  EstimatedTravelDistance: BigDecimal
+  EstimatedTravelTime: Duration
+  GeoCheckedInLatitude: BigDecimal
+  GeoCheckedInLongitude: BigDecimal
+  GeoCompletedLatitude: BigDecimal
+  GeoCompletedLongitude: BigDecimal
+  GeoInProgressLatitude: BigDecimal
+  GeoInProgressLongitude: BigDecimal
+  GeoStartTravelLatitude: BigDecimal
+  GeoStartTravelLongitude: BigDecimal
+  JobId: ID!
+  NotificationType: String
+  PhoneResponse: String
+  ResourceId: ID!
+  ResourceRequirementId: ID
+  Start: Instant
+  Status: JobAllocationStatus
+  TeamLeader: Boolean
+  TimeCheckedIn: Instant
+  TimeCompleted: Instant
+  TimeInProgress: Instant
+  TimePublished: Instant
+  TimeResponded: Instant
+  TimeStartTravel: Instant
+  TravelDistance: BigDecimal
+  TravelTime: Duration
+}
+
+input NewJobOffers {
+  JobId: ID!
+  ResourceRequirementId: ID
+  Status: OfferStatus
+}
+
+input NewJobProducts {
+  JobId: ID!
+  Name: String
+  ProductId: ID
+  Qty: BigDecimal!
+}
+
+input NewJobTags {
+  JobId: ID!
+  Required: Boolean
+  TagId: ID!
+  Weighting: Int
+}
+
+input NewJobTasks {
+  Completed: Boolean
+  Description: String
+  JobId: ID!
+  Name: String!
+  Seq: Int!
+}
+
+input NewJobTimeConstraints {
+  EndBefore: Instant
+  JobId: ID!
+  Required: Boolean
+  StartAfter: Instant
+  StartBefore: Instant
+  Type: JobTimeConstraintType!
+}
+
+input NewJobs {
+  AbortReason: String
+  AccountId: ID
+  ActualEnd: Instant
+  ActualStart: Instant
+  Address: String
+  AutoSchedule: Boolean
+  CanBeDeclined: Boolean
+  CompletionNotes: String
+  ContactId: ID
+  CustomerConfirmationStatus: CustomerConfirmationStatus
+  Description: String
+  Duration: Duration!
+  End: Instant
+  EstimatedEnd: Instant
+  EstimatedStart: Instant
+  FollowupReason: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  JobAllocationTimeSource: Boolean
+  JobStatus: JobStatus
+  LocationId: ID
+  Locked: Boolean
+  Name: String
+  NotesComments: String
+  NotifyBy: Instant
+  NotifyPeriod: Int
+  ParentId: ID
+  Quantity: Int
+  RecurringScheduleId: ID
+  RegionId: ID!
+  Start: Instant
+  Type: String
+  Urgency: String
+}
+
+input NewLocationResourceScores {
+  Blacklisted: Boolean
+  LocationId: ID!
+  ResourceId: ID!
+  Whitelisted: Boolean
+}
+
+input NewLocations {
+  AccountId: ID
+  Address: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String!
+  RegionId: ID
+  RequiresWhitelist: Boolean
+  Type: String
+}
+
+input NewProducts {
+  Description: String
+  Family: String
+  IsActive: Boolean
+  Name: String!
+  ProductCode: String
+}
+
+input NewRecurringSchedules {
+  AckAllJobs: Boolean
+  Description: String
+  Name: String
+  Pattern: String
+  Summary: String
+}
+
+input NewRegions {
+  CountryCode: String
+  Description: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String!
+  Radius: Int
+  Timezone: String!
+}
+
+input NewResourceJobOffers {
+  JobOfferId: ID!
+  ResourceId: ID!
+  Response: OfferResponse
+  Status: ResourceOfferStatus
+  TimeNotified: Instant
+  TimeResponded: Instant
+}
+
+input NewResourceOverrideRegions {
+  RegionId: ID!
+  ResourceOverrideId: ID!
+}
+
+input NewResourceOverrides {
+  Description: String
+  End: Instant!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  ResourceId: ID!
+  Start: Instant!
+}
+
+input NewResourceRegions {
+  End: Instant
+  RegionId: ID!
+  ResourceId: ID!
+  Start: Instant
+}
+
+input NewResourceRequirementTags {
+  Required: Boolean
+  ResourceRequirementId: ID!
+  TagId: ID!
+  Weighting: Int
+}
+
+input NewResourceRequirements {
+  Description: String
+  Duration: Duration
+  JobAllocationTimeSource: Boolean
+  JobId: ID!
+  Name: String
+  Quantity: Int!
+  RelativeStart: Duration
+  ScheduledEnd: Instant
+  ScheduledStart: Instant
+  Status: JobStatus
+}
+
+input NewResourceShiftBreaks {
+  End: Instant!
+  ResourceShiftId: ID!
+  Start: Instant!
+}
+
+input NewResourceShifts {
+  ActualEnd: Instant
+  ActualStart: Instant
+  ResourceId: ID!
+  ShiftId: ID!
+}
+
+input NewResourceTags {
+  ExpiryDate: Instant
+  ResourceId: ID!
+  TagId: ID!
+}
+
+input NewResources {
+  Alias: String
+  AutoSchedule: Boolean
+  Category: String
+  CountryCode: String
+  Email: String
+  EmploymentType: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  IsActive: Boolean
+  MobilePhone: String
+  Name: String!
+  Notes: String
+  NotificationType: String
+  PrimaryPhone: String
+  PrimaryRegionId: ID!
+  Rating: Int
+  ResourceType: String
+  UserId: ID
+  WeeklyHours: BigDecimal
+  WorkingHourType: WorkingHourType
+}
+
+input NewShiftTags {
+  Required: Boolean
+  ShiftId: ID!
+  TagId: ID!
+  Weighting: Int
+}
+
+input NewShifts {
+  DisplayName: String
+  Duration: Duration
+  End: Instant
+  IsDraft: Boolean
+  LocationId: ID
+  RegionId: ID
+  Start: Instant
+}
+
+input NewTags {
+  Classification: TagClassification
+  Name: String!
+  Type: String
+}
+
+"A non-negative integer"
+scalar NonNegativeInt
+
+"Valid values are (Accept, Decline)"
+scalar OfferResponse
+
+"Valid values are (Pending, Filled, Cancelled)"
+scalar OfferStatus
+
+"Information about pagination in a connection."
+type PageInfo {
+  "When paginating forwards, are there more items?"
+  hasNextPage: Boolean!
+
+  "When paginating backwards, are there more items?"
+  hasPreviousPage: Boolean!
+
+  "When paginating backwards, the cursor to continue."
+  startCursor: Base64
+
+  "When paginating forwards, the cursor to continue."
+  endCursor: Base64
+}
+
+"A positive integer less than or equal to 200"
+scalar PositiveIntMax200
+
+type Products {
+  Description: String
+  Family: String
+  IsActive: Boolean!
+  Name: String!
+  ProductCode: String
+  UID: ID!
+}
+
+type ProductsConnection {
+  edges: [ProductsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ProductsEdge {
+  cursor: Base64!
+  node: Products!
+  offset: Int!
+}
+
+type Query {
+  accountResourceScores(after: Base64, filter: EQLQueryFilterAccountResourceScores, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAccountResourceScores): AccountResourceScoresConnection!
+  accountResourceScoresById(UID: ID!): AccountResourceScores
+  accounts(after: Base64, filter: EQLQueryFilterAccounts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAccounts): AccountsConnection!
+  accountsById(UID: ID!): Accounts
+  activities(after: Base64, filter: EQLQueryFilterActivities, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseActivities): ActivitiesConnection!
+  activitiesById(UID: ID!): Activities
+  activityResources(after: Base64, filter: EQLQueryFilterActivityResources, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseActivityResources): ActivityResourcesConnection!
+  activityResourcesById(UID: ID!): ActivityResources
+  availabilities(after: Base64, filter: EQLQueryFilterAvailabilities, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAvailabilities): AvailabilitiesConnection!
+  availabilitiesById(UID: ID!): Availabilities
+  availabilityTemplateEntries(after: Base64, filter: EQLQueryFilterAvailabilityTemplateEntries, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAvailabilityTemplateEntries): AvailabilityTemplateEntriesConnection!
+  availabilityTemplateEntriesById(UID: ID!): AvailabilityTemplateEntries
+  availabilityTemplateResources(after: Base64, filter: EQLQueryFilterAvailabilityTemplateResources, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAvailabilityTemplateResources): AvailabilityTemplateResourcesConnection!
+  availabilityTemplateResourcesById(UID: ID!): AvailabilityTemplateResources
+  availabilityTemplates(after: Base64, filter: EQLQueryFilterAvailabilityTemplates, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseAvailabilityTemplates): AvailabilityTemplatesConnection!
+  availabilityTemplatesById(UID: ID!): AvailabilityTemplates
+  contacts(after: Base64, filter: EQLQueryFilterContacts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseContacts): ContactsConnection!
+  contactsById(UID: ID!): Contacts
+  holidayRegions(after: Base64, filter: EQLQueryFilterHolidayRegions, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseHolidayRegions): HolidayRegionsConnection!
+  holidayRegionsById(UID: ID!): HolidayRegions
+  holidays(after: Base64, filter: EQLQueryFilterHolidays, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseHolidays): HolidaysConnection!
+  holidaysById(UID: ID!): Holidays
+  jobAllocations(after: Base64, filter: EQLQueryFilterJobAllocations, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobAllocations): JobAllocationsConnection!
+  jobAllocationsById(UID: ID!): JobAllocations
+  jobOffers(after: Base64, filter: EQLQueryFilterJobOffers, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobOffers): JobOffersConnection!
+  jobOffersById(UID: ID!): JobOffers
+  jobProducts(after: Base64, filter: EQLQueryFilterJobProducts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobProducts): JobProductsConnection!
+  jobProductsById(UID: ID!): JobProducts
+  jobTags(after: Base64, filter: EQLQueryFilterJobTags, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobTags): JobTagsConnection!
+  jobTagsById(UID: ID!): JobTags
+  jobTasks(after: Base64, filter: EQLQueryFilterJobTasks, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobTasks): JobTasksConnection!
+  jobTasksById(UID: ID!): JobTasks
+  jobTimeConstraints(after: Base64, filter: EQLQueryFilterJobTimeConstraints, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobTimeConstraints): JobTimeConstraintsConnection!
+  jobTimeConstraintsById(UID: ID!): JobTimeConstraints
+  jobs(after: Base64, filter: EQLQueryFilterJobs, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseJobs): JobsConnection!
+  jobsById(UID: ID!): Jobs
+  locationResourceScores(after: Base64, filter: EQLQueryFilterLocationResourceScores, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseLocationResourceScores): LocationResourceScoresConnection!
+  locationResourceScoresById(UID: ID!): LocationResourceScores
+  locations(after: Base64, filter: EQLQueryFilterLocations, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseLocations): LocationsConnection!
+  locationsById(UID: ID!): Locations
+  products(after: Base64, filter: EQLQueryFilterProducts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseProducts): ProductsConnection!
+  productsById(UID: ID!): Products
+  recurringSchedules(after: Base64, filter: EQLQueryFilterRecurringSchedules, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseRecurringSchedules): RecurringSchedulesConnection!
+  recurringSchedulesById(UID: ID!): RecurringSchedules
+  regions(after: Base64, filter: EQLQueryFilterRegions, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseRegions): RegionsConnection!
+  regionsById(UID: ID!): Regions
+  resourceJobOffers(after: Base64, filter: EQLQueryFilterResourceJobOffers, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceJobOffers): ResourceJobOffersConnection!
+  resourceJobOffersById(UID: ID!): ResourceJobOffers
+  resourceOverrideRegions(after: Base64, filter: EQLQueryFilterResourceOverrideRegions, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceOverrideRegions): ResourceOverrideRegionsConnection!
+  resourceOverrideRegionsById(UID: ID!): ResourceOverrideRegions
+  resourceOverrides(after: Base64, filter: EQLQueryFilterResourceOverrides, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceOverrides): ResourceOverridesConnection!
+  resourceOverridesById(UID: ID!): ResourceOverrides
+  resourceRegions(after: Base64, filter: EQLQueryFilterResourceRegions, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceRegions): ResourceRegionsConnection!
+  resourceRegionsById(UID: ID!): ResourceRegions
+  resourceRequirementTags(after: Base64, filter: EQLQueryFilterResourceRequirementTags, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceRequirementTags): ResourceRequirementTagsConnection!
+  resourceRequirementTagsById(UID: ID!): ResourceRequirementTags
+  resourceRequirements(after: Base64, filter: EQLQueryFilterResourceRequirements, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceRequirements): ResourceRequirementsConnection!
+  resourceRequirementsById(UID: ID!): ResourceRequirements
+  resourceShiftBreaks(after: Base64, filter: EQLQueryFilterResourceShiftBreaks, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceShiftBreaks): ResourceShiftBreaksConnection!
+  resourceShiftBreaksById(UID: ID!): ResourceShiftBreaks
+  resourceShifts(after: Base64, filter: EQLQueryFilterResourceShifts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceShifts): ResourceShiftsConnection!
+  resourceShiftsById(UID: ID!): ResourceShifts
+  resourceTags(after: Base64, filter: EQLQueryFilterResourceTags, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResourceTags): ResourceTagsConnection!
+  resourceTagsById(UID: ID!): ResourceTags
+  resources(after: Base64, filter: EQLQueryFilterResources, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseResources): ResourcesConnection!
+  resourcesById(UID: ID!): Resources
+  shiftTags(after: Base64, filter: EQLQueryFilterShiftTags, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseShiftTags): ShiftTagsConnection!
+  shiftTagsById(UID: ID!): ShiftTags
+  shifts(after: Base64, filter: EQLQueryFilterShifts, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseShifts): ShiftsConnection!
+  shiftsById(UID: ID!): Shifts
+  tags(after: Base64, filter: EQLQueryFilterTags, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseTags): TagsConnection!
+  tagsById(UID: ID!): Tags
+  users(after: Base64, filter: EQLQueryFilterUsers, first: PositiveIntMax200, offset: NonNegativeInt, orderBy: EQLOrderByClauseUsers): UsersConnection!
+  usersById(UID: ID!): Users
+}
+
+type RecurringSchedules {
+  AckAllJobs: Boolean!
+  CreatedDate: Instant!
+  Description: String
+  Jobs(filter: EQLQueryFilterJobs, orderBy: EQLOrderByClauseJobs): [Jobs!]!
+  LastModifiedDate: Instant!
+  Name: String!
+  Pattern: String
+  Summary: String
+  UID: ID!
+}
+
+type RecurringSchedulesConnection {
+  edges: [RecurringSchedulesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type RecurringSchedulesEdge {
+  cursor: Base64!
+  node: RecurringSchedules!
+  offset: Int!
+}
+
+type Regions {
+  CountryCode: String
+  Description: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String!
+  Radius: Int
+  Resources(filter: EQLQueryFilterResources, orderBy: EQLOrderByClauseResources): [Resources!]!
+  Timezone: String!
+  UID: ID!
+}
+
+type RegionsConnection {
+  edges: [RegionsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type RegionsEdge {
+  cursor: Base64!
+  node: Regions!
+  offset: Int!
+}
+
+type ResourceJobOffers {
+  JobOffer: JobOffers!
+  Resource: Resources!
+  Response: OfferResponse
+  Status: ResourceOfferStatus!
+  TimeCreated: Instant!
+  TimeNotified: Instant
+  TimeResponded: Instant
+  UID: ID!
+}
+
+type ResourceJobOffersConnection {
+  edges: [ResourceJobOffersEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceJobOffersEdge {
+  cursor: Base64!
+  node: ResourceJobOffers!
+  offset: Int!
+}
+
+"Valid values are (Pending, Declined, OfferFilled, OfferCancelled, ResourceOfferCancelled)"
+scalar ResourceOfferStatus
+
+type ResourceOverrideRegions {
+  Region: Regions!
+  ResourceOverride: ResourceOverrides!
+  UID: ID!
+}
+
+type ResourceOverrideRegionsConnection {
+  edges: [ResourceOverrideRegionsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceOverrideRegionsEdge {
+  cursor: Base64!
+  node: ResourceOverrideRegions!
+  offset: Int!
+}
+
+type ResourceOverrides {
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  Description: String
+  End: Instant!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Resource: Resources!
+  ResourceOverrideRegions(filter: EQLQueryFilterResourceOverrideRegions, orderBy: EQLOrderByClauseResourceOverrideRegions): [ResourceOverrideRegions!]!
+  Start: Instant!
+  UID: ID!
+}
+
+type ResourceOverridesConnection {
+  edges: [ResourceOverridesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceOverridesEdge {
+  cursor: Base64!
+  node: ResourceOverrides!
+  offset: Int!
+}
+
+type ResourceRegions {
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  End: Instant
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  Region: Regions!
+  Resource: Resources!
+  Start: Instant
+  UID: ID!
+}
+
+type ResourceRegionsConnection {
+  edges: [ResourceRegionsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceRegionsEdge {
+  cursor: Base64!
+  node: ResourceRegions!
+  offset: Int!
+}
+
+type ResourceRequirementTags {
+  CreatedDate: Instant!
+  Required: Boolean!
+  ResourceRequirement: ResourceRequirements!
+  Tag: Tags!
+  UID: ID!
+  Weighting: Int
+}
+
+type ResourceRequirementTagsConnection {
+  edges: [ResourceRequirementTagsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceRequirementTagsEdge {
+  cursor: Base64!
+  node: ResourceRequirementTags!
+  offset: Int!
+}
+
+type ResourceRequirements {
+  CreatedById: ID!
+  CreatedDate: Instant!
+  Description: String
+  Duration: Duration
+  Job: Jobs!
+  JobAllocationCount: Int!
+  JobAllocationTimeSource: Boolean!
+  JobAllocations(filter: EQLQueryFilterJobAllocations, orderBy: EQLOrderByClauseJobAllocations): [JobAllocations!]!
+  LastModifiedById: ID!
+  LastModifiedDate: Instant!
+  Name: String!
+  Quantity: Int!
+  RelativeStart: Duration
+  ScheduledEnd: Instant
+  ScheduledStart: Instant
+  Status: JobStatus!
+  Tags(filter: EQLQueryFilterResourceRequirementTags, orderBy: EQLOrderByClauseResourceRequirementTags): [ResourceRequirementTags!]!
+  UID: ID!
+}
+
+type ResourceRequirementsConnection {
+  edges: [ResourceRequirementsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceRequirementsEdge {
+  cursor: Base64!
+  node: ResourceRequirements!
+  offset: Int!
+}
+
+type ResourceShiftBreaks {
+  End: Instant!
+  ResourceShift: ResourceShifts!
+  Start: Instant!
+  UID: ID!
+}
+
+type ResourceShiftBreaksConnection {
+  edges: [ResourceShiftBreaksEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceShiftBreaksEdge {
+  cursor: Base64!
+  node: ResourceShiftBreaks!
+  offset: Int!
+}
+
+type ResourceShifts {
+  ActualEnd: Instant
+  ActualStart: Instant
+  Breaks(filter: EQLQueryFilterResourceShiftBreaks, orderBy: EQLOrderByClauseResourceShiftBreaks): [ResourceShiftBreaks!]!
+  Resource: Resources!
+  Shift: Shifts!
+  UID: ID!
+}
+
+type ResourceShiftsConnection {
+  edges: [ResourceShiftsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceShiftsEdge {
+  cursor: Base64!
+  node: ResourceShifts!
+  offset: Int!
+}
+
+type ResourceTags {
+  CreatedDate: Instant!
+  ExpiryDate: Instant
+  Resource: Resources!
+  Tag: Tags!
+  UID: ID!
+}
+
+type ResourceTagsConnection {
+  edges: [ResourceTagsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourceTagsEdge {
+  cursor: Base64!
+  node: ResourceTags!
+  offset: Int!
+}
+
+type Resources {
+  AccountScores(filter: EQLQueryFilterAccountResourceScores, orderBy: EQLOrderByClauseAccountResourceScores): [AccountResourceScores!]!
+  Alias: String
+  AutoSchedule: Boolean!
+  Availabilities(filter: EQLQueryFilterAvailabilities, orderBy: EQLOrderByClauseAvailabilities): [Availabilities!]!
+  Category: String
+  CountryCode: String
+  Email: String
+  EmploymentType: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  IsActive: Boolean!
+  JobAllocations(filter: EQLQueryFilterJobAllocations, orderBy: EQLOrderByClauseJobAllocations): [JobAllocations!]!
+  LocationScores(filter: EQLQueryFilterLocationResourceScores, orderBy: EQLOrderByClauseLocationResourceScores): [LocationResourceScores!]!
+  MobilePhone: String
+  Name: String!
+  Notes: String
+  NotificationType: String
+  PrimaryPhone: String
+  PrimaryRegion: Regions!
+  Rating: Int
+  ResourceOverrides(filter: EQLQueryFilterResourceOverrides, orderBy: EQLOrderByClauseResourceOverrides): [ResourceOverrides!]!
+  ResourceRegions(filter: EQLQueryFilterResourceRegions, orderBy: EQLOrderByClauseResourceRegions): [ResourceRegions!]!
+  ResourceTags(filter: EQLQueryFilterResourceTags, orderBy: EQLOrderByClauseResourceTags): [ResourceTags!]!
+  ResourceType: String
+  UID: ID!
+  User: Users
+  WeeklyHours: BigDecimal
+  WorkingHourType: WorkingHourType
+}
+
+type ResourcesConnection {
+  edges: [ResourcesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ResourcesEdge {
+  cursor: Base64!
+  node: Resources!
+  offset: Int!
+}
+
+type SchemaMutation {
+  deleteAccountResourceScores(UID: ID!): ID
+  deleteAccounts(UID: ID!): ID
+  deleteActivities(UID: ID!): ID
+  deleteActivityResources(UID: ID!): ID
+  deleteAvailabilities(UID: ID!): ID
+  deleteAvailabilityTemplateEntries(UID: ID!): ID
+  deleteAvailabilityTemplateResources(UID: ID!): ID
+  deleteAvailabilityTemplates(UID: ID!): ID
+  deleteContacts(UID: ID!): ID
+  deleteHolidayRegions(UID: ID!): ID
+  deleteHolidays(UID: ID!): ID
+  deleteJobAllocations(UID: ID!): ID
+  deleteJobOffers(UID: ID!): ID
+  deleteJobProducts(UID: ID!): ID
+  deleteJobTags(UID: ID!): ID
+  deleteJobTasks(UID: ID!): ID
+  deleteJobTimeConstraints(UID: ID!): ID
+  deleteJobs(UID: ID!): ID
+  deleteLocationResourceScores(UID: ID!): ID
+  deleteLocations(UID: ID!): ID
+  deleteProducts(UID: ID!): ID
+  deleteRecurringSchedules(UID: ID!): ID
+  deleteRegions(UID: ID!): ID
+  deleteResourceJobOffers(UID: ID!): ID
+  deleteResourceOverrideRegions(UID: ID!): ID
+  deleteResourceOverrides(UID: ID!): ID
+  deleteResourceRegions(UID: ID!): ID
+  deleteResourceRequirementTags(UID: ID!): ID
+  deleteResourceRequirements(UID: ID!): ID
+  deleteResourceShiftBreaks(UID: ID!): ID
+  deleteResourceShifts(UID: ID!): ID
+  deleteResourceTags(UID: ID!): ID
+  deleteResources(UID: ID!): ID
+  deleteShiftTags(UID: ID!): ID
+  deleteShifts(UID: ID!): ID
+  deleteTags(UID: ID!): ID
+  insertAccountResourceScores(idAlias: ID, input: NewAccountResourceScores!): ID!
+  insertAccounts(idAlias: ID, input: NewAccounts!): ID!
+  insertActivities(idAlias: ID, input: NewActivities!): ID!
+  insertActivityResources(idAlias: ID, input: NewActivityResources!): ID!
+  insertAvailabilities(idAlias: ID, input: NewAvailabilities!): ID!
+  insertAvailabilityTemplateEntries(idAlias: ID, input: NewAvailabilityTemplateEntries!): ID!
+  insertAvailabilityTemplateResources(idAlias: ID, input: NewAvailabilityTemplateResources!): ID!
+  insertAvailabilityTemplates(idAlias: ID, input: NewAvailabilityTemplates!): ID!
+  insertContacts(idAlias: ID, input: NewContacts!): ID!
+  insertHolidayRegions(idAlias: ID, input: NewHolidayRegions!): ID!
+  insertHolidays(idAlias: ID, input: NewHolidays!): ID!
+  insertJobAllocations(idAlias: ID, input: NewJobAllocations!): ID!
+  insertJobOffers(idAlias: ID, input: NewJobOffers!): ID!
+  insertJobProducts(idAlias: ID, input: NewJobProducts!): ID!
+  insertJobTags(idAlias: ID, input: NewJobTags!): ID!
+  insertJobTasks(idAlias: ID, input: NewJobTasks!): ID!
+  insertJobTimeConstraints(idAlias: ID, input: NewJobTimeConstraints!): ID!
+  insertJobs(idAlias: ID, input: NewJobs!): ID!
+  insertLocationResourceScores(idAlias: ID, input: NewLocationResourceScores!): ID!
+  insertLocations(idAlias: ID, input: NewLocations!): ID!
+  insertProducts(idAlias: ID, input: NewProducts!): ID!
+  insertRecurringSchedules(idAlias: ID, input: NewRecurringSchedules!): ID!
+  insertRegions(idAlias: ID, input: NewRegions!): ID!
+  insertResourceJobOffers(idAlias: ID, input: NewResourceJobOffers!): ID!
+  insertResourceOverrideRegions(idAlias: ID, input: NewResourceOverrideRegions!): ID!
+  insertResourceOverrides(idAlias: ID, input: NewResourceOverrides!): ID!
+  insertResourceRegions(idAlias: ID, input: NewResourceRegions!): ID!
+  insertResourceRequirementTags(idAlias: ID, input: NewResourceRequirementTags!): ID!
+  insertResourceRequirements(idAlias: ID, input: NewResourceRequirements!): ID!
+  insertResourceShiftBreaks(idAlias: ID, input: NewResourceShiftBreaks!): ID!
+  insertResourceShifts(idAlias: ID, input: NewResourceShifts!): ID!
+  insertResourceTags(idAlias: ID, input: NewResourceTags!): ID!
+  insertResources(idAlias: ID, input: NewResources!): ID!
+  insertShiftTags(idAlias: ID, input: NewShiftTags!): ID!
+  insertShifts(idAlias: ID, input: NewShifts!): ID!
+  insertTags(idAlias: ID, input: NewTags!): ID!
+  updateAccountResourceScores(input: UpdateAccountResourceScores!): ID!
+  updateAccounts(input: UpdateAccounts!): ID!
+  updateActivities(input: UpdateActivities!): ID!
+  updateActivityResources(input: UpdateActivityResources!): ID!
+  updateAvailabilities(input: UpdateAvailabilities!): ID!
+  updateAvailabilityTemplateEntries(input: UpdateAvailabilityTemplateEntries!): ID!
+  updateAvailabilityTemplateResources(input: UpdateAvailabilityTemplateResources!): ID!
+  updateAvailabilityTemplates(input: UpdateAvailabilityTemplates!): ID!
+  updateContacts(input: UpdateContacts!): ID!
+  updateHolidayRegions(input: UpdateHolidayRegions!): ID!
+  updateHolidays(input: UpdateHolidays!): ID!
+  updateJobAllocations(input: UpdateJobAllocations!): ID!
+  updateJobOffers(input: UpdateJobOffers!): ID!
+  updateJobProducts(input: UpdateJobProducts!): ID!
+  updateJobTags(input: UpdateJobTags!): ID!
+  updateJobTasks(input: UpdateJobTasks!): ID!
+  updateJobTimeConstraints(input: UpdateJobTimeConstraints!): ID!
+  updateJobs(input: UpdateJobs!): ID!
+  updateLocationResourceScores(input: UpdateLocationResourceScores!): ID!
+  updateLocations(input: UpdateLocations!): ID!
+  updateProducts(input: UpdateProducts!): ID!
+  updateRecurringSchedules(input: UpdateRecurringSchedules!): ID!
+  updateRegions(input: UpdateRegions!): ID!
+  updateResourceJobOffers(input: UpdateResourceJobOffers!): ID!
+  updateResourceOverrideRegions(input: UpdateResourceOverrideRegions!): ID!
+  updateResourceOverrides(input: UpdateResourceOverrides!): ID!
+  updateResourceRegions(input: UpdateResourceRegions!): ID!
+  updateResourceRequirementTags(input: UpdateResourceRequirementTags!): ID!
+  updateResourceRequirements(input: UpdateResourceRequirements!): ID!
+  updateResourceShiftBreaks(input: UpdateResourceShiftBreaks!): ID!
+  updateResourceShifts(input: UpdateResourceShifts!): ID!
+  updateResourceTags(input: UpdateResourceTags!): ID!
+  updateResources(input: UpdateResources!): ID!
+  updateShiftTags(input: UpdateShiftTags!): ID!
+  updateShifts(input: UpdateShifts!): ID!
+  updateTags(input: UpdateTags!): ID!
+}
+
+type SchemaSubscriptionActivities {
+  Address: String
+  End: Instant!
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  LocationId: ID
+  Name: String!
+  Notes: String
+  Quantity: Int
+  ResourceId: ID
+  Start: Instant!
+  Timezone: String
+  Type: String
+  UID: ID!
+}
+
+type SchemaSubscriptionAvailabilities {
+  CreatedDate: Instant!
+  Finish: Instant!
+  IsAvailable: Boolean!
+  Notes: String
+  ResourceId: ID!
+  Start: Instant!
+  Status: String
+  Type: String
+  UID: ID!
+}
+
+type SchemaSubscriptionJobAllocations {
+  DeclineDescription: String
+  DeclineReason: String
+  Duration: Duration
+  End: Instant
+  EstimatedTravelDistance: BigDecimal
+  EstimatedTravelTime: Duration
+  GeoCheckedInLatitude: BigDecimal
+  GeoCheckedInLongitude: BigDecimal
+  GeoCompletedLatitude: BigDecimal
+  GeoCompletedLongitude: BigDecimal
+  GeoInProgressLatitude: BigDecimal
+  GeoInProgressLongitude: BigDecimal
+  GeoStartTravelLatitude: BigDecimal
+  GeoStartTravelLongitude: BigDecimal
+  JobId: ID!
+  Name: String!
+  NotificationType: String
+  PhoneResponse: String
+  ResourceId: ID!
+  ResourceRequirementId: ID
+  Start: Instant
+  Status: String!
+  TeamLeader: Boolean!
+  TimeCheckedIn: Instant
+  TimeCompleted: Instant
+  TimeInProgress: Instant
+  TimePublished: Instant
+  TimeResponded: Instant
+  TimeStartTravel: Instant
+  TravelDistance: BigDecimal
+  TravelTime: Duration
+  UID: ID!
+}
+
+type SchemaSubscriptionJobs {
+  AbortReason: String
+  AccountId: ID
+  ActualEnd: Instant
+  ActualStart: Instant
+  Address: String
+  AutoSchedule: Boolean!
+  CanBeDeclined: Boolean!
+  CompletionNotes: String
+  ContactId: ID
+  CreatedById: ID!
+  CreatedDate: Instant!
+  CustomerConfirmationStatus: String
+  Description: String
+  Duration: Duration!
+  End: Instant
+  EstimatedEnd: Instant
+  EstimatedStart: Instant
+  FollowupReason: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  JobAllocationCount: Int!
+  JobAllocationTimeSource: Boolean!
+  JobStatus: String!
+  LastModifiedById: ID!
+  LastModifiedDate: Instant!
+  LocationId: ID
+  Locked: Boolean!
+  Name: String!
+  NotesComments: String
+  NotifyBy: Instant
+  NotifyPeriod: Int
+  ParentId: ID
+  Quantity: Int
+  RecurringScheduleId: ID
+  RegionId: ID!
+  Start: Instant
+  Timezone: String!
+  Type: String
+  UID: ID!
+  Urgency: String
+}
+
+interface SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+}
+
+type SchemaSubscriptionNotificationActivities implements SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+  data: SchemaSubscriptionActivities!
+  previous: SchemaSubscriptionActivities!
+}
+
+type SchemaSubscriptionNotificationAvailabilities implements SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+  data: SchemaSubscriptionAvailabilities!
+  previous: SchemaSubscriptionAvailabilities!
+}
+
+type SchemaSubscriptionNotificationJobAllocations implements SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+  data: SchemaSubscriptionJobAllocations!
+  previous: SchemaSubscriptionJobAllocations!
+}
+
+type SchemaSubscriptionNotificationJobs implements SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+  data: SchemaSubscriptionJobs!
+  previous: SchemaSubscriptionJobs!
+}
+
+type SchemaSubscriptionNotificationShifts implements SchemaSubscriptionNotification {
+  operation: SchemaSubscriptionOp!
+  timestamp: Instant!
+  data: SchemaSubscriptionShifts!
+  previous: SchemaSubscriptionShifts!
+}
+
+enum SchemaSubscriptionOp {
+  INSERT
+  UPDATE
+  DELETE
+}
+
+type SchemaSubscriptionShifts {
+  DisplayName: String
+  Duration: Duration!
+  End: Instant!
+  IsDraft: Boolean!
+  LocationId: ID
+  RegionId: ID
+  Start: Instant!
+  UID: ID!
+}
+
+type ShiftTags {
+  Required: Boolean!
+  Shift: Shifts!
+  Tag: Tags!
+  UID: ID!
+  Weighting: Int
+}
+
+type ShiftTagsConnection {
+  edges: [ShiftTagsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ShiftTagsEdge {
+  cursor: Base64!
+  node: ShiftTags!
+  offset: Int!
+}
+
+type Shifts {
+  DisplayName: String
+  Duration: Duration!
+  End: Instant!
+  IsDraft: Boolean!
+  Location: Locations
+  Region: Regions
+  ResourceShifts(filter: EQLQueryFilterResourceShifts, orderBy: EQLOrderByClauseResourceShifts): [ResourceShifts!]!
+  ShiftTags(filter: EQLQueryFilterShiftTags, orderBy: EQLOrderByClauseShiftTags): [ShiftTags!]!
+  Start: Instant!
+  UID: ID!
+}
+
+type ShiftsConnection {
+  edges: [ShiftsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ShiftsEdge {
+  cursor: Base64!
+  node: Shifts!
+  offset: Int!
+}
+
+type Subscription {
+  schemaActivities(operation: [SchemaSubscriptionOp!], filter: EQLRecordFilterActivities): SchemaSubscriptionNotificationActivities!
+  schemaAvailabilities(operation: [SchemaSubscriptionOp!], filter: EQLRecordFilterAvailabilities): SchemaSubscriptionNotificationAvailabilities!
+  schemaJobAllocations(operation: [SchemaSubscriptionOp!], filter: EQLRecordFilterJobAllocations): SchemaSubscriptionNotificationJobAllocations!
+  schemaJobs(operation: [SchemaSubscriptionOp!], filter: EQLRecordFilterJobs): SchemaSubscriptionNotificationJobs!
+  schemaShifts(operation: [SchemaSubscriptionOp!], filter: EQLRecordFilterShifts): SchemaSubscriptionNotificationShifts!
+}
+
+"Valid values are (Global, Human, Asset)"
+scalar TagClassification
+
+type Tags {
+  Classification: TagClassification
+  Name: String!
+  Type: String
+  UID: ID!
+}
+
+type TagsConnection {
+  edges: [TagsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type TagsEdge {
+  cursor: Base64!
+  node: Tags!
+  offset: Int!
+}
+
+input UpdateAccountResourceScores {
+  AccountId: ID
+  Blacklisted: Boolean
+  ResourceId: ID
+  UID: ID!
+  Whitelisted: Boolean
+}
+
+input UpdateAccounts {
+  BillingCity: String
+  BillingPostalCode: String
+  BillingState: String
+  BillingStreet: String
+  Fax: String
+  Name: String
+  Phone: String
+  Rank: Int
+  RequiresWhitelist: Boolean
+  ShippingCity: String
+  ShippingPostalCode: String
+  ShippingState: String
+  ShippingStreet: String
+  UID: ID!
+}
+
+input UpdateActivities {
+  Address: String
+  End: Instant
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  LocationId: ID
+  Notes: String
+  Quantity: Int
+  ResourceId: ID
+  Start: Instant
+  Timezone: String
+  Type: String
+  UID: ID!
+}
+
+input UpdateActivityResources {
+  ActivityId: ID
+  ResourceId: ID
+  UID: ID!
+}
+
+input UpdateAvailabilities {
+  Finish: Instant
+  IsAvailable: Boolean
+  Notes: String
+  ResourceId: ID
+  Start: Instant
+  Status: AvailabilityStatus
+  Type: String
+  UID: ID!
+}
+
+input UpdateAvailabilityTemplateEntries {
+  AvailabilityTemplateId: ID
+  FinishTime: Int
+  IsAvailable: Boolean
+  StartTime: Int
+  UID: ID!
+  Weekday: Weekday
+}
+
+input UpdateAvailabilityTemplateResources {
+  AvailabilityTemplateId: ID
+  ResourceId: ID
+  UID: ID!
+}
+
+input UpdateAvailabilityTemplates {
+  Finish: LocalDate
+  Global: Boolean
+  Name: String
+  Start: LocalDate
+  UID: ID!
+}
+
+input UpdateContacts {
+  AccountId: ID
+  Email: String
+  FirstName: String
+  LastName: String
+  MailingCity: String
+  MailingPostalCode: String
+  MailingState: String
+  MailingStreet: String
+  MobilePhone: String
+  OtherCity: String
+  OtherPostalCode: String
+  OtherState: String
+  OtherStreet: String
+  Phone: String
+  RegionId: ID
+  Title: String
+  UID: ID!
+}
+
+input UpdateHolidayRegions {
+  HolidayId: ID
+  RegionId: ID
+  UID: ID!
+}
+
+input UpdateHolidays {
+  EndDate: LocalDate
+  Global: Boolean
+  Name: String
+  StartDate: LocalDate
+  UID: ID!
+}
+
+input UpdateJobAllocations {
+  DeclineDescription: String
+  DeclineReason: String
+  Duration: Duration
+  End: Instant
+  EstimatedTravelDistance: BigDecimal
+  EstimatedTravelTime: Duration
+  GeoCheckedInLatitude: BigDecimal
+  GeoCheckedInLongitude: BigDecimal
+  GeoCompletedLatitude: BigDecimal
+  GeoCompletedLongitude: BigDecimal
+  GeoInProgressLatitude: BigDecimal
+  GeoInProgressLongitude: BigDecimal
+  GeoStartTravelLatitude: BigDecimal
+  GeoStartTravelLongitude: BigDecimal
+  JobId: ID
+  NotificationType: String
+  PhoneResponse: String
+  ResourceId: ID
+  ResourceRequirementId: ID
+  Start: Instant
+  Status: JobAllocationStatus
+  TeamLeader: Boolean
+  TimeCheckedIn: Instant
+  TimeCompleted: Instant
+  TimeInProgress: Instant
+  TimePublished: Instant
+  TimeResponded: Instant
+  TimeStartTravel: Instant
+  TravelDistance: BigDecimal
+  TravelTime: Duration
+  UID: ID!
+}
+
+input UpdateJobOffers {
+  JobId: ID
+  ResourceRequirementId: ID
+  Status: OfferStatus
+  UID: ID!
+}
+
+input UpdateJobProducts {
+  JobId: ID
+  Name: String
+  ProductId: ID
+  Qty: BigDecimal
+  UID: ID!
+}
+
+input UpdateJobTags {
+  JobId: ID
+  Required: Boolean
+  TagId: ID
+  UID: ID!
+  Weighting: Int
+}
+
+input UpdateJobTasks {
+  Completed: Boolean
+  Description: String
+  JobId: ID
+  Name: String
+  Seq: Int
+  UID: ID!
+}
+
+input UpdateJobTimeConstraints {
+  EndBefore: Instant
+  JobId: ID
+  Required: Boolean
+  StartAfter: Instant
+  StartBefore: Instant
+  Type: JobTimeConstraintType
+  UID: ID!
+}
+
+input UpdateJobs {
+  AbortReason: String
+  AccountId: ID
+  ActualEnd: Instant
+  ActualStart: Instant
+  Address: String
+  AutoSchedule: Boolean
+  CanBeDeclined: Boolean
+  CompletionNotes: String
+  ContactId: ID
+  CustomerConfirmationStatus: CustomerConfirmationStatus
+  Description: String
+  Duration: Duration
+  End: Instant
+  EstimatedEnd: Instant
+  EstimatedStart: Instant
+  FollowupReason: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  JobAllocationTimeSource: Boolean
+  JobStatus: JobStatus
+  LocationId: ID
+  Locked: Boolean
+  Name: String
+  NotesComments: String
+  NotifyBy: Instant
+  NotifyPeriod: Int
+  ParentId: ID
+  Quantity: Int
+  RecurringScheduleId: ID
+  RegionId: ID
+  Start: Instant
+  Type: String
+  UID: ID!
+  Urgency: String
+}
+
+input UpdateLocationResourceScores {
+  Blacklisted: Boolean
+  LocationId: ID
+  ResourceId: ID
+  UID: ID!
+  Whitelisted: Boolean
+}
+
+input UpdateLocations {
+  AccountId: ID
+  Address: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String
+  RegionId: ID
+  RequiresWhitelist: Boolean
+  Type: String
+  UID: ID!
+}
+
+input UpdateProducts {
+  Description: String
+  Family: String
+  IsActive: Boolean
+  Name: String
+  ProductCode: String
+  UID: ID!
+}
+
+input UpdateRecurringSchedules {
+  AckAllJobs: Boolean
+  Description: String
+  Name: String
+  Pattern: String
+  Summary: String
+  UID: ID!
+}
+
+input UpdateRegions {
+  CountryCode: String
+  Description: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  Name: String
+  Radius: Int
+  Timezone: String
+  UID: ID!
+}
+
+input UpdateResourceJobOffers {
+  JobOfferId: ID
+  ResourceId: ID
+  Response: OfferResponse
+  Status: ResourceOfferStatus
+  TimeNotified: Instant
+  TimeResponded: Instant
+  UID: ID!
+}
+
+input UpdateResourceOverrideRegions {
+  RegionId: ID
+  ResourceOverrideId: ID
+  UID: ID!
+}
+
+input UpdateResourceOverrides {
+  Description: String
+  End: Instant
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  ResourceId: ID
+  Start: Instant
+  UID: ID!
+}
+
+input UpdateResourceRegions {
+  End: Instant
+  RegionId: ID
+  ResourceId: ID
+  Start: Instant
+  UID: ID!
+}
+
+input UpdateResourceRequirementTags {
+  Required: Boolean
+  ResourceRequirementId: ID
+  TagId: ID
+  UID: ID!
+  Weighting: Int
+}
+
+input UpdateResourceRequirements {
+  Description: String
+  Duration: Duration
+  JobAllocationTimeSource: Boolean
+  JobId: ID
+  Name: String
+  Quantity: Int
+  RelativeStart: Duration
+  ScheduledEnd: Instant
+  ScheduledStart: Instant
+  Status: JobStatus
+  UID: ID!
+}
+
+input UpdateResourceShiftBreaks {
+  End: Instant
+  ResourceShiftId: ID
+  Start: Instant
+  UID: ID!
+}
+
+input UpdateResourceShifts {
+  ActualEnd: Instant
+  ActualStart: Instant
+  ResourceId: ID
+  ShiftId: ID
+  UID: ID!
+}
+
+input UpdateResourceTags {
+  ExpiryDate: Instant
+  ResourceId: ID
+  TagId: ID
+  UID: ID!
+}
+
+input UpdateResources {
+  Alias: String
+  AutoSchedule: Boolean
+  Category: String
+  CountryCode: String
+  Email: String
+  EmploymentType: String
+  GeoLatitude: BigDecimal
+  GeoLongitude: BigDecimal
+  HomeAddress: String
+  IsActive: Boolean
+  MobilePhone: String
+  Name: String
+  Notes: String
+  NotificationType: String
+  PrimaryPhone: String
+  PrimaryRegionId: ID
+  Rating: Int
+  ResourceType: String
+  UID: ID!
+  UserId: ID
+  WeeklyHours: BigDecimal
+  WorkingHourType: WorkingHourType
+}
+
+input UpdateShiftTags {
+  Required: Boolean
+  ShiftId: ID
+  TagId: ID
+  UID: ID!
+  Weighting: Int
+}
+
+input UpdateShifts {
+  DisplayName: String
+  Duration: Duration
+  End: Instant
+  IsDraft: Boolean
+  LocationId: ID
+  RegionId: ID
+  Start: Instant
+  UID: ID!
+}
+
+input UpdateTags {
+  Classification: TagClassification
+  Name: String
+  Type: String
+  UID: ID!
+}
+
+type Users {
+  City: String
+  Country: String
+  CreatedBy: Users!
+  CreatedDate: Instant!
+  Email: String!
+  FirstName: String
+  FullPhotoUrl: String!
+  IsActive: Boolean!
+  LastModifiedBy: Users!
+  LastModifiedDate: Instant!
+  LastName: String!
+  MobilePhone: String
+  Name: String!
+  PostalCode: String
+  Resources(filter: EQLQueryFilterResources, orderBy: EQLOrderByClauseResources): [Resources!]!
+  SmallPhotoUrl: String!
+  State: String
+  Street: String
+  UID: ID!
+  UserTypes: [String!]
+}
+
+type UsersConnection {
+  edges: [UsersEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type UsersEdge {
+  cursor: Base64!
+  node: Users!
+  offset: Int!
+}
+
+"Valid values are (MON, TUE, WED, THU, FRI, SAT, SUN)"
+scalar Weekday
+
+"Valid values are (Shift, Availability)"
+scalar WorkingHourType

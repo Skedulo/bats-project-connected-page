@@ -1,0 +1,17 @@
+@import 'src/variables.scss';
+
+.dashboard-page {
+  background-color: $grey-lightest;
+
+  &__filters {
+    align-items: center;
+    background-color: $white;
+    display: flex;
+    height: 5rem;
+    padding: 0 1.5rem 0 1.5rem;
+  }
+}
+
+div[data-sk-name="sk-new-filter"] {
+  height: 2.125rem;
+}

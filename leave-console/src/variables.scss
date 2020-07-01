@@ -1,0 +1,87 @@
+/*----------------
+ *---  Global  ---
+ *----------------
+*/
+// spacing vars
+$global-padding: 16px;
+$global-margin: 16px;
+$global-margin-half: $global-margin / 2;
+$global-form-element-height: 36px;
+$global-radius: 2px;
+
+
+/*-----------------
+ *---  Colours  ---
+ *-----------------
+*/
+$white-1: #fff;
+$black-1: #0c131e;
+
+$midnight-blue-1: #223049;
+
+$skedblue-1: #008cff;
+
+$silver-1: #e7ecf3;
+
+$grey-1: #7d879c;
+$grey-3: #b7bcc8;
+$grey-4: #d4d7de;
+
+$blue-slate-4: #97a5bf;
+
+$blue: #008cff;
+$blue-dark: #0077d8;
+$blue-lightest: #cce8fe;
+$blue-highlight: #e8f6ff;
+
+$green: #59b66e;
+$green-lightest: #ebf6ed;
+
+$red: #d55248;
+$red-lightest: #faeae9;
+
+$orange: #e3761c;
+$orange-lightest: #fbeee3;
+
+$grey: #9aa2b2;
+$grey-light: #d4d7de;
+$grey-lighter: #e5e7ee;
+$grey-lightest: #f3f5f9;
+
+$white: #fff;
+
+$navy: #223049;
+$navy-light: #485875;
+$navy-lighter: #6d7991;
+$navy-lightest: #94a1b7;
+
+$teal: #3aa9ca;
+
+
+/*-----------------
+ *---  Z-Index  ---
+ *-----------------
+*/
+$z-index-max: 9999;
+
+
+/*---------------
+ *---  Fonts  ---
+ *---------------
+*/
+// Font sizes
+$font-size-normal: 13px;
+// Font weights
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semi-bold: 600;
+// Font colours
+$font-colour-regular: $black-1;
+
+/*---------------
+ *---  Other  ---
+ *---------------
+*/
+
+$box-shadow-small: 0 2px 6px 0 rgba(109, 121, 145, .09);
+$box-shadow-big: 0 9px 30px 0 rgba(123, 127, 134, .19);

@@ -1,0 +1,17 @@
+@import 'src/variables.scss';
+
+.unavailabilities-table {
+  background-color: $white;
+
+  &__section {
+    padding-bottom: 1.5rem;
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  td {
+    color: $navy;
+  }
+}

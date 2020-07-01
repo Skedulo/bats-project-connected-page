@@ -1,0 +1,51 @@
+@import 'src/variables.scss';
+
+.absence-tables {
+  margin: 36px -24px;
+  position: relative;
+
+  .sked-calendar-controls {
+    padding-left: 100px;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  &__tabs {
+    .sked-tabs__tab {
+      font-weight: 600;
+      margin: 0 24px;
+      padding-left: 0;
+      padding-right: 0;
+      text-shadow: none;
+    }
+  }
+
+  &__tab {
+    align-items: center;
+    display: flex;
+  }
+
+  &__number {
+    align-items: center;
+    background-color: $blue;
+    border-radius: 12px;
+    color: $white;
+    display: flex;
+    font-size: 11px;
+    font-weight: 600;
+    height: 16px;
+    justify-content: center;
+    margin-left: 16px;
+    min-width: 16px;
+    padding: 0 4px;
+
+    &--warning {
+      background-color: $red;
+    }
+  }
+
+  .react-datepicker-popper {
+    z-index: 500;
+  }
+}

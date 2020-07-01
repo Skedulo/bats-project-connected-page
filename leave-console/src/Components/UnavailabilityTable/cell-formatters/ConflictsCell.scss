@@ -1,0 +1,22 @@
+@import '../../../variables.scss';
+
+.conflicts-cell {
+    display: flex;
+    align-items: center;
+
+    &__icon {
+        align-items: center;
+        background-color: $green;
+        border-radius: 50%;
+        color: $white;
+        display: flex;
+        height: 1.125rem;
+        justify-content: center;
+        margin-right: .5rem;
+        width: 1.125rem;
+
+        &--red {
+            background-color: $red;
+        }
+    }
+}

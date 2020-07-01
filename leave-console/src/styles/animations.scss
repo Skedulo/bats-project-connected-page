@@ -1,0 +1,28 @@
+
+.sk-slide-up {
+  animation: slide-up .3s ease;
+}
+
+.sk-fade-in {
+  animation: fade-in .3s ease
+}
+
+@keyframes slide-up {
+  0% {
+      opacity: 0;
+      transform: translateY(10%);
+  }
+  100% {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  0% {
+      opacity: 0;
+  }
+  100% {
+      opacity: 1;
+  }
+}

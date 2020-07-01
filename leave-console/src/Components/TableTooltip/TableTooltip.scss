@@ -1,0 +1,66 @@
+@import 'src/variables.scss';
+
+.table-tooltip {
+  background-color: $white;
+  box-shadow: $box-shadow-big;
+  display: inline-block;
+  padding: 22px 40px 22px 22px;
+  position: relative;
+  width: 400px;
+
+  &__popup {
+    // override Popup styles :(
+    &-content {
+      background: none !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      width: auto !important;
+      z-index: 500 !important;
+    }
+  }
+
+  &__close {
+    position: absolute;
+    right: 22px;
+    top: 22px;
+  }
+
+  &__date {
+    color: $navy;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+
+    &--light {
+      font-weight: 500;
+    }
+  }
+
+  &__conflict {
+    display: flex;
+    margin-top: 28px;
+
+    svg {
+      color: $navy-lighter;
+      margin-right: 15px;
+    }
+  }
+
+  &__text {
+    color: $navy;
+    font-size: 14px;
+    margin-bottom: 14px;
+
+    &--bold {
+      font-weight: 600;
+    }
+
+    &--link {
+      color: $blue;
+      cursor: pointer;
+      display: inline-block;
+      margin: 10px 0 0;
+      text-decoration: underline;
+    }
+  }
+}

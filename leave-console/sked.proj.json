@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "url": "leave-console",
+  "title": "Leave console",
+  "description": "ASD - leave console",
+  "menuID": "LC",
+  "showInNavBar": true
+}

@@ -1,0 +1,27 @@
+@import 'src/variables.scss';
+
+.unavailability-detail {
+  align-items: center;
+  color: $blue;
+  display: flex;
+
+  &__icon {
+    margin-right: 20px;
+  }
+
+  &__title {
+    color: $navy-lighter;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  &__value {
+    color: $navy;
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: -0.07px;
+  }
+}
