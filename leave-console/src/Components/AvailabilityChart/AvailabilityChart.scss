@@ -1,0 +1,59 @@
+@import 'src/variables.scss';
+
+.absence-chart {
+  background-color: $white;
+  padding: 1.5rem;
+
+  .recharts-surface {
+    overflow: visible;
+  }
+
+  &__title {
+    color: $navy;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .tooltip {
+    align-items: center;
+    background-color: $white;
+    box-shadow: $box-shadow-big;
+    color: $navy;
+    display: flex;
+    flex-direction: column;
+    padding: .5rem 1rem;
+    position: relative;
+    transform: translateY(-50px);
+    // fixed width, so offset set in Tooltip component will be always half of this width, ie. tooltip will be centered above corresponding dot
+    width: 120px;
+
+    &::before {
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid $white;
+      bottom: -6px;
+      box-shadow: $box-shadow-big;
+      content: '';
+      display: block;
+      height: 0;
+      position: absolute;
+      width: 0;
+    }
+
+    &__x-data {
+      color: $navy-lighter;
+      font-size: 10px;
+      letter-spacing: .17px;
+      line-height: .8;
+      margin-bottom: 0.5rem;
+      opacity: .6;
+    }
+
+    &__y-data {
+      color: $navy;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .2px;
+    }
+  }
+}

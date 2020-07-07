@@ -4,8 +4,8 @@
   display: grid;
   grid-gap: 12px;
   grid-template-areas:
-  "tile-1 tile-2 tile-3 tile-4 unavailability-chart"
-  "absence-chart absence-chart absence-chart absence-chart unavailability-chart";
+  "tile-1 tile-2 tile-3 tile-4 availability-chart-by-type"
+  "availability-chart availability-chart availability-chart availability-chart availability-chart-by-type";
   grid-template-columns: repeat(4, 1fr) 3fr;
   grid-template-rows: 150px 240px;
   padding: 1.5rem;
@@ -32,11 +32,11 @@
     }
   }
 
-  &__absence-chart {
-    grid-area: absence-chart;
+  &__availability-chart {
+    grid-area: availability-chart;
   }
 
-  &__unavailability-chart {
-    grid-area: unavailability-chart;
+  &__availability-chart-by-type {
+    grid-area: availability-chart-by-type;
   }
 }

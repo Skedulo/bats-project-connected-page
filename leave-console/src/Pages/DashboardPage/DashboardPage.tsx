@@ -1,96 +1,110 @@
-import React from 'react'
-import { connect } from 'react-redux'
+import React, { useEffect, useCallback, memo, useState } from 'react'
+import { connect, useSelector, useDispatch } from 'react-redux'
 import { initSubscriptionService, registerNewSubscription } from '../../Store/reducers/subscription'
-import { getResources } from '../../Store/reducers/fetch'
+import { getResources, getConfigs } from '../../Store/reducers/fetch'
 import { updateAvailability } from '../../Mutations/input'
 import { State } from '../../Store/types'
 import { classes } from '../../common/utils/classes'
 import TimeRangeControl from '../../Components/TimeRangeControl'
-import Filters from '../../Components/Filters'
+import DashboardFilter from './DashboardFilter'
 import DashboardSummary from '../../Components/DashboardSummary'
-import UnavailabilityTable from '../../Components/UnavailabilityTable'
 
 import './DashboardPage.scss'
 import { IconButton } from '@skedulo/sked-ui'
 import { routes } from '..'
 import { Link } from 'react-router-dom'
+import { getAvailabilities } from '../../Store/reducers/availabilities'
+import LoadingTrigger from '../../Components/GlobalLoading/LoadingTrigger';
+import UnavailabilityTable from '../../Components/UnavailabilityTable';
 
 const bem = classes('dashboard-page')
 
-type ReduxProps = Pick<State,
-  'resources' | 'availabilities' | 'subscriptionStatus'
->
+type ReduxProps = Pick<State, 'subscriptionStatus'>
+
 interface IProps extends ReduxProps {
+  getConfigs: typeof getConfigs
   getResources: typeof getResources
   updateAvailability: typeof updateAvailability
   initSubscriptionService: typeof initSubscriptionService
   registerNewSubscription: typeof registerNewSubscription
 }
 
-class DashboardPage extends React.PureComponent<IProps, {}> {
-  constructor(props: IProps) {
-    super(props)
-  }
+const DashboardPage: React.FC<IProps> = () => {
+  const dispatch = useDispatch()
+  const {
+    subscriptionStatus,
+    region,
+    regions,
+    timeRange,
+    resources
+  } = useSelector((state: State) => ({
+    subscriptionStatus: state.subscriptionStatus,
+    regions: state.configs?.regions || [],
+    region: state.region,
+    timeRange: state.timeRange,
+    resources: state.resources
+  }))
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
-  componentDidMount() {
-    this.props.getResources()
-    this.props.initSubscriptionService()
-  }
+  const fetchAvailabilities = useCallback(async () => {
+    setIsLoading(true)
+    await dispatch(getAvailabilities())
+    setIsLoading(false)
+  }, [])
 
-  componentDidUpdate(prevProps: IProps) {
-    if (prevProps.subscriptionStatus !== 'connected' && this.props.subscriptionStatus === 'connected') {
-      this.props.registerNewSubscription('AvailabilityUpdate', undefined, true)
+  const onApprove = useCallback((id: string) => {
+    updateAvailability({ UID: id, Status: 'Approved' })
+  }, [])
+
+  const onReject = useCallback((id: string) => {
+    updateAvailability({ UID: id, Status: 'Declined' })
+  }, [])
+
+  const onRecall = useCallback((id: string) => {
+    updateAvailability({ UID: id, Status: 'Pending' })
+  }, [])
+
+  useEffect(() => {
+    registerNewSubscription('AvailabilityUpdate', undefined, true)
+  }, [subscriptionStatus])
+
+  useEffect(() => {
+    dispatch(getConfigs())
+    dispatch(initSubscriptionService())
+  }, [])
+
+  useEffect(() => {
+    if (region) {
+      dispatch(getResources(region, timeRange))
     }
-  }
+  }, [region])
 
-  onApprove = (id: string) => {
-    this.props.updateAvailability({ UID: id, Status: 'Approved' })
-  }
+  useEffect(() => {
+    fetchAvailabilities()
+  }, [timeRange, resources])
 
-  onReject = (id: string) => {
-    this.props.updateAvailability({ UID: id, Status: 'Declined' })
-  }
-
-  onRecall = (id: string) => {
-    this.props.updateAvailability({ UID: id, Status: 'Pending' })
-  }
-
-  render() {
-    return (
-      <>
-        <section className={ bem('filters') }>
-          <Link to={ routes.settings() }>
-            <IconButton icon="settings" tooltipContent="Setting" />
-          </Link>
-          <TimeRangeControl />
-          <Filters />
-        </section>
-        <section>
-          <DashboardSummary />
-        </section>
-        {/* <section>
-          <UnavailabilityTable
-            onApprove={ this.onApprove }
-            onReject={ this.onReject }
-            onRecall={ this.onRecall }
-          />
-        </section> */}
-      </>
-    )
-  }
+  return (
+    <>
+      {isLoading && <LoadingTrigger />}
+      <section className={ bem('filters') }>
+        <Link to={ routes.settings() }>
+          <IconButton icon="settings" tooltipContent="Setting" />
+        </Link>
+        <TimeRangeControl />
+        {regions.length > 0 && region && <DashboardFilter />}
+      </section>
+      <section>
+        <DashboardSummary />
+      </section>
+      <section>
+        <UnavailabilityTable
+          onApprove={onApprove}
+          onReject={onReject}
+          onRecall={onRecall}
+        />
+      </section>
+    </>
+  )
 }
 
-const mapStateToProps = (state: State) => ({
-  resources: state.resources,
-  availabilities: state.availabilities,
-  subscriptionStatus: state.subscriptionStatus
-})
-
-const mapDispatchToProps = {
-  getResources,
-  updateAvailability,
-  initSubscriptionService,
-  registerNewSubscription
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(DashboardPage)
+export default memo(DashboardPage)

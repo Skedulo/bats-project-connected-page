@@ -15,22 +15,20 @@ interface StatusStyle {
 const statusStyles: {
   [index: string]: StatusStyle
 } = {
-  pending: { className: 'sk-bg-grey-lightest sk-text-grey-dark', style: {} },
-  approved: { className: 'sk-bg-green-lightest', style: { color: '#59b66e' } },
-  declined: { className: 'sk-bg-red-lightest sk-text-red', style: {} }
+  pending: { className: 'cx-bg-neutral-300 cx-text-neutral-850', style: {} },
+  approved: { className: 'cx-bg-green-300 cx-text-green-8-0', style: {} },
+  declined: { className: 'cx-bg-red-300 cx-text-red-800', style: {} }
 }
 
 export const StatusCell: React.FC<IStatusCell> = props => {
-  const baseClassName = 'sk-leading-tight sk-text-xxs sk-px-4 sk-py-2 sk-rounded-medium sk-truncate sk-max-w-full sk-inline-block sk-w-full'
+  const baseClassName = 'cx-leading-tight cx-text-xxs cx-px-4 cx-py-2 cx-rounded-medium cx-truncate cx-max-w-full cx-inline-block'
   const statusStyle = statusStyles[props.type!.toLowerCase()]
   return (
     <div
-      className={ classnames(baseClassName, statusStyle.className, props.className) }
-      style={ { ...statusStyle.style } }
+      className={classnames(baseClassName, statusStyle.className, props.className)}
+      style={{ ...statusStyle.style }}
     >
-      <span className="sk-flex sk-items-center sk-h-full">
-        { props.type }
-      </span>
+      {props.type}
     </div>
   )
 }

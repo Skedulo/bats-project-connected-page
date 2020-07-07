@@ -3,22 +3,23 @@ import { debounce } from 'lodash/fp'
 import {
   DynamicTable,
   IDynamicTable,
-  Lozenge,
   Pagination,
   ActionMenu,
   Button,
   ConfirmationModal,
-  Icon,
-  LozengeColors,
 } from '@skedulo/sked-ui'
 import RuleFilter from './RuleFilter'
 import CreateRuleModal from './CreateRuleModal'
 import LoadingTrigger from '../../Components/GlobalLoading/LoadingTrigger'
-import { ResourceRequirementRule, FilterParams, IListResponse } from '../../Store/types'
+import { ResourceRequirementRule, FilterParams, IListResponse, IConfig } from '../../Store/types'
 import SearchBox from '../../Components/SearchBox'
 import { toastMessage } from '../../common/utils/toast'
 import { DEFAULT_FILTER } from '../../common/constants'
-import { fetchResourceRequirementRules } from '../../Services/DataServices'
+import {
+  fetchResourceRequirementRules,
+  createUpdateResourceRequirementRule,
+  deleteResourceRequirementRule,
+} from '../../Services/DataServices'
 
 interface ResourceRequirementRulesProps {
   children?: any
@@ -30,30 +31,69 @@ export const DEFAULT_LIST = {
 }
 
 export const rulesTableColumns = (
-  onEdit: (projectId: string) => void,
-  onDelete?: (projectId: string) => void
+  onEdit: (rule: ResourceRequirementRule) => void,
+  onDelete: (ruleId: string) => void
 ) => {
   return [
     {
       Header: 'Name',
-      accessor: 'projectName',
+      accessor: 'name',
       width: '20%',
+      Cell: ({ cell, row }: { cell: { value: string }; row: { original: ResourceRequirementRule } }) => {
+        const handleEdit = () => onEdit(row.original)
+
+        return (
+          <div className="cx-cursor-pointer" onClick={handleEdit}>
+            {cell.value}
+          </div>
+        )
+      },
     },
     {
       Header: 'Region',
-      accessor: 'RegionId',
-      width: '30%',
+      accessor: 'region.name',
     },
     {
-      Header: 'Start',
+      Header: 'Start date',
       accessor: 'startDate',
-      emptyCellText: 'No start date',
+      emptyCellText: '-',
     },
     {
-      Header: 'Finish',
+      Header: 'End date',
       accessor: 'endDate',
-      emptyCellText: 'No finish date',
-    }
+      emptyCellText: '-',
+    },
+    {
+      Header: 'Core skill',
+      accessor: 'coreSkill',
+      emptyCellText: '-',
+    },
+    {
+      Header: 'Depot',
+      accessor: 'depot.name',
+      emptyCellText: '-',
+    },
+    {
+      Header: 'Min. Resources',
+      accessor: 'numberOfResources'
+    },
+    {
+      Header: '',
+      accessor: 'id',
+      disableSortBy: true,
+      Cell: ({ cell, row }: { cell: { value: string }; row: { original: ResourceRequirementRule } }) => {
+        const actionItems = [
+          { label: 'View/Edit', onClick: () => onEdit(row.original) },
+          { label: 'Delete', onClick: () => onDelete(cell.value) },
+        ]
+
+        return (
+          <div className="cx-text-right">
+            <ActionMenu menuItems={actionItems} />
+          </div>
+        )
+      },
+    },
   ]
 }
 
@@ -71,23 +111,13 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
   const [editingRule, setEditingRule] = useState<ResourceRequirementRule | null>(null)
 
   const getResourceRequirementRules = useCallback(async (params: FilterParams) => {
-    try {
-      setIsLoading(true)
-      const res = await fetchResourceRequirementRules({ ...params })
-      console.log('res: ', res);
-      // setProjects(res)
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setIsLoading(false)
-    }
+    setIsLoading(true)
+    const res = await fetchResourceRequirementRules({ ...params })
+    setRules(res)
+    setIsLoading(false)
   }, [])
 
   const debounceGetRules = useMemo(() => debounce(700, getResourceRequirementRules), [getResourceRequirementRules])
-
-  const onRowSelect = useCallback((selectedRowIds: string[]) => {
-    // console.log('selectedRowIds: ', selectedRowIds)
-  }, [])
 
   const onPageChange = useCallback((page: number) => {
     setFilterParams((prev: FilterParams) => ({ ...prev, pageNumber: page }))
@@ -105,7 +135,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
     setFilterParams((prev: FilterParams) => ({ ...prev, ...params }))
   }, [])
 
-  const toggleCreateModal = useCallback(() => {
+  const toggleRuleModal = useCallback(() => {
     setOpenCreateModal((prev: boolean) => !prev)
   }, [])
 
@@ -114,49 +144,32 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
   }, [])
 
   const onSave = useCallback(async (data: Partial<ResourceRequirementRule>) => {
-    try {
-      // setIsLoading(true)
-      // const res = await createProject(data)
-      // setProjects(res)
-      // setFilterParams(DEFAULT_FILTER)
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setOpenCreateModal(false)
-      setIsLoading(false)
+    setIsLoading(true)
+    const success = await createUpdateResourceRequirementRule(data)
+    if (success) {
+      await getResourceRequirementRules(filterParams)
     }
+    setOpenCreateModal(false)
+    setIsLoading(false)
+  }, [filterParams])
+
+  const onEdit = useCallback((rule: ResourceRequirementRule) => {
+    setEditingRule(rule)
+    toggleRuleModal()
   }, [])
 
-  const onEdit = useCallback(async () => {
-    // const projectId = confirmId?.split(',')[1]
-    // if (!projectId) {
-    //   return
-    // }
-    // setIsLoading(true)
-    // const success = await cancelProject(projectId)
-    // if (success) {
-    //   await getResourceRequirementRules(filterParams)
-    // } else {
-    //   toastMessage.error('Cancelled unsuccessfully!')
-    // }
-    // setIsLoading(false)
-    // closeConfirm()
-  }, [confirmId, filterParams])
-
   const onDelete = useCallback(async () => {
-    // const projectId = confirmId?.split(',')[1]
-
-    // if (!projectId) {
-    //   return
-    // }
-    // setIsLoading(true)
-    // const success = await deleteProject(projectId)
-    // if (success) {
-    //   await getResourceRequirementRules(filterParams)
-    // } else {
-    //   toastMessage.error('Deleted unsuccessfully!')
-    // }
-    // setIsLoading(false)
+    if (!confirmId) {
+      return
+    }
+    setIsLoading(true)
+    const success = await deleteResourceRequirementRule(confirmId)
+    if (success) {
+      await getResourceRequirementRules(filterParams)
+    } else {
+      toastMessage.error('Deleted unsuccessfully!')
+    }
+    setIsLoading(false)
     closeConfirm()
   }, [confirmId, filterParams])
 
@@ -165,17 +178,11 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
       data: rules.results,
       columns: rulesTableColumns(
         onEdit,
-        onDelete
+        (ruleId: string) => setConfirmId(ruleId)
       ),
       stickyHeader: false,
       getRowId: (row: ResourceRequirementRule) => row.id,
       rowSelectControl: 'allRows',
-      // onRowSelect,
-      // onSortBy: props => {
-      //   if (props?.id) {
-      //     onFilterChange({ sortBy: props?.id, sortType: props?.desc ? 'DESC' : 'ASC' })
-      //   }
-      // },
       sortByControl: 'disabled',
       initialRowStateKey: 'id',
     }),
@@ -192,7 +199,8 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
       <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
-        <div className="cx-flex cx-items-center cx-justify-end cx-px-4 cx-pt-4">
+        <RuleFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
+        <div className="cx-flex cx-items-center cx-justify-end cx-px-4 cx-mb-2">
           <div className="cx-flex">
             <SearchBox
               className="cx-px-4 cx-py-0 cx-mb-0 cx-border cx-mr-2"
@@ -202,12 +210,11 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
               value={filterParams.searchText || ''}
               autoFocus={false}
             />
-            <Button buttonType="primary" onClick={toggleCreateModal}>
+            <Button buttonType="primary" onClick={toggleRuleModal}>
               Create new
             </Button>
           </div>
         </div>
-        <RuleFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
       </div>
       <DynamicTable {...rulesTableConfig} />
       {rules.results.length > 0 && (
@@ -220,7 +227,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
         />
       )}
       {openCreateModal && (
-        <CreateRuleModal rule={editingRule} onClose={toggleCreateModal} onSubmit={onSave} />
+        <CreateRuleModal rule={editingRule} onClose={toggleRuleModal} onSubmit={onSave} />
       )}
       {!!confirmId && (
         <ConfirmationModal
@@ -228,7 +235,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
           onConfirm={onDelete}
           confirmButtonText="Ok"
         >
-          {`Are you sure you want to delete this project?`}
+          {`Are you sure you want to delete this rule?`}
         </ConfirmationModal>
       )}
     </div>

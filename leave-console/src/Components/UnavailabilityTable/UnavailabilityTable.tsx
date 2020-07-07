@@ -3,21 +3,21 @@ import { connect } from 'react-redux'
 import isEqual from 'lodash/isEqual'
 
 import { DynamicTable, IDynamicTable, Pagination } from '@skedulo/sked-ui'
-import { Availability } from '../../Store/types/Availability'
 import { State, UnavailabilityTableItem } from '../../Store/types'
 import ActionBar from '../ActionBar'
 import { filterBySearchPhrase } from './tableFilters'
 import { getColumns } from './TableConfig'
 
 import './UnavailabilityTable.scss'
+import { IDynamicTableColumn } from '@skedulo/sked-ui/dist/components/dynamic-table/interfaces'
 
 export type AvailabilityStatus = 'Pending' | 'Approved' | 'Declined'
 
 type ReduxProps = Pick<State,
-  'availabilities'
+  'unavailabilities'
 >
 
-const itemsPerPage = 25
+const itemsPerPage = 20
 
 interface IProps extends ReduxProps {
   onReject: (id: string) => void,
@@ -26,7 +26,7 @@ interface IProps extends ReduxProps {
 }
 
 interface IState {
-  tableConfig: IDynamicTable<Availability>,
+  tableColumns: IDynamicTableColumn<UnavailabilityTableItem>[],
   filteredItems?: UnavailabilityTableItem[],
   currentPage: number,
   selectedAvailabilityUIDs: Set<string>,
@@ -40,13 +40,11 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
     super(props)
 
     this.state = {
-      tableConfig: {
-        columns: getColumns({
-          onApprove: (id: string) => this.props.onApprove(id),
-          onRecall: (id: string) => this.props.onRecall(id),
-          onReject: (id: string) => this.props.onReject(id)
-        })
-      },
+      tableColumns: getColumns({
+        onApprove: (id: string) => this.props.onApprove(id),
+        onRecall: (id: string) => this.props.onRecall(id),
+        onReject: (id: string) => this.props.onReject(id)
+      }),
       currentPage: 1,
       selectedAvailabilityUIDs: new Set(),
       isBatchApproveModalOpened: false,
@@ -56,9 +54,9 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
   }
 
   populateUnavailabilityTable() {
-    if (this.props.availabilities !== undefined) {
+    if (this.props.unavailabilities !== undefined) {
       this.setState({
-        filteredItems: this.props.availabilities as UnavailabilityTableItem[]
+        filteredItems: this.props.unavailabilities as UnavailabilityTableItem[]
       })
     } else {
       this.setState({ filteredItems: [] })
@@ -70,15 +68,15 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
   }
 
   componentDidUpdate(prevProps: any) {
-    if (!isEqual(prevProps.availabilities, this.props.availabilities)) {
+    if (!isEqual(prevProps.unavailabilities, this.props.unavailabilities)) {
       this.populateUnavailabilityTable()
     }
   }
 
   onSearch = (searchPhrase: string) => {
-    if (this.props.availabilities !== undefined && this.props.availabilities.length) {
+    if (this.props.unavailabilities !== undefined && this.props.unavailabilities.length) {
       this.setState({
-        filteredItems: filterBySearchPhrase(this.props.availabilities, searchPhrase),
+        filteredItems: filterBySearchPhrase(this.props.unavailabilities, searchPhrase),
         currentPage: 1
       })
     }
@@ -86,7 +84,7 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
 
   onSearchClear = () => {
     this.setState({
-      filteredItems: this.props.availabilities
+      filteredItems: this.props.unavailabilities
     })
   }
 
@@ -108,8 +106,8 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
 
   renderNoTimesheetsPlaceholder() {
     return (
-      <div className="sk-flex sk-items-center sk-justify-center sk-w-full">
-        <span className="sk-text-xs sk-mt-12 sk-mb-8">No timesheets available</span>
+      <div className="cx-flex cx-items-center cx-justify-center cx-w-full">
+        <span className="cx-text-xs cx-mt-12 cx-mb-8">No timesheets available</span>
       </div>
     )
   }
@@ -128,22 +126,23 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
           </section>
           <section>
             <DynamicTable
-              data={ displayedItems }
-              config={ this.state.tableConfig }
-              selection={ this.state.selectedAvailabilityUIDs }
+              data={displayedItems}
+              columns={this.state.tableColumns}
+              initialRowStateKey="id"
             />
             { displayedItems.length === 0 && this.renderNoTimesheetsPlaceholder() }
           </section>
           {
-            displayedItems.length > 0 &&
-            <section>
-              <Pagination
-                itemsTotal={ this.state.filteredItems!.length }
-                itemsPerPage={ itemsPerPage }
-                currentPage={ this.state.currentPage }
-                onPageChange={ this.onPageChange }
-              />
-            </section>
+            displayedItems.length > 0 && (
+              <section>
+                <Pagination
+                  itemsTotal={ this.state.filteredItems!.length }
+                  itemsPerPage={ itemsPerPage }
+                  currentPage={ this.state.currentPage }
+                  onPageChange={ this.onPageChange }
+                />
+              </section>
+            )
           }
         </div>
       )
@@ -154,7 +153,7 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
 }
 
 const mapStateToProps = (state: State) => ({
-  availabilities: state.availabilities || []
+  unavailabilities: state.unavailabilities || []
 })
 
 export default connect(mapStateToProps)(UnavailabilityTable)

@@ -1,1 +1,1 @@
-export { default } from './Dashboardsummary'
+export { default } from './DashboardSummary'

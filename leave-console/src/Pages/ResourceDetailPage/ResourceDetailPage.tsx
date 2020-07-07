@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { startOfDay, startOfMonth, parseISO, endOfDay, endOfMonth } from 'date-fns'
 import { connect } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
@@ -31,7 +31,7 @@ type RouteProps = RouteComponentProps<{availabilityId?: string}>
 
 interface Props extends RouteProps {
   resources?: Resource[]
-  availabilities?: UnavailabilityTableItem[]
+  unavailabilities?: UnavailabilityTableItem[]
   setTimeRange: typeof setTimeRange
   setTimeRangeSimp: typeof setTimeRangeSimp
   timeRange: TimeRange
@@ -47,111 +47,36 @@ interface ResourceDetailPageState {
   resource?: Resource
 }
 
-class ResourceDetailPage extends React.PureComponent<Props, ResourceDetailPageState> {
-  state = {
-    rescheduleModalVisible: false,
-    originalTimeRange: this.props.timeRange,
-    showConflictDetails: false,
-    resource: this.getResourceData()
-  }
-
-  componentDidMount = () => {
-    this.adjustTimeRangeToUnavailability()
-  }
-
-  componentWillUnmount = () => {
-    const { originalTimeRange: { startDate, endDate } } = this.state
-    this.props.setTimeRange(parseISO(startDate), parseISO(endDate))
-  }
-
-  componentDidUpdate = (prevProps: Props) => {
-    const { match, availabilities } = this.props
-    if (prevProps.match.params.availabilityId !== match.params.availabilityId && !!availabilities) {
-      this.adjustTimeRangeToUnavailability()
-      this.setState({ resource: this.getResourceData() })
-    }
-  }
-
-  getResourceData() {
-    if (this.props.unavailability && this.props.resources) {
-      const resource = this.props.resources.find(resource => resource.UID === this.props.unavailability!.Resource.UID)
-      if (resource) {
-        return {
-          ...resource,
-          avatarUrl: resource.User ? resource.User.SmallPhotoUrl : getDefaultAvatar()
-        }
-      }
-    }
-
-    return null
-  }
-
-  adjustTimeRangeToUnavailability() {
-    if (this.props.unavailability) {
-      const timeRangeStart = startOfDay(startOfMonth(parseISO(this.props.unavailability.Start)))
-      const timeRangeEnd = endOfDay(endOfMonth(timeRangeStart))
-      this.props.setTimeRangeSimp(timeRangeStart, timeRangeEnd)
-    }
-  }
-
-  toggleModalVisibility = () => (
-    this.setState(prevState => ({
-      rescheduleModalVisible: !prevState.rescheduleModalVisible
-    }))
+const ResourceDetailPage: FC<Props, ResourceDetailPageState> = ({ }) => {
+  return (
+    // <div className={ bem() }>
+    //   <DetailsHeader 
+    //     userData={ this.state.resource } 
+    //     unavailabilityStatus={ this.props.unavailability.Status }
+    //     onApprove={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Approved' }) }
+    //     onReject={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Declined' }) }
+    //     onRecall={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Pending' }) }
+    //   />
+    //   <UnavailabilityDetails data={ this.props.unavailability } />
+    //   <AbsenceTables
+    //     data={ {
+    //       ...TABLE_DATA,
+    //       unavailability: this.props.unavailability
+    //     } }
+    //   />
+    //   { /* TODO: move to Work Conflicts table */ }
+    //   { this.state.rescheduleModalVisible &&
+    //       <RescheduleModal
+    //         resources={ RESOURCES }
+    //         job={ JOB }
+    //         toggleModalVisibility={ this.toggleModalVisibility }
+    //       />
+    //   }
+    //   { /* TODO: remove this button after adding Work conflicts table it's for delelopment/demo purpose only */ }
+    //   <Button buttonType="primary" onClick={ () => this.toggleModalVisibility() }>show reschedule modal</Button>
+    // </div >
+    <div>hello</div>
   )
-
-  toggleConflictDetailsVisibility = () => (
-    this.setState(prevState => ({
-      showConflictDetails: !prevState.showConflictDetails
-    }))
-  )
-
-  render() {
-    return (
-      this.props.unavailability &&
-      <div className={ bem() }>
-        <DetailsHeader 
-          userData={ this.state.resource } 
-          unavailabilityStatus={ this.props.unavailability.Status }
-          onApprove={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Approved' }) }
-          onReject={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Declined' }) }
-          onRecall={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Pending' }) }
-        />
-        <UnavailabilityDetails data={ this.props.unavailability } />
-        <AbsenceTables
-          data={ {
-            ...TABLE_DATA,
-            unavailability: this.props.unavailability
-          } }
-        />
-        { /* TODO: move to Work Conflicts table */ }
-        { this.state.rescheduleModalVisible &&
-            <RescheduleModal
-              resources={ RESOURCES }
-              job={ JOB }
-              toggleModalVisibility={ this.toggleModalVisibility }
-            />
-        }
-        { /* TODO: remove this button after adding Work conflicts table it's for delelopment/demo purpose only */ }
-        <Button buttonType="primary" onClick={ () => this.toggleModalVisibility() }>show reschedule modal</Button>
-      </div >
-    )
-  }
 }
 
-const mapStateToProps = (state: State, ownProps: Props) => ({
-  resources: state.resources,
-  availabilities: state.availabilities,
-  timeRange: state.timeRange,
-  unavailability: state.availabilities && state.availabilities.find(availability => (
-    availability.UID === ownProps.match.params.availabilityId
-  ))
-})
-
-const mapDispatchToProps = {
-  setTimeRange,
-  setTimeRangeSimp,
-  updateAvailability
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ResourceDetailPage)
+export default memo(ResourceDetailPage)

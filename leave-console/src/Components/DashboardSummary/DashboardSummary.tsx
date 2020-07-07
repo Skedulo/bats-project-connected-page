@@ -1,169 +1,145 @@
-import React from 'react'
-import isEqual from 'lodash/isEqual'
-import { connect } from 'react-redux'
-import differenceInCalendarDays from 'date-fns/differenceInCalendarDays'
-import parseISO from 'date-fns/parseISO'
-import addDays from 'date-fns/addDays'
-
+import React, { useMemo, useCallback, useEffect, useState } from 'react'
+import { keyBy } from 'lodash'
+import { useSelector } from 'react-redux'
+import { addDays, parseISO, eachDayOfInterval } from 'date-fns'
+import { utcToZonedTime, format } from 'date-fns-tz'
 import { classes } from '../../common/utils/classes'
 import Tile from '../Tile'
-import AbsenceChart from '../AbsenceChart'
-import UnavailabilityChart from '../UnavailabilityChart'
-import { State, AbsenceData } from '../../Store/types'
+import AvailabilityChart from '../AvailabilityChart'
+import AvailabilityByTypeChart from '../AvailabilityByTypeChart'
+import { State, Resource, IResource, IBaseModel } from '../../Store/types'
 import './DashboardSummary.scss'
+import { AvailabilityChartData } from '../../Store/types/Availability'
+import { fetchDepotByRegion } from '../../Services/DataServices'
+import { DATE_FORMAT } from '../../common/constants'
 
 const bem = classes('dashboard-summary')
 
-type ReduxProps = Pick<State, 'availabilities' | 'filters' | 'resources' |'timeRange' >
+const DashboardSummary: React.FC = () => {
+  const { availabilities, unavailabilities, resources, timeRange, region } = useSelector((state: State) => ({
+    availabilities: state.availabilities,
+    unavailabilities: state.unavailabilities?.filter(item => !item.IsAvailable) || [],
+    resources: state.resources,
+    timeRange: state.timeRange,
+    region: state.region || { timezoneSid: '' }
+  }))
+  const [depots, setDepots] = useState<IBaseModel[]>([])
 
-interface UnavailabilityData {
-  type: string
-}
-
-interface IState {
-  absenceData: AbsenceData[],
-  unavailabilityData: UnavailabilityData[],
-  requestsStats: string
-  conflictsStat: string
-}
-
-class DashboardSummary extends React.Component<ReduxProps, IState> {
-  constructor(props: ReduxProps) {
-    super(props)
-    const daysDiff = Math.abs(differenceInCalendarDays(parseISO(this.props.timeRange.startDate), parseISO(this.props.timeRange.endDate))) 
-
-    this.state = {
-      absenceData: Array.from({length: daysDiff}, (_, i)=>({
-        resources: 0,
-        date: addDays(parseISO(this.props.timeRange.startDate),i)
-      })),
-      unavailabilityData: [],
-      requestsStats: '-',
-      conflictsStat: '-'
-    }
+  const getDepots = async(regionId: string) => {
+    const resp = await fetchDepotByRegion(regionId)
+    setDepots(resp)
   }
 
-  componentDidMount(){
-    this.populateDashboardSummary()
-  }
+  const daysBetween = useMemo(() => eachDayOfInterval({
+    start: utcToZonedTime(parseISO(timeRange.startDate), region.timezoneSid),
+    end: addDays(utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid), -1)
+  }), [timeRange])
 
-  populateDashboardSummary() {
-    if(this.props.availabilities === undefined || !this.props.availabilities.length){
-      this.setState({
-        absenceData: this.calculateAbsenceData() as AbsenceData[],
-        unavailabilityData: [],
-        requestsStats: '-',
-        conflictsStat: '-'
-      })
-    } else if(this.props.availabilities !== undefined && this.props.availabilities.length) {
-      this.setState({
-        absenceData: this.calculateAbsenceData() as AbsenceData[],
-        unavailabilityData: this.props.availabilities.map(availability => {return {type: availability.Type}}),
-        requestsStats: this.calculateRequestsStats(),
-        conflictsStat: this.calculateConflictsCount()
-      })
-    }
-  }
+  const requestsStats = useMemo(() => {
+    let requestsCount = 0
+    let approvedCount = 0
 
-  calculateAbsenceData(){
-    const daysBetween = Math.abs(differenceInCalendarDays(parseISO(this.props.timeRange.startDate), parseISO(this.props.timeRange.endDate)))
-    const absenceData = Array.from({length: daysBetween})
+    unavailabilities?.forEach(unavailability => {
+      requestsCount += 1
+      if (unavailability.Status === 'Approved') {
+        approvedCount += 1
+      }
+    })
 
-    for(let i=0; i < daysBetween; i++){
-      const date = addDays(parseISO(this.props.timeRange.startDate),i)
+    return `${approvedCount} / ${requestsCount} approved`
+  }, [unavailabilities])
+
+  const conflictsStat = useMemo(() => {
+    let conflictsCount = 0
+
+    unavailabilities?.forEach(unavailability => {
+      conflictsCount += unavailability.conflicts!
+    })
+
+    return conflictsCount.toString()
+  }, [unavailabilities])
+
+  const availabilityData = useMemo(() => {
+    const data = Array.from({ length: daysBetween.length })
+    const resourcesKeyById = keyBy(resources, 'id')
+    daysBetween.forEach((date, i) => {
       let resourcesCount = 0
+      const availabilityResources: IResource[] = []
+      if (availabilities) {
+        Object.keys(availabilities).forEach(resourceId => {
+          if (availabilities[resourceId].availability.records[0]?.length) {
+            const formattedDate = format(date, DATE_FORMAT)
+            const availabilityRecords = availabilities[resourceId].availability.records[0]
+            const matchedRecord = availabilityRecords.find(item => {
+              const startDate = format(parseISO(item.start), DATE_FORMAT, { timeZone: region.timezoneSid })
+              const endDate = format(parseISO(item.end), DATE_FORMAT, { timeZone: region.timezoneSid })
+              return formattedDate >= startDate && formattedDate <= endDate
+            })
+            if (matchedRecord) {
+              resourcesCount += 1
 
-      if(this.props.availabilities === undefined || !this.props.availabilities.length){
-        resourcesCount = 0
-      } else {
-        this.props.availabilities.map((availability) => {
-          if(new Date(date) >= new Date(parseISO(availability.Start)) && new Date(date) <= new Date(parseISO(availability.Finish))) {
-            resourcesCount+=1
+              availabilityResources.push(resourcesKeyById[resourceId])
+            }
           }
         })
       }
 
-      const absenceChartItem = {
-        resources: resourcesCount,
-        date
+      const chartItem = {
+        date,
+        resourcesCount,
+        shortDate: format(date, 'M/d'),
+        resources: availabilityResources,
       }
-      absenceData[i] = absenceChartItem
-    }
-    return absenceData
-  }
-
-  calculateRequestsStats(){
-    let requestsCount = 0
-    let approvedCount = 0
-
-    this.props.availabilities!.map(availability => {
-      requestsCount+= 1
-      if(availability.Status === 'Approved'){
-        approvedCount +=1
-      }
+      data[i] = chartItem
     })
+    return data as AvailabilityChartData[]
+  }, [daysBetween, availabilities, resources])
 
-    const tileValue = `${approvedCount} / ${requestsCount} approved`
-    return tileValue
-  }
-
-  calculateConflictsCount() {
-    let conflictsCount = 0
-    this.props.availabilities!.map(availability => {
-      conflictsCount += availability.conflicts!
-    })
-
-    return conflictsCount.toString()
-  }
-
-  componentDidUpdate(prevProps: ReduxProps) {
-    if(!isEqual(prevProps.filters, this.props.filters) ||
-       !isEqual(prevProps.timeRange, this.props.timeRange) ||
-       !isEqual(prevProps.availabilities, this.props.availabilities)){
-        this.populateDashboardSummary()
+  useEffect(() => {
+    if (region?.id) {
+      getDepots(region.id)
     }
-  }
+  }, [region])
 
-  render(){
-    return (
-      <div className={ bem() }>
-        <Tile
-          className={ bem('tile') }
-          title="Total Resources"
-          amount={this.props.resources ? this.props.resources.length : 0}
-          iconName="resource"
-        />
-        <Tile
-          className={ bem('tile') }
-          title="Resources on Leave"
-          amount={this.props.availabilities ? this.props.availabilities.length : 0}
-          iconName="resourceRemove"
-        />
-        <Tile
-          className={ bem('tile') }
-          title="Number of Requests"
-          amount={this.state.requestsStats}
-          iconName="availability"
-        />
-        <Tile
-          className={ bem('tile') }
-          title="Conflicts"
-          amount={this.state.conflictsStat}
-          iconName="warning"
-          warning
-        />
-        <AbsenceChart className={ bem('absence-chart') } data={ this.state.absenceData } />
-        <UnavailabilityChart className={ bem('unavailability-chart') } data={ this.state.unavailabilityData } />
-      </div>
-    )
-  }
+  return (
+    <div className={ bem() }>
+      <Tile
+        className={ bem('tile') }
+        title="Total Resources"
+        amount={resources?.length || 0}
+        iconName="resource"
+      />
+      <Tile
+        className={ bem('tile') }
+        title="Unavailable Resources"
+        amount={unavailabilities?.length || 0}
+        iconName="resourceRemove"
+      />
+      <Tile
+        className={ bem('tile') }
+        title="Number of Requests"
+        amount={requestsStats}
+        iconName="availability"
+      />
+      <Tile
+        className={ bem('tile') }
+        title="Conflicts"
+        amount={conflictsStat}
+        iconName="warning"
+        warning
+      />
+      <AvailabilityChart
+        className={bem('availability-chart')}
+        data={availabilityData}
+        depots={depots}
+      />
+      <AvailabilityByTypeChart
+        className={bem('availability-chart-by-type')}
+        data={availabilityData}
+        depots={depots}
+      />
+    </div>
+  )
 }
 
-const mapStateToProps = (state: State) => ({
-  availabilities: state.availabilities,
-  filters: state.filters,
-  resources: state.resources,
-  timeRange: state.timeRange,
-})
-
-export default connect(mapStateToProps)(DashboardSummary)
+export default React.memo(DashboardSummary)

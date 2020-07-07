@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const AbsenceTableContainer: React.FC<Props> = ({ unavailability, startDate, endDate, onAbsenceCountChange }) => {
-  const unavailabilities = useSelector<State, UnavailabilityTableItem[] | undefined>(state => state.availabilities)
+  const unavailabilities = useSelector<State, UnavailabilityTableItem[] | undefined>(state => state.unavailabilities)
   const resources = useSelector<State, Resource[] | undefined>(state => state.resources)
 
   const leaveRequest = createLeaveRequest(unavailability, resources)

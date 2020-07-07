@@ -12,7 +12,9 @@ import {
 
 import * as Queries from '../queries'
 import { Services } from '../../Services/Services'
+import { getResourceAvailabilities } from '../../Services/DataServices'
 import { State, Availability, JobAllocation, UnavailabilityTableItem } from '../types'
+import { IResourceAvailability } from '../types/Availability';
 
 const AVAILABILITY = makeActionsSet('AVAILABILITY')
 const dateFilter = (startDate: string, endDate: string) => `Start < ${endDate} AND Finish > ${startDate}`
@@ -23,33 +25,45 @@ const formatFilterValue = (valueArray: string[]) => valueArray.length === 1
 
 const createAllAvailabilitiesFilters = (store: State) => {
   const { timeRange: { startDate,endDate }, filters } = store
-
   const appliedFilters = filters
     .filter(filter => filter.value && filter.value.length > 0)
     .map(({
-       value, selector
+      value, selector
     }) => `${selector} ${formatFilterValue(value)}`)
   const dateFilters = dateFilter(startDate,endDate)
-  return ['IsAvailable == false', dateFilters, ...appliedFilters].join(' AND ')
+  return [dateFilters, ...appliedFilters].join(' AND ')
 }
 
 export const getAvailabilities = makeAsyncActionCreatorSimp(
   AVAILABILITY, () => async (dispatch: Dispatch, getState: () => State) => {
     const store = getState()
+    const { resources, timeRange, region } = store
+    const resourceIds = resources?.map(item => item.id) || []
+    const resourceIdsGrapql = resourceIds.map(item => `\"${item}\"`).join(', ')
     const filters = createAllAvailabilitiesFilters(store)
-    const resp = await Services.graphQL.fetch<{availability: Availability[]}>({
-      query: Queries.AllAvailabilitiesQuery,
-      variables: {
-        filters
-      }
-    })
-    return resp
+    const [unavailabilitiesResp, availabilitiesResp] = await Promise.all([
+      Services.graphQL.fetch<{availabilities: Availability[]}>({
+        query: Queries.AllAvailabilitiesQuery,
+        variables: {
+          filters: `IsAvailable == false AND ResourceId IN [${resourceIdsGrapql}] AND ${filters}`
+        }
+      }),
+      getResourceAvailabilities(resourceIds, [region.id], timeRange.startDate, timeRange.endDate)
+    ])
+
+    return {
+      availabilities: availabilitiesResp,
+      unavailabilities: unavailabilitiesResp.availabilities,
+    }
   }
 )
 
-const availabilityTransform = ({ availabilities }: {availabilities: Availability[] }) => {
-  const unavailabilityTableData: UnavailabilityTableItem[] = availabilities.map(availability => {
-    const { Start, Finish, Resource: { JobAllocations } } = availability
+const availabilityTransform = (
+  { availabilities, unavailabilities }:
+  { unavailabilities: Availability[], availabilities: Record<string, IResourceAvailability> }
+) => {
+  const unavailabilityTableData: UnavailabilityTableItem[] = unavailabilities.map(unavailability => {
+    const { Start, Finish, Resource: { JobAllocations } } = unavailability
 
     const unavailabilityStart = parseISO(Start)
     const unavailabilityEnd = parseISO(Finish)
@@ -57,14 +71,15 @@ const availabilityTransform = ({ availabilities }: {availabilities: Availability
     const conflictsByDay = getConflictsByDay(unavailabilityStart, unavailabilityEnd, JobAllocations)
 
     return {
-      ...availability,
+      ...unavailability,
       conflicts,
       conflictsByDay
     }
   })
 
   return {
-    availabilities: unavailabilityTableData
+    availabilities,
+    unavailabilities: unavailabilityTableData,
   }
 }
 
@@ -113,5 +128,5 @@ const toDayIntervals: (interval: Interval) => Interval[] = interval => {
 }
 
 export default {
-  ...makeReducers(AVAILABILITY, { transform: availabilityTransform })
+  ...makeReducers(AVAILABILITY, { transform: availabilityTransform, dataField: ['unavailabilities'] })
 }

@@ -1,6 +1,10 @@
 export const AllResourcesQuery = `
 {
   resources (filter: "IsActive == true") {
+    totalCount
+    pageInfo {
+      hasNextPage
+    }
     edges {
       node {
         UID

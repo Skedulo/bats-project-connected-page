@@ -14,7 +14,7 @@ function App() {
   return (
     <>
       <Router>
-        <Route exact path={ routes.dashboard() } component={ SettingPage } />
+        <Route exact path={ routes.dashboard() } component={ DashboardPage } />
         <Route path={ routes.resourceDetail() } component={ ResourceDetailPage } />
         <Route path={ routes.settings() } component={ SettingPage } />
       </Router>

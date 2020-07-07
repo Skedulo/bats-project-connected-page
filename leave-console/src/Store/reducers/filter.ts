@@ -84,7 +84,7 @@ export const setFiltersValues = (values: { name: string, value: any[] }[]) => (d
 export default {
   [FILTERS_BUILD]: (state: State) => ({
     ...state,
-    filters: buildFilters(state.availabilities!)
+    filters: buildFilters(state.unavailabilities!)
   }),
   [FILTERS_VALUES_SET]: (
     state: State,

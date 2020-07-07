@@ -15,6 +15,11 @@ query getAvailabilities ($filters: EQLQueryFilterAvailabilities!) {
           Name
           UID
           Category
+          CoreSkill
+          Depot {
+            UID
+            Name
+          }
           PrimaryRegion {
             Name
           }

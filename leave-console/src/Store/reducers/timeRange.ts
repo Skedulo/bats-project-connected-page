@@ -6,11 +6,12 @@ import { getAvailabilities } from './availabilities'
 import { State } from '../types'
 
 const TIME_RANGE_SET = 'TIME_RANGE_SET'
-
+const UTC_FORMAT = `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`
 export const getDefaultTimeRange = () => {
   const today = getMonday(new Date())
-  const startDate = format(new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0)), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-  const endDate = format(new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 6, 23, 59, 59)), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+  const startDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0)).toISOString()
+  const endDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 7, 23, 59, 59)).toISOString()
+
   return {
     startDate,
     endDate
@@ -21,7 +22,7 @@ export const setTimeRangeSimp = makeActionCreator(TIME_RANGE_SET, null, ['startD
 
 export const setTimeRange = (startDate: Date, endDate: Date) => (dispatch: Dispatch) => {
   dispatch(setTimeRangeSimp(startDate, endDate))
-  dispatch(getAvailabilities())
+  // dispatch(getAvailabilities())
 }
 
 function getMonday(date: Date) {
@@ -38,8 +39,8 @@ export default {
   ) => ({
     ...state,
     timeRange: {
-      startDate: format(startDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"),
-      endDate: format(endDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString()
     }
   })
 }

@@ -26,6 +26,10 @@ export interface FilterParams {
   pageNumber?: number
 }
 
+export interface IConfig {
+  coreSkills: IBaseModel[],
+  regions: IRegion[]
+}
 export interface ResourceRequirementRule {
   id: string
   regionId: string
@@ -34,11 +38,18 @@ export interface ResourceRequirementRule {
   endDate: string
   coreSkill: string
   numberOfResources: number
+  depot?: IBaseModel
+  depotId?: string
 }
 
 export interface IBaseModel {
   name: string
   id: string
+}
+
+export interface IGraphqlBaseModal {
+  UID: string
+  Name: string
 }
 
 export enum GenericOptionObjects {
@@ -62,4 +73,18 @@ export interface IGenericSelectItem extends ISelectItem {
   contact?: IBaseModel
   region?: IBaseModel
   fieldName?: string
+}
+
+export interface IRegion extends IBaseModel {
+  timezoneSid: string
+}
+
+export interface IResource {
+  id: string
+  name: string
+  rating?: number
+  category?: string
+  avatarUrl?: string
+  coreSkill?: string
+  depot?: IBaseModel
 }

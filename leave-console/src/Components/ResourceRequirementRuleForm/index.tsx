@@ -1,13 +1,18 @@
 import * as React from 'react'
 import { omit } from 'lodash/fp'
-import { SkedFormChildren, SkedFormValidation, FormContext } from '@skedulo/sked-ui'
+import { SkedFormChildren, SkedFormValidation } from '@skedulo/sked-ui'
 import ResourceRequirementRuleFormChildren from './FormChildren'
-import { ResourceRequirementRule } from '../../Store/types/ResourceRequirementRule'
+import { ResourceRequirementRule, IBaseModel } from '../../Store/types/ResourceRequirementRule'
+import { isDate, format } from 'date-fns'
+import { DATE_FORMAT } from '../../common/constants'
 
 const ResourceRequirementRuleFormConfig = {
-  jobType: { isRequired: 'Job type is required' },
-  description: {},
-  jobConstraints: {},
+  region: { isRequired: 'Region is required' },
+  startDate: {},
+  endDate: {},
+  coreSkill: {},
+  depot: {},
+  numberOfResources: { isRequired: { message: 'Number of resources is required' } }
 }
 
 interface IResourceRequirementRuleFormProps {
@@ -21,47 +26,21 @@ const ResourceRequirementRuleForm: React.FC<IResourceRequirementRuleFormProps> =
   onSubmit,
   onCancel,
 }) => {
-  const handleSubmit = React.useCallback(
-    (form: FormContext<ResourceRequirementRule>) => {
-      // let hasError = false
-      // let validatedJobConstraints: IJobConstraint[] = []
-      // if (jobConstraints.length) {
-      //   validatedJobConstraints = jobConstraints.map((item, index) => {
-      //     const jobId = item.dependentJobId || item.dependentJob?.id
-      //     const duplicatedJobId = jobConstraints.find(
-      //       (jc, jcIndex) =>
-      //         (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index && !jc.action && !item.action
-      //     )
-      //     if (!item.constraintType || !item.dependencyType || !jobId) {
-      //       hasError = true
-      //       return {
-      //         ...item,
-      //         error: 'Constraint is invalid',
-      //       }
-      //     }
-      //     if (duplicatedJobId) {
-      //       hasError = true
-      //       return {
-      //         ...item,
-      //         error: 'Dependent job is duplicated',
-      //       }
-      //     }
-      //     return item
-      //   })
-      // }
-      // if (hasError) {
-      //   setJobConstraints(validatedJobConstraints)
-      //   return
-      // }
-      // const submitData = {
-      //   ...jobTemplate,
-      //   ...form.fields,
-      //   jobConstraints: jobConstraints.map(item =>
-      //     omit(['tempId', 'error', 'sObjectType', 'projectJobTemplateId'], item)
-      //   ),
-      // }
-      // onSubmit(submitData)
-    },
+  const handleSubmit = React.useCallback(form => {
+    const submitData = {
+      ...rule,
+      ...form.fields,
+      regionId: form.fields.region.id,
+      region: { id: form.fields.region.id, name: form.fields.region.name },
+      depotId: form.fields.depot?.id,
+      depot: form.fields.depot ? { id: form.fields.depot?.id, name: form.fields.depot?.name } : undefined,
+      startDate: isDate(form.fields.startDate) ? format(form.fields.startDate, DATE_FORMAT) : form.fields.startDate,
+      endDate: isDate(form.fields.endDate) ? format(form.fields.endDate, DATE_FORMAT) : form.fields.endDate,
+      coreSkill: form.fields.coreSkill.id
+    }
+
+    onSubmit(submitData)
+  },
     [rule]
   )
 

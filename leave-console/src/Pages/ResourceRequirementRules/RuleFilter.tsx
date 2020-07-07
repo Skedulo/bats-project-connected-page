@@ -116,7 +116,7 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
   }, [filterParams.startDate])
 
   return (
-    <div className="cx-relative cx-p-4 cx-border-b cx-border-neutral-300">
+    <div className="cx-relative cx-p-4">
       <ul className="cx-flex cx-items-center">
         <li>
           <div className="cx-flex cx-items-center">

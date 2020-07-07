@@ -47,6 +47,7 @@ const TimeRangeControl: React.FC = () => {
 
   const onDateSelect = (date: Date) => {
     const startDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0))
+    console.log('startDate: ', startDate);
     dispatch(setTimeRange(startDate, getRangeEndDate(startDate, selectedRange)))
   }
 

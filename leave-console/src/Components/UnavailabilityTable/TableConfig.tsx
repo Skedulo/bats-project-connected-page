@@ -1,14 +1,16 @@
 import React from 'react'
 import { parseISO, format } from 'date-fns'
 
-import { IDynamicTable } from '@skedulo/sked-ui'
 import { ConflictsCell } from './cell-formatters/ConflictsCell'
 import { ResourceCell } from './cell-formatters/ResourceCell'
 import { RegionCell } from './cell-formatters/RegionCell'
 import { StatusCell } from './cell-formatters/StatusCell'
-import { DateRangeCell } from './cell-formatters/DateRangeCell'
-import { ActionsCell } from './cell-formatters/ActionsCell'
-import { UnavailabilityTableItem } from '../../Store/types/UnavailabilityTableItem';
+import DateRangeCell from './cell-formatters/DateRangeCell'
+import ActionsCell from './cell-formatters/ActionsCell'
+import { UnavailabilityTableItem } from '../../Store/types/UnavailabilityTableItem'
+import { Resource } from '../../Store/types/Resource'
+import { AvailabilityStatus } from './UnavailabilityTable'
+import { Region } from '../../Store/types'
 
 interface IGetColumns {
   onApprove: (id: string) => void,
@@ -18,63 +20,65 @@ interface IGetColumns {
 
 export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
   {
-    key: 'Resource',
-    name: 'Resource name',
+    Header: 'Resource',
+    accessor: 'Resource',
     emptyPlaceholderText: '-',
-    cellRenderer: (resource, row) => <ResourceCell resource={ row.Resource } />
+    Cell: ({ cell }: { cell: { value: Resource } }) => {
+      return <ResourceCell resource={cell.value} />
+    }
   },
   {
-    key: 'Resource',
-    name: 'Region',
+    Header: 'Region',
+    accessor: 'Resource.PrimaryRegion',
     emptyPlaceholderText: '-',
-    cellRenderer: (region, row) => <RegionCell regionName={ row.Resource.PrimaryRegion.Name }/>
+    Cell: ({ cell }: { cell: { value: Region } }) => {
+      return <RegionCell regionName={ cell.value.Name } />
+    }
   },
   {
-    key : 'Start',
-    name: 'Leave',
+    Header: 'Unavailability',
+    accessor: 'Start',
     emptyPlaceholderText: '-',
-    cellRenderer: (startDate, row) => (
-      <DateRangeCell startDate={ startDate } endDate={ row.Finish } />
-    )
+    Cell: ({ cell, row }: { cell: { value: string }; row: { original: UnavailabilityTableItem } }) => {
+      return <DateRangeCell startDate={cell.value} endDate={ row.original.Finish } />
+    }
   },
   {
-    key : 'CreatedDate',
-    name: 'Created',
+    Header: 'Created',
+    accessor: 'CreatedDate',
     emptyPlaceholderText: '-',
-    cellRenderer: (createdDate) => (
-      <span>{ format(parseISO(createdDate), 'MMM d, y') }</span>
-    )
+    Cell: ({ cell }: { cell: { value: string } }) => {
+      return <span>{ format(parseISO(cell.value), 'MMM d, y') }</span>
+    }
   },
   {
-    key: 'conflicts',
-    name: 'Conflicts',
+    Header: 'Conflicts',
+    accessor: 'conflicts',
     emptyPlaceholderText: '-',
-    cellRenderer: (conflicts) => (
-      <ConflictsCell conflictsCount={ conflicts } />
-    )
+    Cell: ({ cell }: { cell: { value: number } }) => {
+      return <ConflictsCell conflictsCount={cell.value} />
+    }
   },
   {
-    key: 'Status',
-    name: 'Status',
-    width: 120,
+    Header: 'Status',
+    accessor: 'Status',
     emptyPlaceholderText: '-',
-    cellRenderer: status => (
-      <StatusCell type={ status } />
-    )
+    Cell: ({ cell }: { cell: { value: AvailabilityStatus } }) => {
+      return <StatusCell type={cell.value} />
+    }
   },
   {
-    key: 'UID',
-    name: 'Action',
+    Header: '',
+    accessor: 'UID',
     width: 240,
-    emptyPlaceholderText: '-',
-    cellRenderer: (id, row) => (
-      <ActionsCell
-        availabilityId={ id }
-        availabilityStatus={ row.Status }
-        onApprove={ onApprove }
-        onReject={ onReject }
-        onRecall={ onRecall }
-      />
-    )
+    Cell: ({ cell, row }: { cell: { value: string }, row: { original: UnavailabilityTableItem } }) => {
+      return (
+        <ActionsCell
+          availabilityId={cell.value}
+          availabilityStatus={row.original.Status}
+          onRecall={onRecall}
+        />
+      )
+    }
   }
-] as IDynamicTable<UnavailabilityTableItem>[]
+]

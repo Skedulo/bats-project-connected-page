@@ -8,6 +8,7 @@ import { State } from '../types'
 import subscriptionReducers from './subscription'
 import fetchReducers from './fetch'
 import filterReducers from './filter'
+import regionReducers from './region'
 import timeRangeReducers, { getDefaultTimeRange } from './timeRange'
 import availabilityReducers from './availabilities'
 import conflictingJobAllocations, { getDefaultConflictingJobAllocations } from './conflictingJobAllocations'
@@ -27,7 +28,8 @@ const reducer = makeReducer(
     ...filterReducers,
     ...timeRangeReducers,
     ...availabilityReducers,
-    ...conflictingJobAllocations
+    ...conflictingJobAllocations,
+    ...regionReducers
   },
   DEF_STATE
 )
