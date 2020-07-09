@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { mapValues, isNumber, chunk, isEmpty, values, flatten } from 'lodash/fp'
-import { utcToZonedTime } from 'date-fns-tz'
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import { Services, credentials } from './Services'
 import {
   ISalesforceResponse,
@@ -13,14 +13,18 @@ import {
   IGenericSelectItem,
   IConfig,
   IResource,
-  IGraphqlBaseModal
+  IGraphqlBaseModal,
+  IJobDetail,
+  Job,
+  Availability,
 } from '../Store/types'
 import { toastMessage } from '../common/utils/toast'
 import { ISelectItem } from '@skedulo/sked-ui'
-import { format } from 'date-fns';
+import { format, addMinutes, parse } from 'date-fns';
 import { DATE_FORMAT, TIME_FORMAT } from '../common/constants'
-import { parseTimeString } from '../common/utils/dateTimeHelpers'
+import { parseTimeString, parseTimeValue } from '../common/utils/dateTimeHelpers'
 import { LocationsQuery } from '../Store/queries'
+import { IResourceAvailability } from '../Store/types/Availability';
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -112,7 +116,7 @@ export const getResourceAvailabilities = async (
       unavailability: true
     }))
     const responses = await Promise.all(promises)
-    const availabilities: Record<string, { start: string, end: string }[]> = {}
+    const availabilities: Record<string, IResourceAvailability> = {}
     responses.forEach(r => {
       const result = r.data.result
       Object.keys(result).forEach(id => {
@@ -161,5 +165,85 @@ export const fetchDepotByRegion = async (regionId: string): Promise<IBaseModel[]
     return resp.locations.map(item => ({ id: item.UID, name: item.Name }))
   } catch (error) {
     return []
+  }
+}
+
+export const getResourceSuggestions = async (
+  jobId: string,
+  resources: Record<string, { start: string, end: string }[]>,
+  scheduleStart: string,
+  scheduleEnd: string
+) => {
+  try {
+    const response = await httpApi.post('/planr/optimize/resource_suggestions', {
+      jobId,
+      resources,
+      scheduleStart,
+      scheduleEnd,
+      schedulingOptions: {
+        balanceWorkload: false,
+        ignoreTravelTimeFirstJob: false,
+        ignoreTravelTimeLastJob: false,
+        ignoreTravelTimes: false,
+        jobTimeAsTimeConstraint: true,
+        minimizeResources: false,
+        padding: 0,
+        preferJobTimeOverTimeConstraint: true,
+        respectSchedule: true,
+        snapUnit: 0,
+      }
+    })
+    return response.data.result
+  } catch (error) {
+    return {}
+  }
+}
+
+export const fetchAvailableResources = async (
+  job: Job,
+  regionId: string,
+) => {
+  try {
+    const scheduleStartUtc = job.Start
+    const scheduleEndUtc = job.End
+
+    const resourcesByRegion = await fetchResourcesByRegion(regionId, scheduleStartUtc, scheduleEndUtc, job.Timezone)
+    const resourceIds = resourcesByRegion.map(item => item.id)
+    const availabilities = await getResourceAvailabilities(resourceIds, [regionId], scheduleStartUtc, scheduleEndUtc)
+
+    const suggestedResources = await getResourceSuggestions(
+      job.UID,
+      mapValues((value => value.available), availabilities),
+      scheduleStartUtc,
+      scheduleEndUtc
+    )
+    return resourcesByRegion.map(item => {
+      return {
+        ...item,
+        suggestion: suggestedResources[item.id],
+        isSuggested: !!suggestedResources[item.id]
+      }
+    })
+  } catch (error) {
+    return []
+  }
+}
+
+export const reallocateResources = async(jobId: string, newResourceIds: string[]) => {
+  console.log('jobId: ', jobId);
+  console.log('newResourceIds: ', newResourceIds);
+}
+
+export const pushNotification = async (resourceId: string, message: string) => {
+  try {
+    const responses = await httpApi.post('/notifications/oneoff', {
+      resourceId,
+      message,
+      protocol: 'push'
+    })
+
+    return responses
+  } catch (error) {
+    return {}
   }
 }

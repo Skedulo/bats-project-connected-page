@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react'
 import { startOfMonth, endOfMonth, parseISO } from 'date-fns'
+import { utcToZonedTime } from 'date-fns-tz'
 import { useSelector } from 'react-redux'
 
 import { AbsenceTable } from './AbsenceTable'
-import { State, UnavailabilityTableItem, Resource } from '../../Store/types'
+import { State, UnavailabilityTableItem, Resource, IResource } from '../../Store/types'
 import { AbsenceRowData } from './types/AbsenceRowData'
 import { getDefaultAvatar } from '../../common/utils/avatars'
 
@@ -15,10 +16,13 @@ interface Props {
 }
 
 export const AbsenceTableContainer: React.FC<Props> = ({ unavailability, startDate, endDate, onAbsenceCountChange }) => {
-  const unavailabilities = useSelector<State, UnavailabilityTableItem[] | undefined>(state => state.unavailabilities)
-  const resources = useSelector<State, Resource[] | undefined>(state => state.resources)
+  const { unavailabilities, resources, region } = useSelector((state: State) => ({
+    unavailabilities: state.unavailabilities || [],
+    resources: state.resources || [],
+    region: state.region
+  }))
 
-  const leaveRequest = createLeaveRequest(unavailability, resources)
+  const leaveRequest = createLeaveRequest(unavailability, resources, region.timezoneSid)
   const absenceData = getAbsenceData(unavailabilities, resources, leaveRequest ? leaveRequest.resource.UID : undefined)
   const startOfRequestMonth = leaveRequest ? startOfMonth(leaveRequest.leave.start) : new Date()
   const endOfRequestMonth = endOfMonth(startOfRequestMonth)
@@ -37,12 +41,12 @@ export const AbsenceTableContainer: React.FC<Props> = ({ unavailability, startDa
   )
 }
 
-const createLeaveRequest = (unavailability?: UnavailabilityTableItem, resources?: Resource[]) => {
+const createLeaveRequest = (unavailability?: UnavailabilityTableItem, resources?: IResource[], timezone: string) => {
   if (!unavailability || !resources) {
     return undefined
   }
 
-  const resource = resources.find(resourceItem => resourceItem.UID === unavailability.Resource.UID)
+  const resource = unavailability.Resource
   if (!resource) {
     return undefined
   }
@@ -51,22 +55,22 @@ const createLeaveRequest = (unavailability?: UnavailabilityTableItem, resources?
     resource: {
       UID: resource.UID,
       name: resource.Name,
-      category: resource.Category,
+      category: resource.CoreSkill,
       avatarUrl: resource!.User
         ? resource!.User.SmallPhotoUrl
         : getDefaultAvatar()
     },
     leave: {
       name: unavailability.Name,
-      start: parseISO(unavailability.Start),
-      end: parseISO(unavailability.Finish),
+      start: utcToZonedTime(unavailability.Start, timezone),
+      end: utcToZonedTime(unavailability.Finish, timezone),
       conflictsByDay: unavailability.conflictsByDay,
       conflicts: unavailability.conflicts
     }
   }
 }
 
-const getAbsenceData = (unavailabilities?: UnavailabilityTableItem[], resources?: Resource[], requestingResourceId?: string) => {
+const getAbsenceData = (unavailabilities?: UnavailabilityTableItem[], resources?: IResource[], requestingResourceId?: string) => {
   if (!unavailabilities || !resources) {
     return []
   }
@@ -92,17 +96,15 @@ const getAbsenceData = (unavailabilities?: UnavailabilityTableItem[], resources?
   return Array.from(absenceData.values())
 }
 
-const appendUserIfNotExists = (absenceData: Map<string, AbsenceRowData>, resourceId: string, resources: Resource[]) => {
+const appendUserIfNotExists = (absenceData: Map<string, AbsenceRowData>, resourceId: string, resources: IResource[]) => {
   if (!absenceData.has(resourceId)) {
-    const resource = resources.find(res => res.UID === resourceId)
+    const resource = resources.find(res => res.id === resourceId)
     absenceData.set(resourceId, {
       resource: {
-        UID: resource!.UID,
-        name: resource!.Name,
-        category: resource!.Category,
-        avatarUrl: resource!.User
-          ? resource!.User.SmallPhotoUrl
-          : getDefaultAvatar()
+        UID: resource!.id,
+        name: resource!.name,
+        category: resource!.coreSkill || '',
+        avatarUrl: resource!.avatarUrl || getDefaultAvatar()
       },
       leaves: []
     })

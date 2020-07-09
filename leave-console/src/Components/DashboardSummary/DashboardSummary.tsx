@@ -77,7 +77,6 @@ const DashboardSummary: React.FC = () => {
             })
             if (matchedRecord) {
               resourcesCount += 1
-
               availabilityResources.push(resourcesKeyById[resourceId])
             }
           }

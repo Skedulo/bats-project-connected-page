@@ -8,11 +8,12 @@ import {
 
 import * as Queries from '../queries'
 
-import { Avatars, UID, Resource, State, Region, TimeRange, IRegion } from '../types'
+import { Avatars, UID, State, TimeRange, IRegion } from '../types'
 
 import { Services } from '../../Services/Services'
-import { fetchConfig, fetchResourcesByRegion } from '../../Services/DataServices'
+import { fetchConfig, fetchResourcesByRegion, fetchResourceRequirementRules } from '../../Services/DataServices'
 import { setRegionSimp } from './region'
+import { DEFAULT_FILTER } from '../../common/constants';
 
 const RESOURCE = makeActionsSet('RESOURCE')
 const CLEAR_NEW_ENTRY_STATE = 'CLEAR_NEW_ENTRY_STATE'
@@ -26,26 +27,16 @@ export const getConfigs = makeAsyncActionCreatorSimp(
   CONFIGS, () => async (dispatch: Dispatch) => {
     const resp = await fetchConfig()
     if (resp.regions.length) {
-      dispatch(setRegionSimp(resp.regions[2]))
+      dispatch(setRegionSimp(resp.regions[0]))
     }
     return { configs: resp }
   }
 )
 
-// export const getResources = makeAsyncActionCreatorSimp(
-//   RESOURCE, () => async (dispatch: Dispatch) => {
-//     const resp = await Services.graphQL.fetch<{resources: Resource[], totalCount: number}>({
-//       query: Queries.AllResourcesQuery
-//     })
-//     dispatch(getUsersAvatars(resp.resources.reduce((acc, { UID }) => UID ? [...acc, UID] : acc , [] as UID[])))
-//     return resp
-//   }
-// )
-
 export const getResources = makeAsyncActionCreatorSimp(
   RESOURCE, (region: IRegion, timeRange: TimeRange) => async (dispatch: Dispatch, store: State) => {
     const resp = await fetchResourcesByRegion(region.id, timeRange.startDate, timeRange.endDate, region.timezoneSid)
-    return { resources: resp }
+    return { resources: resp.map(item => ({ annualLeaveRemaining: 1, annualLeaveAllowance: 15, ...item })) }
   }
 )
 

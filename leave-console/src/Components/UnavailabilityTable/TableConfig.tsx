@@ -13,12 +13,10 @@ import { AvailabilityStatus } from './UnavailabilityTable'
 import { Region } from '../../Store/types'
 
 interface IGetColumns {
-  onApprove: (id: string) => void,
-  onRecall: (id: string) => void,
-  onReject: (id: string) => void,
+  onRecall: (unavailability: UnavailabilityTableItem) => void,
 }
 
-export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
+export const getColumns = ({ onRecall }: IGetColumns) => [
   {
     Header: 'Resource',
     accessor: 'Resource',
@@ -32,7 +30,7 @@ export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
     accessor: 'Resource.PrimaryRegion',
     emptyPlaceholderText: '-',
     Cell: ({ cell }: { cell: { value: Region } }) => {
-      return <RegionCell regionName={ cell.value.Name } />
+      return <RegionCell regionName={cell.value.Name} />
     }
   },
   {
@@ -40,7 +38,7 @@ export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
     accessor: 'Start',
     emptyPlaceholderText: '-',
     Cell: ({ cell, row }: { cell: { value: string }; row: { original: UnavailabilityTableItem } }) => {
-      return <DateRangeCell startDate={cell.value} endDate={ row.original.Finish } />
+      return <DateRangeCell startDate={cell.value} endDate={row.original.Finish} />
     }
   },
   {
@@ -48,7 +46,7 @@ export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
     accessor: 'CreatedDate',
     emptyPlaceholderText: '-',
     Cell: ({ cell }: { cell: { value: string } }) => {
-      return <span>{ format(parseISO(cell.value), 'MMM d, y') }</span>
+      return <span>{format(parseISO(cell.value), 'MMM d, y')}</span>
     }
   },
   {
@@ -72,11 +70,12 @@ export const getColumns = ({ onApprove, onRecall, onReject }: IGetColumns) => [
     accessor: 'UID',
     width: 240,
     Cell: ({ cell, row }: { cell: { value: string }, row: { original: UnavailabilityTableItem } }) => {
+      const handleRecall = () => onRecall(row.original)
       return (
         <ActionsCell
           availabilityId={cell.value}
           availabilityStatus={row.original.Status}
-          onRecall={onRecall}
+          onRecall={handleRecall}
         />
       )
     }

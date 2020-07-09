@@ -26,7 +26,21 @@ export const DayConflicts: React.FC<Props> = ({ leave, days }) => {
 
   return (
     <>
-      { visibleConflicts.map((conflict, index) => (
+      {visibleConflicts.map((conflict, index) => (
+        <span
+          key={ index }
+          className={ bem('conflictsLabel') }
+          style={ {
+            gridRowStart: 2,
+            gridRowEnd: 3,
+            gridColumnStart: conflict.columnStart,
+            gridColumnEnd: conflict.columnStart + 1
+          } }
+        >
+          { conflict.conflicts }
+        </span>
+      ))}
+      {/* { visibleConflicts.map((conflict, index) => (
         <TableTooltip
           key={ index }
           data={ {
@@ -47,7 +61,7 @@ export const DayConflicts: React.FC<Props> = ({ leave, days }) => {
             </span>
           }
         />
-      )) }
+      )) } */}
     </>
   )
 }

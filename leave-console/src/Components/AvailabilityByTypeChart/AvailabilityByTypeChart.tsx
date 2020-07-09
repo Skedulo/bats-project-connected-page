@@ -56,7 +56,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
   const displayData = useMemo(() => {
     return data.map(item => {
       const resourceByCoreSkill = groupBy(item.resources, 'coreSkill')
-      const resourceByDepot = groupBy(item.resources, 'depot.name')
+      const resourceByDepot = groupBy(item.resources, 'depot.id')
       return {
         ...item,
         [ChartType.CoreSkill]: mapValues(resourceByCoreSkill, value => value.length),

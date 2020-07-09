@@ -8,7 +8,7 @@ import { AvailabilityStatus } from '../UnavailabilityTable'
 interface IActionsCell {
   availabilityId: string
   availabilityStatus: AvailabilityStatus
-  onRecall: (id: string) => void
+  onRecall: () => void
 }
 
 const ActionsCell: React.FC<IActionsCell> = ({ availabilityId, availabilityStatus, onRecall }) => {
@@ -17,7 +17,7 @@ const ActionsCell: React.FC<IActionsCell> = ({ availabilityId, availabilityStatu
       <Button
         className="cx-mr-2"
         buttonType="secondary"
-        onClick={() => onRecall(availabilityId)}
+        onClick={onRecall}
         disabled={availabilityStatus === 'Pending'}
         compact
       >

@@ -48,12 +48,12 @@ export const Viewport: React.FC<Props> = ({ days, leaveRequest, absenceData, day
     <div className={ bem('viewportWrapper') }>
       <div
         className={ bem('viewport') }
-        style={ {
+        style={{
           maxHeight,
           gridTemplateRows,
           gridTemplateColumns: `${firstColumnWidth}px repeat(${days.length}, ${finalColumnWidth})`,
           display: 'grid'
-        } }
+        }}
       >
         { leaveRequest && <Separator columns={ days.length  + 1 } /> }
 

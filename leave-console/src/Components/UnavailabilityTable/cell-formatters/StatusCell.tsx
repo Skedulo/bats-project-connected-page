@@ -16,8 +16,8 @@ const statusStyles: {
   [index: string]: StatusStyle
 } = {
   pending: { className: 'cx-bg-neutral-300 cx-text-neutral-850', style: {} },
-  approved: { className: 'cx-bg-green-300 cx-text-green-8-0', style: {} },
-  declined: { className: 'cx-bg-red-300 cx-text-red-800', style: {} }
+  approved: { className: 'cx-bg-green-200 cx-text-green-800', style: {} },
+  declined: { className: 'cx-bg-red-200 cx-text-red-800', style: {} }
 }
 
 export const StatusCell: React.FC<IStatusCell> = props => {

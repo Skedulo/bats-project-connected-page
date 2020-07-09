@@ -34,7 +34,7 @@ const SearchBox: React.FC<ISearchBoxProps> = ({
   return (
     <div
       className={classnames(
-        'sk-bg-white sk-border sk-border-b-0 sk-border-neutral-350 sk-text-neutral-650 sk-text-sm sk-flex sk-items-center sk-px-3 sk-py-1',
+        'sk-bg-white sk-border sk-border-b-0 sk-border-neutral-350 sk-text-neutral-650 sk-text-sm sk-flex sk-items-center sk-px-3',
         className
       )}
     >

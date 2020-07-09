@@ -36,12 +36,12 @@ export const LeaveOverlay: React.FC<Props> = ({ leave, days }) => {
       { isLeaveInRange && (
         <div
           className={ bem('leaveOverlay') }
-          style={ {
+          style={{
             gridRowStart: 2,
             gridRowEnd: -1,
             gridColumnStart: columnStart,
             gridColumnEnd: columnEnd
-          } }
+          }}
         />
       ) }
     </>

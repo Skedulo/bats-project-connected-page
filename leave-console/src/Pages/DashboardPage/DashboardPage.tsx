@@ -3,7 +3,7 @@ import { connect, useSelector, useDispatch } from 'react-redux'
 import { initSubscriptionService, registerNewSubscription } from '../../Store/reducers/subscription'
 import { getResources, getConfigs } from '../../Store/reducers/fetch'
 import { updateAvailability } from '../../Mutations/input'
-import { State } from '../../Store/types'
+import { State, Availability } from '../../Store/types'
 import { classes } from '../../common/utils/classes'
 import TimeRangeControl from '../../Components/TimeRangeControl'
 import DashboardFilter from './DashboardFilter'
@@ -52,26 +52,25 @@ const DashboardPage: React.FC<IProps> = () => {
     setIsLoading(false)
   }, [])
 
-  const onApprove = useCallback((id: string) => {
-    updateAvailability({ UID: id, Status: 'Approved' })
-  }, [])
-
-  const onReject = useCallback((id: string) => {
-    updateAvailability({ UID: id, Status: 'Declined' })
-  }, [])
-
-  const onRecall = useCallback((id: string) => {
-    updateAvailability({ UID: id, Status: 'Pending' })
+  const onRecall = useCallback(async (unavailability: Availability) => {
+    try {
+      setIsLoading(true)
+      await dispatch(updateAvailability({
+        UID: unavailability.UID,
+        Status: 'Pending',
+        Resource: unavailability!.Resource,
+        Start: unavailability!.Start
+      }))
+    } catch (error) {
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   useEffect(() => {
     registerNewSubscription('AvailabilityUpdate', undefined, true)
   }, [subscriptionStatus])
-
-  useEffect(() => {
-    dispatch(getConfigs())
-    dispatch(initSubscriptionService())
-  }, [])
 
   useEffect(() => {
     if (region) {
@@ -98,8 +97,6 @@ const DashboardPage: React.FC<IProps> = () => {
       </section>
       <section>
         <UnavailabilityTable
-          onApprove={onApprove}
-          onReject={onReject}
           onRecall={onRecall}
         />
       </section>

@@ -4,12 +4,12 @@ import isEqual from 'lodash/isEqual'
 
 import { DynamicTable, IDynamicTable, Pagination } from '@skedulo/sked-ui'
 import { State, UnavailabilityTableItem } from '../../Store/types'
-import ActionBar from '../ActionBar'
 import { filterBySearchPhrase } from './tableFilters'
 import { getColumns } from './TableConfig'
 
 import './UnavailabilityTable.scss'
 import { IDynamicTableColumn } from '@skedulo/sked-ui/dist/components/dynamic-table/interfaces'
+import SearchBox from '../SearchBox'
 
 export type AvailabilityStatus = 'Pending' | 'Approved' | 'Declined'
 
@@ -20,9 +20,7 @@ type ReduxProps = Pick<State,
 const itemsPerPage = 20
 
 interface IProps extends ReduxProps {
-  onReject: (id: string) => void,
-  onApprove: (id: string) => void,
-  onRecall: (id: string) => void,
+  onRecall: (unavailability: UnavailabilityTableItem) => void,
 }
 
 interface IState {
@@ -41,9 +39,7 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
 
     this.state = {
       tableColumns: getColumns({
-        onApprove: (id: string) => this.props.onApprove(id),
-        onRecall: (id: string) => this.props.onRecall(id),
-        onReject: (id: string) => this.props.onReject(id)
+        onRecall: (unavailability: UnavailabilityTableItem) => this.props.onRecall(unavailability),
       }),
       currentPage: 1,
       selectedAvailabilityUIDs: new Set(),
@@ -118,10 +114,13 @@ class UnavailabilityTable extends React.Component<IProps, IState> {
     if (displayedItems) {
       return (
         <div className="unavailabilities-table">
-          <section>
-            <ActionBar
-              onSearch={ this.onSearch }
-              onSearchClear={ this.onSearchClear }
+          <section className="cx-p-4 cx-flex cx-justify-between cx-items-center">
+            <h2 className="cx-text-lg cx-font-bold">Unavailability Request</h2>
+            <SearchBox
+              className="cx-w-1/4 cx-border-b"
+              placeholder="unavailabilities"
+              onChange={this.onSearch}
+              autoFocus={false}
             />
           </section>
           <section>
@@ -157,3 +156,4 @@ const mapStateToProps = (state: State) => ({
 })
 
 export default connect(mapStateToProps)(UnavailabilityTable)
+

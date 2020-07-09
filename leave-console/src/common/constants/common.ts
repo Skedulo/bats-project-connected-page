@@ -1,3 +1,5 @@
+import { ResourceSortType } from '../../Store/types/Resource'
+
 export const DEFAULT_FILTER = {
   searchText: '',
   pageSize: 20,
@@ -12,3 +14,12 @@ export const CHART_COLORS = {
   bar: '#008cff',
   warning: '#c0142a',
 }
+
+export const RESOURCE_SORT_OPTIONS = [
+  { value: ResourceSortType.TravelDistanceFromHome, label: 'Travel Distance from home' },
+  { value: ResourceSortType.TravelDurationFromHome, label: 'Travel Duration from home' },
+  { value: ResourceSortType.BestFit, label: 'Best Fit' },
+  { value: ResourceSortType.Name, label: 'Name' },
+  { value: ResourceSortType.Rating, label: 'Highest Rating' },
+  { value: ResourceSortType.Utilised, label: 'Least Utilised' }
+]

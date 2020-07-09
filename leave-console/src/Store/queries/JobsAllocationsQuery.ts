@@ -9,8 +9,14 @@ query getJobsAllocations ($filters: EQLQueryFilterJobAllocations!) {
           UID
           Name
           Description
+          Duration
+          Timezone
           Start
           End
+          Region {
+            UID
+            Name
+          }
           Account {
             Name
           }
@@ -19,8 +25,10 @@ query getJobsAllocations ($filters: EQLQueryFilterJobAllocations!) {
           }
           Type
           Address
-          JobAllocations {
+          JobAllocations(filter: "Status != 'Deleted'") {
             Resource {
+              UID
+              Name
               User {
                 UID
                 SmallPhotoUrl

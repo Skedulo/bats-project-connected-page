@@ -23,7 +23,7 @@ query getAvailabilities ($filters: EQLQueryFilterAvailabilities!) {
           PrimaryRegion {
             Name
           }
-          JobAllocations(filter: "Status == 'Confirmed'") {
+          JobAllocations(filter: "Status != 'Deleted'") {
             UID
             Start
             End

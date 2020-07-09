@@ -10,6 +10,10 @@ import {
   makeAsyncActionCreatorSimp,
   makeActionCreator } from '../common/utils/redux-helpers'
 import { getAvailabilities } from '../Store/reducers/availabilities'
+import { pushNotification } from '../Services/DataServices'
+import { toastMessage } from '../common/utils/toast';
+import { format } from 'date-fns-tz';
+import { DATE_FORMAT } from '../common/constants';
 
 export type UID = string
 
@@ -17,17 +21,34 @@ interface AvailabilityUpdateResp { schema: { updateAvailabilities: UID }}
 
 const UPDATE_AVAILABILITY = makeActionsSet('UPDATE_AVAILABILITY')
 
+const STATUS_MESSAGES = {
+  Approved: 'approved',
+  Declined: 'declined',
+  Pending: 'recalled',
+}
+
 export const updateAvailability = makeAsyncActionCreatorSimp(
   UPDATE_AVAILABILITY, (updateInput: Availability) =>
-    async (dispatch: Dispatch) => {
+    async (dispatch: Dispatch, getState: () => State) => {
+      const store = getState()
       const { schema: { updateAvailabilities } } = await Services.graphQL.mutate<AvailabilityUpdateResp>({
         query: updateAvailabilityQuery,
         variables: {
-          updateInput
+          updateInput: {
+            UID: updateInput.UID,
+            Status: updateInput.Status
+          }
         }
       })
       dispatch(getAvailabilities())
-      return updateAvailabilities ? updateInput : null
+      if (updateAvailabilities) {
+        const startDate = format(new Date(updateInput.Start), DATE_FORMAT, { timeZone: store.region?.timezoneSid })
+        const message = `Your leave request on ${startDate} has been ${STATUS_MESSAGES[updateInput.Status]}`
+        await pushNotification(updateInput.Resource.UID, message)
+        return updateInput
+      }
+      toastMessage.error('Updated status failed!')
+      return null
     }
 )
 

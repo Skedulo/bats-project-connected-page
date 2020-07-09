@@ -73,7 +73,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
       const matchedResources = item.resources.filter(res => {
         let isMatched = true
         if (filter.depot.value) {
-          isMatched = isMatched && toString(res.depot) === filter.depot.value
+          isMatched = isMatched && toString(res.depot?.id) === filter.depot.value
         }
         if (filter.coreSkill.value) {
           isMatched = isMatched && toString(res.coreSkill) === filter.coreSkill.value

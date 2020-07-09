@@ -29,6 +29,7 @@ export interface IConfig extends IOrgPreference {
   jobTypeTemplateValues?: Record<string, IResourceRequirement>
   constraintTypes?: IBaseModel[]
   dependencyTypes?: IBaseModel[]
+  coreSkills?: IBaseModel[]
 }
 
 export interface IJobTypeTemplate {

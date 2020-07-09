@@ -1,9 +1,11 @@
-import React, { useState, memo, useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useState, useEffect, memo, useMemo, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 
+import { classes } from '../../common/utils/classes'
 import { DynamicTable, Pagination } from '@skedulo/sked-ui'
 import { getColumns } from './TableConfig'
-import { UnavailabilityTableItem, State } from '../../Store/types'
+import { getJobAllocations } from '../../Store/reducers/conflictingJobAllocations'
+import { UnavailabilityTableItem, JobAllocation, State } from '../../Store/types'
 
 const itemsPerPage = 25
 
@@ -11,7 +13,7 @@ interface Props {
   unavailability?: UnavailabilityTableItem
 }
 
-const WorkConflictsTable: React.FC<Props> = () => {
+const ExceptionsTable: React.FC<Props> = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   const conflictingJobsAllocations = useSelector((state: State) => state.conflictingJobAllocations)
@@ -21,7 +23,7 @@ const WorkConflictsTable: React.FC<Props> = () => {
   return (
     <>
       <DynamicTable
-        data={conflictingJobsAllocations}
+        data={conflictingJobsAllocations }
         columns={tableColumns}
         initialRowStateKey="UID"
       />
@@ -37,4 +39,4 @@ const WorkConflictsTable: React.FC<Props> = () => {
   )
 }
 
-export default memo(WorkConflictsTable)
+export default memo(ExceptionsTable)

@@ -1,35 +1,19 @@
-import React, { memo } from 'react'
+import React, { memo, FC, useMemo, useCallback } from 'react'
 import { startOfDay, startOfMonth, parseISO, endOfDay, endOfMonth } from 'date-fns'
-import { connect } from 'react-redux'
-import { RouteComponentProps } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { connect, useSelector, useDispatch } from 'react-redux'
 
 import { classes } from '../../common/utils/classes'
 import { Button } from '@skedulo/sked-ui'
 import AbsenceTables from '../../Components/AbsenceTables'
 import UnavailabilityDetails from '../../Components/UnvailabilityDetails'
 import DetailsHeader from '../../Components/DetailsHeader'
-import RescheduleModal from '../../Components/RescheduleModal'
 import { State, Resource, UnavailabilityTableItem, TimeRange } from '../../Store/types'
 import { setTimeRange, setTimeRangeSimp } from '../../Store/reducers/timeRange'
 import { updateAvailability } from '../../Mutations/input'
+import { useGlobalLoading } from '../../Components/GlobalLoading'
 
-import './ResourceDetailPage.scss'
-import { getDefaultAvatar } from '../../common/utils/avatars'
-
-const bem = classes('resource-detail-page')
-
-const TABLE_DATA = {
-  resourcesOff: 5
-}
-
-const RESOURCES = [
-  'Resource 1', 'Resource 2', 'Resource 3'
-]
-const JOB = 'JOB-1862'
-
-type RouteProps = RouteComponentProps<{availabilityId?: string}>
-
-interface Props extends RouteProps {
+interface Props {
   resources?: Resource[]
   unavailabilities?: UnavailabilityTableItem[]
   setTimeRange: typeof setTimeRange
@@ -39,43 +23,54 @@ interface Props extends RouteProps {
   updateAvailability: typeof updateAvailability
 }
 
-interface ResourceDetailPageState {
-  rescheduleModalVisible: boolean,
-  customState?: string,
-  originalTimeRange: TimeRange
-  showConflictDetails: boolean,
-  resource?: Resource
-}
+const ResourceDetailPage: FC<Props> = ({ }) => {
+  const dispatch = useDispatch()
 
-const ResourceDetailPage: FC<Props, ResourceDetailPageState> = ({ }) => {
+  const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
+
+  const { availabilityId } = useParams<{ availabilityId?: string }>()
+
+  const { unavailabilities, region } = useSelector((state: State) => ({
+    unavailabilities: state.unavailabilities || [],
+    region: state.region || {}
+  }))
+
+  const unavailability = useMemo(() => {
+    return unavailabilities?.find(item => item.UID === availabilityId)
+  }, [unavailabilities, availabilityId])
+
+  const handleUpdateStatus = useCallback((status: 'Approved' | 'Declined' | 'Pending') => async () => {
+    try {
+      startGlobalLoading()
+      await dispatch(updateAvailability({
+        UID: unavailability!.UID,
+        Status: status,
+        Resource: unavailability!.Resource,
+        Start: unavailability!.Start
+      }))
+    } catch (error) {
+      throw error
+    } finally {
+      endGlobalLoading()
+    }
+  }, [unavailability])
+
+  if (!unavailability) {
+    return null
+  }
+
   return (
-    // <div className={ bem() }>
-    //   <DetailsHeader 
-    //     userData={ this.state.resource } 
-    //     unavailabilityStatus={ this.props.unavailability.Status }
-    //     onApprove={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Approved' }) }
-    //     onReject={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Declined' }) }
-    //     onRecall={ () => this.props.updateAvailability({ UID: this.props.unavailability!.UID, Status: 'Pending' }) }
-    //   />
-    //   <UnavailabilityDetails data={ this.props.unavailability } />
-    //   <AbsenceTables
-    //     data={ {
-    //       ...TABLE_DATA,
-    //       unavailability: this.props.unavailability
-    //     } }
-    //   />
-    //   { /* TODO: move to Work Conflicts table */ }
-    //   { this.state.rescheduleModalVisible &&
-    //       <RescheduleModal
-    //         resources={ RESOURCES }
-    //         job={ JOB }
-    //         toggleModalVisibility={ this.toggleModalVisibility }
-    //       />
-    //   }
-    //   { /* TODO: remove this button after adding Work conflicts table it's for delelopment/demo purpose only */ }
-    //   <Button buttonType="primary" onClick={ () => this.toggleModalVisibility() }>show reschedule modal</Button>
-    // </div >
-    <div>hello</div>
+    <div className="cx-bg-white cx-h-full">
+      <DetailsHeader
+        userData={unavailability.Resource}
+        unavailabilityStatus={unavailability.Status}
+        onApprove={handleUpdateStatus('Approved')}
+        onReject={handleUpdateStatus('Declined')}
+        onRecall={handleUpdateStatus('Pending')}
+      />
+      <UnavailabilityDetails data={unavailability} />
+      <AbsenceTables data={{ unavailability }} />
+    </div >
   )
 }
 

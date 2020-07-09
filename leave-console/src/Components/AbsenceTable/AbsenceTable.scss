@@ -1,12 +1,12 @@
 @import 'src/variables.scss';
 
 .absenceTable--wrapper {
-  // // @apply sk-relative;
+  @apply cx-relative;
 
 }
 
 .absenceTable--bottomSmoother {
-  // // @apply sk-z-1;
+  @apply cx-z-1;
   content: '';
   width: 60px;
   height: 60px;
@@ -19,25 +19,25 @@
 }
 
 .absenceTable--container {
-  // // @apply sk-relative sk-border;
+  @apply cx-relative cx-border cx-border-neutral-300;
   overflow: visible;
-  // overflow: auto;
+  overflow: auto;
 }
 
 .absenceTable--event_card {
-  // // @apply sk-text-xxs sk-px-2;
+  @apply cx-text-xxs cx-px-2;
   margin-right: 13px;
   overflow-y: auto;
 
   p {
-    // @apply sk-my-2;
+    @apply cx-my-2;
   }
 }
 
 
 
 .absenceTable--topSmoother {
-  // @apply sk-z-20;
+  // @apply cx-z-20;
   background: #fff;
   position: sticky;
   left: 0;
@@ -71,7 +71,7 @@
 .absenceTable {
   
   &__head {
-    // @apply sk-z-1;
+    @apply cx-z-1;
     display: grid;
     background-color: #fff;
     position: sticky;
@@ -80,14 +80,14 @@
   }
 
   &__header {
-    // @apply sk-px-4 sk-py-3;
+    @apply cx-px-4 cx-py-3;
     text-align: center;
     background-color: $grey-lightest;
     font-weight: $font-weight-semi-bold;
   }
 
   &__headerCell {
-    // @apply sk-border-b sk-border-l sk-py-2 sk-font-medium sk-text-xxs sk-uppercase sk-text-center sk-text-navy-lighter sk-bg-white;
+    @apply cx-border-b cx-border-l cx-border-neutral-300 cx-py-2 cx-font-medium cx-text-xxs cx-uppercase cx-text-center cx-text-neutral-850 cx-bg-white;
 
     &--resourceAbsent {
       color: $blue;
@@ -95,7 +95,7 @@
   }
   
   &__resourceCell {
-    // @apply sk-text-xxs sk-text-navy-lighter sk-relative sk-border-b sk-flex sk-px-4;
+    @apply cx-text-xxs cx-text-neutral-800 cx-relative cx-border-b cx-border-neutral-300 cx-flex cx-px-4;
     background-color: #fff;
     position: sticky;
     left: 0;
@@ -109,7 +109,7 @@
   }
 
   &__resourceCellDataContainer {
-    // @apply sk-ml-4 sk-text-sm;
+    @apply cx-ml-4 cx-text-sm;
     flex-grow: 1;
     width: calc(100% - 32px - 3rem);
   }
@@ -127,7 +127,7 @@
   }
 
   &__leaveCard {
-    // @apply sk-px-3;
+    @apply cx-px-3;
     padding-top: .3rem;
     padding-bottom: .5rem;
     background-color: $grey-lighter;
@@ -150,7 +150,7 @@
   }
   
   &__leaveName {
-    // @apply sk-mb-1;
+    @apply cx-mb-1;
     font-weight: $font-weight-semi-bold;
     color: $navy;
     display: block;
@@ -174,12 +174,12 @@
   }
 
   &__separatorCell {
-    // @apply sk-border-b;
+    @apply cx-border-b;
   }
 
 
   &__dayCell {
-    // @apply sk-border-l sk-border-b sk-bg-white;
+    @apply cx-border-l cx-border-b cx-bg-white cx-border-neutral-300;
     position: relative;
 
     &--weekend {
@@ -237,15 +237,15 @@
     font-size: 11px;
     text-align: center;
     line-height: 16px;
-    cursor: pointer;
+    // cursor: pointer;
   }
 
   &__viewportWrapper {
-    // @apply sk-relative;
+    @apply cx-relative;
   }
 
   &__viewport {
-    // @apply sk-relative;
+    @apply cx-relative;
   }
 }
 

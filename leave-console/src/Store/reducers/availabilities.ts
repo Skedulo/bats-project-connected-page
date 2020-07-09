@@ -64,7 +64,6 @@ const availabilityTransform = (
 ) => {
   const unavailabilityTableData: UnavailabilityTableItem[] = unavailabilities.map(unavailability => {
     const { Start, Finish, Resource: { JobAllocations } } = unavailability
-
     const unavailabilityStart = parseISO(Start)
     const unavailabilityEnd = parseISO(Finish)
     const conflicts = countConflicts(unavailabilityStart, unavailabilityEnd, JobAllocations)

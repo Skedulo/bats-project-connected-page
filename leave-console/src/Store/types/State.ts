@@ -2,10 +2,12 @@ import {
   Avatars,
   Filter,
   Resource,
-  TimeRange
+  TimeRange,
+  IConfig,
+  IRegion,
+  IResource
 } from '.'
 import { UnavailabilityTableItem } from './UnavailabilityTableItem'
-import { IConfig, IRegion, IResource } from './ResourceRequirementRule'
 import { IResourceAvailability } from './Availability'
 
 export interface State {

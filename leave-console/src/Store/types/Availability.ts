@@ -1,5 +1,4 @@
-import { Resource } from './Resource'
-import { IResource } from './ResourceRequirementRule';
+import { Resource, IResource } from './Resource'
 
 export type AvailabilityStatus = 'Pending' | 'Approved' | 'Declined'
 
