@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { DynamicModal, Icon } from '@skedulo/sked-ui'
 import ResourceRequirementRuleForm from '../../../Components/ResourceRequirementRuleForm'
-import { ResourceRequirementRule, IBaseModel } from '../../../Store/types/ResourceRequirementRule'
+import { ResourceRequirementRule } from '../../../Store/types/ResourceRequirementRule'
 
 interface ICreateRuleModalProp {
   onClose: () => void

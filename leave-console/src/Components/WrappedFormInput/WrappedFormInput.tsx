@@ -1,10 +1,10 @@
 import * as React from 'react'
 import classNames from 'classnames'
-import { FormElementWrapper, FormInputElement, TextArea } from '@skedulo/sked-ui'
+import { FormElementWrapper, FormInputElement, TextArea, FormLabel } from '@skedulo/sked-ui'
 
 interface IWrappedFormInputProps {
   size?: number
-  label: string
+  label?: string
   name: string
   value: string
   error?: string
@@ -52,13 +52,13 @@ const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
 
   return (
     <div className={labelClasses}>
-      <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">{label}</span>
+      {label && <FormLabel status={isRequired ? 'required' :'optional'}>{label}</FormLabel>}
       <FormElementWrapper
         className={wrapperClasses}
         name={name}
         readOnlyValue={value}
         isReadOnly={isReadOnly}
-        validation={{ isValid: !error, error }}
+        validation={{ error, isValid: !error }}
       >
         {(!type || type === 'text') && (
           <FormInputElement

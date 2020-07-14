@@ -12,10 +12,11 @@ import {
   NumberInput,
   FormLabel,
 } from '@skedulo/sked-ui'
-import { isSameDay, isDate, isAfter, isEqual, add, parse } from 'date-fns'
+import { isDate, isAfter } from 'date-fns'
+import WrappedFormInput from '../WrappedFormInput'
 import { ResourceRequirementRule, IGenericSelectItem, IBaseModel, State } from '../../Store/types'
-import { fetchGenericOptions } from '../../Services/DataServices'
-import { DATE_FORMAT } from '../../common/constants';
+import { fetchGenericOptions, fetchDepotOptions } from '../../Services/DataServices'
+import { DATE_FORMAT, WEEKDAYS } from '../../common/constants'
 
 interface IFormChildrenProps {
   formParams: SkedFormChildren<ResourceRequirementRule>
@@ -28,13 +29,20 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
   onCancel,
   rule
 }) => {
-  const coreSkills = useSelector((state: State) => state.configs?.coreSkills || [])
+  const { coreSkills, categories } = useSelector((state: State) => ({
+    coreSkills: state.configs?.coreSkills || [],
+    categories: state.configs?.resourceCategories || [],
+  }))
 
   const [selectedOption, setSelectedOption] = React.useState<IGenericSelectItem | null>(null)
 
   const coreSkillOptions = React.useMemo(() => {
     return coreSkills.map(item => ({ value: item.id, label: item.name }))
   }, [coreSkills])
+
+  const categoryOptions = React.useMemo(() => {
+    return categories.map(item => ({ value: item.id, label: item.name }))
+  }, [categories])
 
   const { fields, customFieldUpdate, errors, submitted, isFormReadonly } = formParams
 
@@ -63,12 +71,9 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
   )
 
   const handleFetchLocations = React.useCallback(
-    (searchTerm: string) => {
-      return fetchGenericOptions({
-        name: searchTerm,
-        sObjectType: 'sked__Location__c',
-        regionIds: fields.region?.id
-      })
+    async (searchTerm: string) => {
+      const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Location__c' })
+      return res.filter(item => item.isDepot)
     },
     [fields.region]
   )
@@ -122,6 +127,15 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
   return (
     <>
       <div className="vertical-panel cx-p-4">
+        <WrappedFormInput
+          className="cx-mb-4"
+          label="Description"
+          isReadOnly={isFormReadonly}
+          value={rule?.description || ''}
+          isRequired={true}
+          name="description"
+          type="textarea"
+        />
         <div className="cx-mb-4">
           <FormLabel status="required">Region</FormLabel>
           <FormElementWrapper
@@ -189,6 +203,41 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
             </FormElementWrapper>
           </div>
         </div>
+        <div className="cx-flex cx-justify-start">
+          {WEEKDAYS.map(item => (
+            <div key={item.value} className="cx-flex cx-flex-col cx-mr-2">
+              <label className="cx-mb-1">{item.label}</label>
+              <WrappedFormInput
+                name={item.value}
+                type="checkbox"
+                isReadOnly={isFormReadonly}
+                label=""
+                value={fields[item.value]}
+                isRequired={false}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="cx-mb-4">
+          <FormLabel>Category</FormLabel>
+          <FormElementWrapper
+            className="cx-mt-1"
+            name="category"
+            readOnlyValue={rule?.category || ''}
+            isReadOnly={isFormReadonly}
+          >
+            <SearchSelect
+              name="categoryId"
+              onSelectedItemChange={onSelectLookupField('category')}
+              initialSelectedItem={
+                rule?.category ? { value: rule.category, label: rule.category } : undefined
+              }
+              items={categoryOptions}
+              placeholder="Search category..."
+              icon="chevronDown"
+            />
+          </FormElementWrapper>
+        </div>
         <div className="cx-mb-4">
           <FormLabel>Core skill</FormLabel>
           <FormElementWrapper
@@ -231,7 +280,7 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
           </FormElementWrapper>
         </div>
         <div className="cx-mb-4 cx-w-1/2">
-          <FormLabel status="required">Number of resources</FormLabel>
+          <FormLabel status="required">Minimum resources</FormLabel>
           <FormElementWrapper
             className="cx-mt-1"
             name="numberOfResources"

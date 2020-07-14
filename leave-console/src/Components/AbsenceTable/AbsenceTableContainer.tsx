@@ -19,11 +19,11 @@ export const AbsenceTableContainer: React.FC<Props> = ({ unavailability, startDa
   const { unavailabilities, resources, region } = useSelector((state: State) => ({
     unavailabilities: state.unavailabilities || [],
     resources: state.resources || [],
-    region: state.region
+    region: state.region || { timezoneSid: '' }
   }))
 
   const leaveRequest = createLeaveRequest(unavailability, resources, region.timezoneSid)
-  const absenceData = getAbsenceData(unavailabilities, resources, leaveRequest ? leaveRequest.resource.UID : undefined)
+  const absenceData = getAbsenceData(region.timezoneSid, unavailabilities, resources, leaveRequest ? leaveRequest.resource.UID : undefined)
   const startOfRequestMonth = leaveRequest ? startOfMonth(leaveRequest.leave.start) : new Date()
   const endOfRequestMonth = endOfMonth(startOfRequestMonth)
 
@@ -70,7 +70,12 @@ const createLeaveRequest = (unavailability?: UnavailabilityTableItem, resources?
   }
 }
 
-const getAbsenceData = (unavailabilities?: UnavailabilityTableItem[], resources?: IResource[], requestingResourceId?: string) => {
+const getAbsenceData = (
+  timezone: string,
+  unavailabilities?: UnavailabilityTableItem[],
+  resources?: IResource[],
+  requestingResourceId?: string,
+) => {
   if (!unavailabilities || !resources) {
     return []
   }
@@ -86,8 +91,8 @@ const getAbsenceData = (unavailabilities?: UnavailabilityTableItem[], resources?
 
     absenceData.get(absenceKey)!.leaves.push({
       name: 'Annual Leave',
-      start: new Date(unavailability.Start),
-      end: new Date(unavailability.Finish),
+      start: utcToZonedTime(unavailability.Start, timezone),
+      end: utcToZonedTime(unavailability.Finish, timezone),
       conflictsByDay: unavailability.conflictsByDay,
       conflicts: unavailability.conflicts
     })

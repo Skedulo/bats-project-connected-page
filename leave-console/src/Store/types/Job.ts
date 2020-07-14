@@ -21,6 +21,7 @@ export interface Job {
     Name: string
   }
   JobAllocations: {
+    UID: string
     Resource: {
       UID: string
       Name: string
@@ -58,3 +59,18 @@ export interface IJobDetail {
   timezoneSid: string
   allocations: IJobAllocation[]
 }
+
+export enum JobStatusColor {
+  'Queued',
+  'Pending Allocation',
+  'Pending Dispatch',
+  'Dispatched',
+  'Ready',
+  'En Route',
+  'On Site',
+  'In Progress',
+  'Complete',
+  'Cancelled',
+}
+
+export declare type JobStatusKey = keyof typeof JobStatusColor

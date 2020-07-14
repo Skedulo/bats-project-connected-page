@@ -14,7 +14,7 @@ import * as Queries from '../queries'
 import { Services } from '../../Services/Services'
 import { getResourceAvailabilities } from '../../Services/DataServices'
 import { State, Availability, JobAllocation, UnavailabilityTableItem } from '../types'
-import { IResourceAvailability } from '../types/Availability';
+import { IResourceAvailability } from '../types/Availability'
 
 const AVAILABILITY = makeActionsSet('AVAILABILITY')
 const dateFilter = (startDate: string, endDate: string) => `Start < ${endDate} AND Finish > ${startDate}`
@@ -38,7 +38,7 @@ export const getAvailabilities = makeAsyncActionCreatorSimp(
   AVAILABILITY, () => async (dispatch: Dispatch, getState: () => State) => {
     const store = getState()
     const { resources, timeRange, region } = store
-    const resourceIds = resources?.map(item => item.id) || []
+    const resourceIds = resources?.map(item => item?.id) || []
     const resourceIdsGrapql = resourceIds.map(item => `\"${item}\"`).join(', ')
     const filters = createAllAvailabilitiesFilters(store)
     const [unavailabilitiesResp, availabilitiesResp] = await Promise.all([
@@ -48,7 +48,7 @@ export const getAvailabilities = makeAsyncActionCreatorSimp(
           filters: `IsAvailable == false AND ResourceId IN [${resourceIdsGrapql}] AND ${filters}`
         }
       }),
-      getResourceAvailabilities(resourceIds, [region.id], timeRange.startDate, timeRange.endDate)
+      getResourceAvailabilities(resourceIds, [region?.id], timeRange.startDate, timeRange.endDate)
     ])
 
     return {

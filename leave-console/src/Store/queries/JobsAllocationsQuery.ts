@@ -13,6 +13,8 @@ query getJobsAllocations ($filters: EQLQueryFilterJobAllocations!) {
           Timezone
           Start
           End
+          JobStatus
+          Type
           Region {
             UID
             Name
@@ -26,6 +28,7 @@ query getJobsAllocations ($filters: EQLQueryFilterJobAllocations!) {
           Type
           Address
           JobAllocations(filter: "Status != 'Deleted'") {
+            UID
             Resource {
               UID
               Name

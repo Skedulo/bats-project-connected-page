@@ -1,21 +1,18 @@
 import React, { memo, useState, useCallback } from 'react'
 import { Button } from '@skedulo/sked-ui'
-import { Job } from '../../../Store/types'
+import { Job, UnavailabilityTableItem } from '../../../Store/types'
 import JobAllocationModal from '../../JobAllocationModal'
 
 interface RescheduleCellProps {
   job: Job
+  unavailability: UnavailabilityTableItem
 }
 
-const ScheduledCell: React.FC<RescheduleCellProps> = ({ job }) => {
+const ScheduledCell: React.FC<RescheduleCellProps> = ({ job, unavailability }) => {
   const [openReallocateModal, setOpenReallocateModal] = useState<boolean>(false)
 
   const toggleReallocateModal = useCallback(() => {
     setOpenReallocateModal(prev => !prev)
-  }, [])
-
-  const handleReallocate = useCallback(() => {
-    console.log('resallocate')
   }, [])
 
   return (
@@ -29,8 +26,8 @@ const ScheduledCell: React.FC<RescheduleCellProps> = ({ job }) => {
       <JobAllocationModal
         isOpen={openReallocateModal}
         job={job}
+        unavailability={unavailability}
         onClose={toggleReallocateModal}
-        onAllocation={handleReallocate}
       />
     </div>
   )

@@ -17,6 +17,7 @@ import {
   IJobDetail,
   Job,
   Availability,
+  Depot,
 } from '../Store/types'
 import { toastMessage } from '../common/utils/toast'
 import { ISelectItem } from '@skedulo/sked-ui'
@@ -82,12 +83,25 @@ export const deleteResourceRequirementRule = async (uids: string): Promise<boole
   }
 }
 
-export const fetchGenericOptions = async (params: IGenericOptionParams): Promise<ISelectItem[]> => {
+export const fetchGenericOptions = async (params: IGenericOptionParams): Promise<IGenericSelectItem[]> => {
   try {
     const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
       params,
     })
     return response.data.data.results.map((item: IBaseModel) => ({ ...item, value: item.id, label: item.name }))
+  } catch (error) {
+    return []
+  }
+}
+
+export const fetchDepotOptions = async (params: IGenericOptionParams): Promise<ISelectItem[]> => {
+  try {
+    const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
+      params,
+    })
+    return response.data.data.results
+      .filter((item: Depot) => item.isDepot)
+      .map((item: IBaseModel) => ({ ...item, value: item.id, label: item.name }))
   } catch (error) {
     return []
   }
@@ -229,9 +243,48 @@ export const fetchAvailableResources = async (
   }
 }
 
-export const reallocateResources = async(jobId: string, newResourceIds: string[]) => {
-  console.log('jobId: ', jobId);
-  console.log('newResourceIds: ', newResourceIds);
+export const reallocateResources = async(jobId: string, oldJobAllocationIds: string[], newResourceIds: string[]) => {
+  if (!newResourceIds.length) {
+    return true
+  }
+  try {
+    let deleteQueries = ''
+    oldJobAllocationIds.forEach((id, index) => {
+      deleteQueries += `_j${index}: deleteJobAllocations(UID: "${id}")\n`
+    })
+    await Services.graphQL.fetch<{ resources: IResource[] }>({
+      query: `
+        mutation deleteJobAllocations {
+          schema {
+            ${deleteQueries}
+          }
+        }
+      `
+    })
+
+    let createQueries = ''
+    newResourceIds.forEach((id, index) => {
+      createQueries += `_j${index}: insertJobAllocations(input: {
+        JobId: "${jobId}",
+        ResourceId: "${id}",
+        Status: "Pending Dispatch"
+      })\n`
+    })
+    await Services.graphQL.fetch<{ resources: IResource[] }>({
+      query: `
+        mutation createJobAllocations {
+          schema {
+            ${createQueries}
+          }
+        }
+      `
+    })
+
+    return true
+  } catch (error) {
+    toastMessage.error('Allocated unsuccessfully!')
+    return false
+  }
 }
 
 export const pushNotification = async (resourceId: string, message: string) => {

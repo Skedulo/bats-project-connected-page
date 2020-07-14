@@ -5,7 +5,11 @@ import { fetchGenericOptions } from '../../Services/DataServices'
 import { State } from '../../Store/types'
 
 export const useRuleFilter = () => {
-  const coreSkills = useSelector((state: State) => state.configs?.coreSkills || [])
+  const { coreSkills, categories } = useSelector((state: State) => ({
+    coreSkills: state.configs?.coreSkills || [],
+    categories: state.configs?.resourceCategories || [],
+  }))
+
   const defaultFilterBar: IFilter<{ id: string; name: string; }>[] = React.useMemo(() => ([
     {
       id: 'regionIds',
@@ -26,13 +30,20 @@ export const useRuleFilter = () => {
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
         const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Location__c' })
-        return res.map(item => ({ id: item.value, name: item.label }))
+        return res.filter(item => item.isDepot).map(item => ({ id: item.value, name: item.label }))
       }
     },
     {
       id: 'coreSkills',
       name: 'Core skill',
       items: coreSkills,
+      selectedIds: [],
+      inputType: 'checkbox'
+    },
+    {
+      id: 'categories',
+      name: 'Category',
+      items: categories,
       selectedIds: [],
       inputType: 'checkbox'
     }

@@ -247,11 +247,14 @@ export const makeReducers = (
         ...decrBusy(state, NAME, busyOpts),
       })),
 
-    [ERROR]: (state, { error }) => ({
-      ...state,
-      ...decrBusy(state, NAME, busyOpts),
-      [errorField]: addError(state, error, NAME),
-    }),
+    [ERROR]: (state, { error }) => {
+      console.log('error: ', error);
+      return {
+        ...state,
+        ...decrBusy(state, NAME, busyOpts),
+        [errorField]: addError(state, error, NAME),
+      }
+    },
   }
 }
 

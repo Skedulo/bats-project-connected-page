@@ -6,8 +6,6 @@ import { useRuleFilter } from './useRuleFilter'
 import { format, add, isValid } from 'date-fns'
 import { FilterBar } from '../../Components/filter-bar/FilterBar'
 
-const ALL_PROJECTS = 'All Projects'
-
 interface IRuleFilterProps {
   onFilterChange: (data: any) => void
   onResetFilter: () => void
@@ -50,7 +48,7 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
     (fieldName: string, callback?: () => void) => (value: Date) => {
       if (fieldName === 'startDate') {
         const endDate = isValid(filterDates.endDate) ? filterDates.endDate : add(value, { days: 7 })
-        setFilterDates(prev => ({ ...prev, [fieldName]: value, endDate }))
+        setFilterDates(prev => ({ ...prev, endDate, [fieldName]: value }))
         onFilterChange({
           [fieldName]: format(value, DATE_FORMAT),
           endDate: format(endDate, DATE_FORMAT),
@@ -87,7 +85,7 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
       return <></>
     }
     return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
         <span>
           End date:
           <span className="cx-font-semibold cx-ml-2">{filterParams.endDate}</span>
@@ -99,7 +97,7 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
   // the start date filter text
   const filterStartDateTrigger = useCallback(() => {
     return (
-      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200">
         {!filterParams.startDate ? (
           <span>
             Date:
@@ -119,6 +117,14 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
     <div className="cx-relative cx-p-4">
       <ul className="cx-flex cx-items-center">
         <li>
+          <div
+            className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 cx-cursor-pointer cx-px-3 cx-text-neutral-750 hover:cx-bg-blue-100 cx-bg-neutral-200"
+            onClick={resetFilter}
+          >
+            All rules
+          </div>
+        </li>
+        <li>
           <div className="cx-flex cx-items-center">
             <PopOut
               placement="bottom"
@@ -128,7 +134,7 @@ const RuleFilter: React.FC<IRuleFilterProps> = ({ onResetFilter, onFilterChange,
             >
               {togglePopout => (
                 <Datepicker
-                  selected={isValid(filterDates.endDate) ? filterDates.endDate : new Date()}
+                  selected={isValid(filterDates.startDate) ? filterDates.startDate : new Date()}
                   onChange={onSelectDate('startDate', togglePopout)}
                   dateFormat={DATE_FORMAT}
                   inline={true}

@@ -1,4 +1,6 @@
-import { ISelectItem } from '@skedulo/sked-ui'
+import { ISelectItem } from '@skedulo/sked-ui';
+import { WEEKDAYS } from '../../common/constants';
+import { types } from '@babel/core';
 
 export interface IListResponse<T> {
   totalItems: number
@@ -28,7 +30,8 @@ export interface FilterParams {
 
 export interface IConfig {
   coreSkills: IBaseModel[],
-  regions: IRegion[]
+  regions: IRegion[],
+  resourceCategories: IBaseModel[]
 }
 
 
@@ -63,8 +66,26 @@ export interface IGenericSelectItem extends ISelectItem {
   contact?: IBaseModel
   region?: IBaseModel
   fieldName?: string
+  isDepot?: boolean
 }
 
 export interface IRegion extends IBaseModel {
   timezoneSid: string
 }
+
+export interface WeekdayOption {
+  value: Weekday
+  label: string
+}
+
+export interface Weekdays {
+  monday: boolean
+  tuesday: boolean
+  wednesday: boolean
+  thursday: boolean
+  friday: boolean
+  saturday: boolean
+  sunday: boolean
+}
+
+export type Weekday = keyof Weekdays

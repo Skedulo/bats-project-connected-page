@@ -8,15 +8,15 @@ import { UnavailabilityTableItem, State } from '../../Store/types'
 const itemsPerPage = 25
 
 interface Props {
-  unavailability?: UnavailabilityTableItem
+  unavailability: UnavailabilityTableItem
 }
 
-const WorkConflictsTable: React.FC<Props> = () => {
+const WorkConflictsTable: React.FC<Props> = ({ unavailability }) => {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
   const conflictingJobsAllocations = useSelector((state: State) => state.conflictingJobAllocations)
 
-  const tableColumns = useMemo(() => getColumns(), [])
+  const tableColumns = useMemo(() => getColumns(unavailability), [])
 
   return (
     <>
@@ -25,6 +25,9 @@ const WorkConflictsTable: React.FC<Props> = () => {
         columns={tableColumns}
         initialRowStateKey="UID"
       />
+      {!conflictingJobsAllocations.length && (
+        <div className="cx-text-center cx-pt-4">No work conflicts.</div>
+      )}
       {conflictingJobsAllocations.length > 0 && (
         <Pagination
           itemsTotal={conflictingJobsAllocations.length}

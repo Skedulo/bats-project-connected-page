@@ -7,14 +7,12 @@ import {
   AvailableResourcesCell,
   ReallocateCell
 } from './cell-formatters'
-import { JobAllocation, Job, Resource } from '../../Store/types'
+import { JobAllocation, Job, Resource, UnavailabilityTableItem, JobStatusKey } from '../../Store/types'
 import { getDefaultAvatar } from '../../common/utils/avatars'
+import { JOB_STATUS_COLOR } from '../../common/constants';
+import { Lozenge } from '@skedulo/sked-ui';
 
-interface IGetColumns {
-  onRecall: (id: string) => void,
-}
-
-export const getColumns = () => ([
+export const getColumns = (unavailability: UnavailabilityTableItem) => ([
   {
     Header: 'Name/Description',
     accessor: 'Job.Name',
@@ -33,16 +31,17 @@ export const getColumns = () => ([
   },
   {
     Header: 'Job Type',
-    accessor: 'Job.JobType',
+    accessor: 'Job.Type',
     emptyPlaceholderText: '-'
   },
   {
     Header: 'Status',
-    accessor: 'Job.Status',
+    accessor: 'Job.JobStatus',
     emptyPlaceholderText: '-',
-    Cell: ({ cell }: { cell: { value: string } }) => {
-      return <StatusCell status={cell.value} />
-    }
+    Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
+      const color = JOB_STATUS_COLOR[cell.value] || 'neutral'
+      return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
+    },
   },
   {
     Header: 'Address',
@@ -74,7 +73,7 @@ export const getColumns = () => ([
     accessor: 'Job',
     width: 240,
     Cell: ({ cell }: { cell: { value: Job } }) => {
-      return <ReallocateCell job={cell.value} />
+      return <ReallocateCell job={cell.value} unavailability={unavailability} />
     }
   }
 ])

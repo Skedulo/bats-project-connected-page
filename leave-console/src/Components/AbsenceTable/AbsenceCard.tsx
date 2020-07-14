@@ -22,7 +22,6 @@ const lastColumn = -1
 
 export const AbsenceCard: React.FC<Props> = ({ isPrimary, leave, days, rowId }) => {
   const isInCurrentDayRange = isOverlappingDays(leave.start, leave.end, days)
-
   const startDay = isWithinDays(leave.start, days)
     ? getDate(leave.start)
     : undefined

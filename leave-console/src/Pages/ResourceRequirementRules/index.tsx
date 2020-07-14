@@ -7,14 +7,15 @@ import {
   ActionMenu,
   Button,
   ConfirmationModal,
+  FormInputElement,
 } from '@skedulo/sked-ui'
 import RuleFilter from './RuleFilter'
 import CreateRuleModal from './CreateRuleModal'
 import LoadingTrigger from '../../Components/GlobalLoading/LoadingTrigger'
-import { ResourceRequirementRule, FilterParams, IListResponse, IConfig } from '../../Store/types'
+import { ResourceRequirementRule, FilterParams, IListResponse } from '../../Store/types'
 import SearchBox from '../../Components/SearchBox'
 import { toastMessage } from '../../common/utils/toast'
-import { DEFAULT_FILTER } from '../../common/constants'
+import { DEFAULT_FILTER, WEEKDAYS } from '../../common/constants'
 import {
   fetchResourceRequirementRules,
   createUpdateResourceRequirementRule,
@@ -34,6 +35,19 @@ export const rulesTableColumns = (
   onEdit: (rule: ResourceRequirementRule) => void,
   onDelete: (ruleId: string) => void
 ) => {
+  const weekdays = WEEKDAYS.map(item => ({
+    Header: item.label,
+    accessor: item.value,
+    width: '1%',
+    minWidth: '1%',
+    emptyCellText: <FormInputElement type="checkbox" checked={false} disabled={true} />,
+    Cell: ({ cell }: { cell: { value: boolean } }) => {
+      return (
+        <FormInputElement type="checkbox" checked={cell.value} disabled={true} />
+      )
+    },
+  }))
+
   return [
     {
       Header: 'Name',
@@ -44,7 +58,8 @@ export const rulesTableColumns = (
 
         return (
           <div className="cx-cursor-pointer" onClick={handleEdit}>
-            {cell.value}
+            <div className="cx-text-neutral-850">{cell.value}</div>
+            <div className="cx-text-neutral-600">{row.original.description}</div>
           </div>
         )
       },
@@ -61,6 +76,12 @@ export const rulesTableColumns = (
     {
       Header: 'End date',
       accessor: 'endDate',
+      emptyCellText: '-',
+    },
+    ...weekdays,
+    {
+      Header: 'Category',
+      accessor: 'category',
       emptyCellText: '-',
     },
     {
@@ -182,7 +203,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
       ),
       stickyHeader: false,
       getRowId: (row: ResourceRequirementRule) => row.id,
-      rowSelectControl: 'allRows',
+      rowSelectControl: 'disabled',
       sortByControl: 'disabled',
       initialRowStateKey: 'id',
     }),
@@ -211,7 +232,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
               autoFocus={false}
             />
             <Button buttonType="primary" onClick={toggleRuleModal}>
-              Create new
+              New rule
             </Button>
           </div>
         </div>

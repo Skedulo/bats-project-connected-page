@@ -47,9 +47,15 @@ const DashboardPage: React.FC<IProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const fetchAvailabilities = useCallback(async () => {
-    setIsLoading(true)
-    await dispatch(getAvailabilities())
-    setIsLoading(false)
+    try {
+      setIsLoading(true)
+      await dispatch(getAvailabilities())
+    } catch (error) {
+      console.log('error: ', error);
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   const onRecall = useCallback(async (unavailability: Availability) => {

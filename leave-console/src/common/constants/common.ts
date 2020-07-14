@@ -1,4 +1,6 @@
 import { ResourceSortType } from '../../Store/types/Resource'
+import { WeekdayOption, JobStatusKey } from '../../Store/types'
+import { LozengeColors } from '@skedulo/sked-ui';
 
 export const DEFAULT_FILTER = {
   searchText: '',
@@ -23,3 +25,27 @@ export const RESOURCE_SORT_OPTIONS = [
   { value: ResourceSortType.Rating, label: 'Highest Rating' },
   { value: ResourceSortType.Utilised, label: 'Least Utilised' }
 ]
+
+export const WEEKDAYS: WeekdayOption[] = [
+  { value: 'sunday', label: 'Su' },
+  { value: 'monday', label: 'Mo' },
+  { value: 'tuesday', label: 'Tu' },
+  { value: 'wednesday', label: 'We' },
+  { value: 'thursday', label: 'Th' },
+  { value: 'friday', label: 'Fr' },
+  { value: 'saturday', label: 'Sa' }
+]
+
+export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors>  = {
+  'Queued': 'neutral-light',
+  'Pending Allocation': 'neutral',
+  'Pending Dispatch': 'green',
+  'Dispatched': 'cyan',
+  'Ready': 'sapphire',
+  'En Route': 'purple',
+  'On Site': 'purple-darker',
+  'In Progress': 'orange',
+  'Complete': 'green',
+  'Cancelled': 'red',
+}
+

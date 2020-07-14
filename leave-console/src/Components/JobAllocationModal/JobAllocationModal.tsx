@@ -1,6 +1,7 @@
 import React, { memo, useState, useEffect, useCallback, ChangeEvent, useMemo } from 'react'
 import { sortBy, toNumber } from 'lodash/fp'
 import classnames from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import {
   Avatar,
@@ -14,10 +15,12 @@ import {
   Button,
   LoadingSpinner
 } from '@skedulo/sked-ui'
-import { IJobDetail, IResource, IBaseModel, ResourceSortType, Job } from '../../Store/types'
-import { fetchGenericOptions, fetchAvailableResources } from '../../Services/DataServices'
+import { IResource, ResourceSortType, Job, UnavailabilityTableItem } from '../../Store/types'
+import { fetchGenericOptions, fetchAvailableResources, reallocateResources } from '../../Services/DataServices'
 import { RESOURCE_SORT_OPTIONS } from '../../common/constants'
 import SearchBox from '../../Components/SearchBox'
+import { getJobAllocations } from '../../Store/reducers/conflictingJobAllocations'
+import { useGlobalLoading } from '../GlobalLoading'
 
 interface IModalHeaderProp {
   onClose: () => void
@@ -35,18 +38,18 @@ const ModalHeader: React.FC<IModalHeaderProp> = ({ onClose, title }) => {
 
 interface IJobAllocationModalProps {
   job: Job
+  unavailability: UnavailabilityTableItem
   onClose: () => void
   isOpen: boolean
-  onAllocation: (job: Job, resourcesIds: string[]) => void
 }
 
 const JobAllocationModal: React.FC<IJobAllocationModalProps> = ({
   isOpen,
   onClose,
   job,
-  onAllocation
+  unavailability
 }) => {
-  console.log('job: ', job);
+  const dispatch = useDispatch()
   const [selectedRegion, setSelectedRegion] = useState<ISelectItem>({ label: '', value: '' })
   const [sortType, setSortType] = useState<ISelectItem>(RESOURCE_SORT_OPTIONS[0])
   const [searchText, setSearchText] = useState<string>('')
@@ -54,6 +57,7 @@ const JobAllocationModal: React.FC<IJobAllocationModalProps> = ({
   const [displayResources, setDisplayResources] = useState<IResource[]>([])
   const [selectedResources, setSelectedResources] = useState<IResource[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isReallocating, setIsReallocating] = useState<boolean>(false)
   const suggestedResources = useMemo(() => sortedResources.filter(item => item.isSuggested), [sortedResources])
 
   const getAvailableResources = async (
@@ -127,11 +131,23 @@ const JobAllocationModal: React.FC<IJobAllocationModalProps> = ({
   }, [selectedResources])
 
   const onSave = useCallback(async () => {
-    onAllocation(
-      job,
-      selectedResources.map(item => item.id)
-    )
-  }, [selectedResources, job])
+    try {
+      setIsReallocating(true)
+      const success = await reallocateResources(
+        job.UID,
+        job.JobAllocations.map(item => item.UID),
+        selectedResources.map(item => item.id),
+      )
+      if (success) {
+        await dispatch(getJobAllocations(unavailability.Start, unavailability.Finish, unavailability.Resource.UID))
+      }
+    } catch (error) {
+      
+    } finally {
+      setIsReallocating(false)
+      onClose()
+    }
+  }, [selectedResources, job, unavailability])
 
   useEffect(() => {
     setDisplayResources(sortedResources)
@@ -246,6 +262,7 @@ const JobAllocationModal: React.FC<IJobAllocationModalProps> = ({
             buttonType="primary"
             disabled={!selectedResources.length}
             onClick={onSave}
+            loading={isReallocating}
           >
             Save
           </Button>
