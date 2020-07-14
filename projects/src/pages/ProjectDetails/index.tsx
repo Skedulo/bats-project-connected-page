@@ -1,10 +1,10 @@
 import React, { useEffect, useState, memo, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { IProjectDetail, IRouterParams, IJobTypeTemplateValue } from '../../commons/types'
+import { IProjectDetail, IRouterParams, ProjectStatusKey } from '../../commons/types'
 import { fetchProjectById, updateProject } from '../../Services/DataServices'
 import { useGlobalLoading, LoadingTrigger } from '../../commons/components/GlobalLoading'
-import { Icon, Tabs } from '@skedulo/sked-ui'
-import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES, PROJECT_TEMPLATE_TAB_OPTIONS } from '../../commons/constants'
+import { Icon, Tabs, Lozenge } from '@skedulo/sked-ui'
+import { PROJECT_TAB_OPTIONS, PROJECT_TAB_ROUTES, PROJECT_TEMPLATE_TAB_OPTIONS, PROJECT_STATUS_COLOR } from '../../commons/constants'
 import DetailTab from './DetailTab'
 import JobsTab from '../JobsTab'
 import ScheduleTab from '../ScheduleTab'
@@ -19,6 +19,8 @@ const ProjectDetail: React.FC = () => {
   const [project, setProject] = useState<IProjectDetail | null>(null)
 
   const tabOptions = useMemo(() => project?.isTemplate ? PROJECT_TEMPLATE_TAB_OPTIONS : PROJECT_TAB_OPTIONS, [project])
+
+  const statusColor = PROJECT_STATUS_COLOR[project?.projectStatus as ProjectStatusKey] || 'neutral'
 
   const getProjectById = useCallback(async (projectId: string) => {
     startGlobalLoading()
@@ -59,13 +61,13 @@ const ProjectDetail: React.FC = () => {
           <span className="cx-text-primary cx-capitalize">Projects</span>
         </Link>
         <div>
-          <div className="cx-flex cx-justify-between cx-mb-4">
-            <h1 className="cx-text-xl cx-font-semibold">
+          <div className="cx-flex cx-justify-start cx-items-center cx-mb-4">
+            <h1 className="cx-text-xl cx-font-semibold cx-mr-4">
               {project.projectName}
             </h1>
-            {/* <button data-sk-name="delete" className="sk-button-icon transparent" onClick={toggleConfirmDelete}>
-              <Icon name="trash" className="cx-text-neutral-500" />
-            </button> */}
+            {project.projectStatus && (
+              <Lozenge label={project.projectStatus} color={statusColor} solid={false} border={false} />
+            )}
           </div>
           <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
             {project.projectDescription}

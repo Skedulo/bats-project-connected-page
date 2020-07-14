@@ -95,14 +95,19 @@ export const updateProject = async (requestData: IProjectDetail): Promise<IProje
   return fetchProjectById(requestData.id)
 }
 
-export const createProject = async (createInput: IProjectDetail): Promise<IListResponse<IProjectListItem>> => {
-  const formattedPayload = mapValues(value => (value === '' ? null : value), createInput)
+export const createProject = async (createInput: IProjectDetail): Promise<string> => {
+  try {
+    const formattedPayload = mapValues(value => (value === '' ? null : value), createInput)
 
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
 
-  return fetchListProjects(DEFAULT_FILTER)
+    return response.data.data.id
+  } catch (error) {
+    toastMessage.error('Created unsuccessfully!')
+    return ''
+  }
 }
 
 export const deleteProject = async (uids: string): Promise<boolean> => {
@@ -115,7 +120,6 @@ export const deleteProject = async (uids: string): Promise<boolean> => {
 
     return response.data.success
   } catch (error) {
-    console.log('error: ', error)
     return false
   }
 }

@@ -6,6 +6,7 @@ import { useProjectFilter } from './useProjectFilter'
 import { format, add, isValid } from 'date-fns'
 import { ISavedFilterSet } from '../../commons/types'
 import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
+import { toastMessage } from '../../commons/utils'
 
 const ALL_PROJECTS = 'All Projects'
 
@@ -167,7 +168,12 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
       })
       if (!isEqual(filterBar, newFilterBar)) {
         setFilterBar(newFilterBar)
+      } else if (appliedFilter.length) {
+        toastMessage.info('The current filters have not been saved.')
+        setForceUpdateFilterBar(true)
+        setAppliedFilter([])
       }
+
       const filterObj = cloneDeep(selectedItem)
       delete filterObj.id
       delete filterObj.name
@@ -185,7 +191,7 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
       setSelectedFilterSet(selectedItem)
       setFilterSetName('')
     }
-  }, [selectedFilterSet, filterBar])
+  }, [selectedFilterSet, filterBar, appliedFilter])
 
   // save the current filter set to local storage
   const onSaveFilterSet = useCallback(() => {

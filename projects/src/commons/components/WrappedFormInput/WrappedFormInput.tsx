@@ -52,7 +52,10 @@ const WrappedFormInput: React.FC<IWrappedFormInputProps> = props => {
 
   return (
     <div className={labelClasses}>
-      <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">{label}</span>
+      <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
+        {label}
+        {isRequired && <span className="cx-text-red-600"> *</span>}
+      </span>
       <FormElementWrapper
         className={wrapperClasses}
         name={name}

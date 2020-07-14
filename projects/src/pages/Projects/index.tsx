@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent, useContext } from 'react'
-import { debounce } from 'lodash/fp'
+import { debounce, replace } from 'lodash/fp'
 import { useHistory } from 'react-router-dom'
 import {
   DynamicTable,
@@ -117,7 +117,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
       const res = await fetchListProjects({ ...params })
       setProjects(res)
     } catch (error) {
-      console.log('error: ', error)
+      throw error
     } finally {
       setIsLoading(false)
     }
@@ -162,22 +162,16 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   }, [])
 
   const onSaveProject = useCallback(async (data: IProjectDetail) => {
-    try {
-      setIsLoading(true)
-      const res = await createProject(data)
-      setProjects(res)
-      setFilterParams(DEFAULT_FILTER)
-    } catch (error) {
-      console.log('error: ', error)
-    } finally {
-      setOpenCreateModal(false)
-      setIsLoading(false)
+    setIsLoading(true)
+    const projectId = await createProject(data)
+    setIsLoading(false)
+    toggleCreateModal()
+    if (projectId) {
+      onViewProject(projectId)
     }
   }, [])
 
-  // TODO: made top url sync with cp url
   const onViewProject = useCallback((projectId: string) => {
-    // window.top.window.location.href = `${PROJECT_DETAIL_PATH}${projectId}`
     history.push(projectDetailPath(projectId))
   }, [])
 
@@ -263,7 +257,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
             {objPermissions?.Project.allowCreate && (
               <li>
                 <Button buttonType="primary" onClick={toggleCreateModal}>
-                  Create new
+                  New project
                 </Button>
               </li>
             )}

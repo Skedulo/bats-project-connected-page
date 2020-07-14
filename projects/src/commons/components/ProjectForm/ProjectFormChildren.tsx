@@ -286,7 +286,10 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
         </div>
         <div className="cx-flex ">
           <div className="cx-mb-4 cx-w-2/4 click-to-edit-custom">
-            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Region</span>
+            <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
+              Region
+              <span className="cx-text-red-600"> *</span>
+            </span>
             <FormElementWrapper
               name="regionId"
               validation={{ isValid: submitted ? !errors.region : true, error: errors.region }}
@@ -315,7 +318,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               label="Apply to all jobs"
               value={fields.applyRegionForAllJob}
               error={submitted ? errors.applyRegionForAllJob : ''}
-              isRequired={true}
+              isRequired={false}
             />
           </div>
         </div>

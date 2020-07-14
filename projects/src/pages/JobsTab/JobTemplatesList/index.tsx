@@ -47,14 +47,14 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
       accessor: 'jobType',
       width: '30%',
     },
-    {
-      Header: 'Status',
-      accessor: 'status',
-      Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
-        const color: LozengeColors = JOB_STATUS_COLOR[cell.value] || 'neutral'
-        return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
-      },
-    },
+    // {
+    //   Header: 'Status',
+    //   accessor: 'status',
+    //   Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
+    //     const color: LozengeColors = JOB_STATUS_COLOR[cell.value] || 'neutral'
+    //     return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
+    //   },
+    // },
     {
       Header: 'Constrains',
       accessor: 'jobConstraints',

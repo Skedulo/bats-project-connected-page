@@ -14,7 +14,7 @@ import {
   Button,
   LoadingSpinner
 } from '@skedulo/sked-ui'
-import { IJobDetail, IResource, IBaseModel, ResourceSortType } from '../../commons/types'
+import { IJobDetail, IResource, ResourceSortType } from '../../commons/types'
 import { fetchGenericOptions, fetchAvailableResources } from '../../Services/DataServices'
 import { RESOURCE_SORT_OPTIONS } from '../../commons/constants'
 import SearchBox from '../../commons/components/SearchBox'
@@ -65,7 +65,6 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
     zonedStartDate: string,
     zonedStartTime: number
   ) => {
-    console.log('targetJob: ', targetJob);
     setIsLoading(true)
     const res = await fetchAvailableResources(targetJob, regionId, zonedStartDate, zonedStartTime)
     const sortedList = handleSort(res, sortType.value)
