@@ -1,5 +1,5 @@
 import React, { useState, useCallback, memo, ChangeEvent } from 'react'
-import { Button, Icon, PopOut, Datepicker, IconButton, Menu, MenuItem } from '@skedulo/sked-ui'
+import { Button, Icon, PopOut, Datepicker, IconButton, Menu, MenuItem, ConfirmationModal } from '@skedulo/sked-ui'
 import { cloneDeep, isEqual } from 'lodash'
 import { DATE_FORMAT } from '../../commons/constants'
 import { useProjectFilter } from './useProjectFilter'
@@ -9,6 +9,11 @@ import { FilterBar } from '../../commons/components/filter-bar/FilterBar'
 import { toastMessage } from '../../commons/utils'
 
 const ALL_PROJECTS = 'All Projects'
+
+const DEFAULT_FILTER_DATES = {
+  startDate: new Date(),
+  endDate: new Date(''),
+}
 
 interface IProjectFilterProps {
   onFilterChange: (data: any) => void
@@ -28,10 +33,8 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
   } = useProjectFilter()
   const [forceUpdateFilterBar, setForceUpdateFilterBar] = useState<boolean>(false)
   const [filterSetName, setFilterSetName] = useState<string>('')
-  const [filterDates, setFilterDates] = useState({
-    startDate: new Date(),
-    endDate: new Date(''),
-  })
+  const [filterDates, setFilterDates] = useState(DEFAULT_FILTER_DATES)
+  const [confirmingFilterSet, setConfirmingFilterSet] = useState<ISavedFilterSet | null>(null)
   const [selectedFilterSet, setSelectedFilterSet] = useState<ISavedFilterSet | null>(null)
 
   const resetFilter = React.useCallback(() => {
@@ -49,9 +52,11 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
     if (!isEqual(filterBar, newFilterBar)) {
       setFilterBar(newFilterBar)
     }
+    setAppliedFilter([])
     setForceUpdateFilterBar(true)
     onResetFilter()
     setSelectedFilterSet(null)
+    setFilterDates(DEFAULT_FILTER_DATES)
   }, [filterBar])
 
   // revoked once selecting filter date
@@ -151,6 +156,11 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
   // select a saved filter set
   const onSelectSavedFilter = useCallback((selectedItem: ISavedFilterSet) => {
     if (selectedFilterSet !== selectedItem) {
+      if (!selectedFilterSet && (appliedFilter.length || isValid(filterDates.endDate)) && !confirmingFilterSet) {
+        setConfirmingFilterSet(selectedItem)
+        return
+      }
+
       const newFilterBar = filterBar.map(filterItem => {
         const matchedItem = selectedItem.filterSet?.find((item: any) => item.id === filterItem.id)
 
@@ -166,12 +176,9 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
           selectedIds: []
         }
       })
+
       if (!isEqual(filterBar, newFilterBar)) {
         setFilterBar(newFilterBar)
-      } else if (appliedFilter.length) {
-        toastMessage.info('The current filters have not been saved.')
-        setForceUpdateFilterBar(true)
-        setAppliedFilter([])
       }
 
       const filterObj = cloneDeep(selectedItem)
@@ -190,8 +197,12 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
       })
       setSelectedFilterSet(selectedItem)
       setFilterSetName('')
+      if (appliedFilter.length) {
+        setAppliedFilter([])
+        setForceUpdateFilterBar(true)
+      }
     }
-  }, [selectedFilterSet, filterBar, appliedFilter])
+  }, [selectedFilterSet, filterBar, confirmingFilterSet, filterDates, appliedFilter])
 
   // save the current filter set to local storage
   const onSaveFilterSet = useCallback(() => {
@@ -211,6 +222,16 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
     deleteFilterSet(id)
     onFilter([])
   }, [])
+
+  // close confirmation modal
+  const onCloseConfirmation = useCallback(() => {
+    setConfirmingFilterSet(null)
+  }, [])
+
+  const onConfirm = useCallback(() => {
+    onSelectSavedFilter(confirmingFilterSet as ISavedFilterSet)
+    setConfirmingFilterSet(null)
+  }, [confirmingFilterSet, appliedFilter])
 
   return (
     <div className="cx-relative cx-p-4 cx-border-b cx-border-neutral-300">
@@ -321,6 +342,14 @@ const ProjectFilter: React.FC<IProjectFilterProps> = ({ onResetFilter, onFilterC
           <FilterBar filters={filterBar} onFilter={onFilter} forceUpdate={forceUpdateFilterBar} />
         </li>
       </ul>
+      {confirmingFilterSet && (
+        <ConfirmationModal
+          onCancel={onCloseConfirmation}
+          onConfirm={onConfirm}
+        >
+          {`Your current filter has not been saved. Are you sure to continue?`}
+        </ConfirmationModal>
+      )}
     </div>
   )
 }
