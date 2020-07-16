@@ -145,8 +145,10 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
   }, [])
 
   const onSearchTextChange = useCallback((value: string) => {
-    onFilterChange({ searchText: value })
-  }, [])
+    if (!isLoading) {
+      onFilterChange({ searchText: value })
+    }
+  }, [isLoading])
 
   const onResetFilter = useCallback(() => {
     setFilterParams(DEFAULT_FILTER)

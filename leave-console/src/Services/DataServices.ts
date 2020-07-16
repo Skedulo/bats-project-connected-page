@@ -18,6 +18,7 @@ import {
   Job,
   Availability,
   Depot,
+  UnavailabilityException,
 } from '../Store/types'
 import { toastMessage } from '../common/utils/toast'
 import { ISelectItem } from '@skedulo/sked-ui'
@@ -298,5 +299,23 @@ export const pushNotification = async (resourceId: string, message: string) => {
     return responses
   } catch (error) {
     return {}
+  }
+}
+
+export const fetchUnavailabilityExceptions = async (
+  availabilityId: string,
+  resourceName: string,
+  annualLeaveRemaining: number
+  ): Promise<UnavailabilityException[]> => {
+  try {
+    const res = await salesforceApi.get('/services/apexrest/sked/resource/leaveException', { params: {
+      resourceName,
+      annualLeaveRemaining,
+      availabilityId
+    } })
+
+    return res.data.data
+  } catch (error) {
+    return []
   }
 }

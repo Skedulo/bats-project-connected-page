@@ -34,9 +34,11 @@ export const getConfigs = makeAsyncActionCreatorSimp(
 )
 
 export const getResources = makeAsyncActionCreatorSimp(
-  RESOURCE, (region: IRegion, timeRange: TimeRange) => async (dispatch: Dispatch, store: State) => {
+  RESOURCE, () => async (dispatch: Dispatch, getState: () => State) => {
+    const store = getState()
+    const { region, timeRange } = store
     const resp = await fetchResourcesByRegion(region.id, timeRange.startDate, timeRange.endDate, region.timezoneSid)
-    return { resources: resp.map(item => ({ annualLeaveRemaining: 1, annualLeaveAllowance: 15, ...item })) }
+    return { resources: resp }
   }
 )
 

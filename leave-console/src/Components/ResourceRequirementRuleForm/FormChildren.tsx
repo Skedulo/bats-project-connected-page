@@ -72,7 +72,11 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
 
   const handleFetchLocations = React.useCallback(
     async (searchTerm: string) => {
-      const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Location__c' })
+      const res = await fetchGenericOptions({
+        name: searchTerm,
+        sObjectType: 'sked__Location__c',
+        regionIds: fields.region?.id || ''
+      })
       return res.filter(item => item.isDepot)
     },
     [fields.region]
@@ -134,6 +138,7 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
           value={rule?.description || ''}
           isRequired={true}
           name="description"
+          error={submitted ? errors.description : ''}
           type="textarea"
         />
         <div className="cx-mb-4">
@@ -141,7 +146,7 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
           <FormElementWrapper
             className="cx-mt-1"
             name="regionId"
-            validation={{ isValid: submitted ? !errors.regionId : true, error: submitted ? errors.regionId : '' }}
+            validation={{ isValid: submitted ? !errors.region : true, error: submitted ? errors.region : '' }}
             readOnlyValue={rule?.region?.name || ''}
             isReadOnly={isFormReadonly}
           >

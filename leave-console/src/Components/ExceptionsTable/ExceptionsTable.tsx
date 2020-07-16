@@ -1,11 +1,9 @@
-import React, { useState, useEffect, memo, useMemo, useCallback } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import React, { useState, memo, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 
-import { classes } from '../../common/utils/classes'
 import { DynamicTable, Pagination } from '@skedulo/sked-ui'
 import { getColumns } from './TableConfig'
-import { getJobAllocations } from '../../Store/reducers/conflictingJobAllocations'
-import { UnavailabilityTableItem, JobAllocation, State } from '../../Store/types'
+import { UnavailabilityTableItem, State } from '../../Store/types'
 
 const itemsPerPage = 25
 
@@ -16,20 +14,23 @@ interface Props {
 const ExceptionsTable: React.FC<Props> = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
-  const conflictingJobsAllocations = useSelector((state: State) => state.conflictingJobAllocations)
+  const unavailabilityExceptions = useSelector((state: State) => state.unavailabilityExceptions || [])
 
   const tableColumns = useMemo(() => getColumns(), [])
 
   return (
     <>
       <DynamicTable
-        data={conflictingJobsAllocations }
+        data={unavailabilityExceptions }
         columns={tableColumns}
         initialRowStateKey="UID"
       />
-      {conflictingJobsAllocations.length > 0 && (
+      {!unavailabilityExceptions.length && (
+        <div className="cx-text-center cx-pt-4">No exceptions.</div>
+      )}
+      {unavailabilityExceptions.length > 0 && (
         <Pagination
-          itemsTotal={conflictingJobsAllocations.length}
+          itemsTotal={unavailabilityExceptions.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           currentPage={currentPage}

@@ -18,3 +18,8 @@ export interface ResourceRequirementRule extends Weekdays {
 export interface Depot {
   isDepot?: boolean
 }
+
+export interface UnavailabilityException {
+  description: string
+  exceptionType: string
+}

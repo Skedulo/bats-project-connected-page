@@ -9,17 +9,12 @@ import ExceptionsTable from '../../components/ExceptionsTable'
 import AbsenceTable from '../AbsenceTable'
 import { UnavailabilityTableItem, State } from '../../Store/types'
 import { getJobAllocations } from '../../Store/reducers/conflictingJobAllocations'
+import { getUnavailabilityExceptions } from '../../Store/reducers/unavailabilyExceptions'
 
 import './AbsenceTables.scss'
 import { useGlobalLoading } from '../GlobalLoading'
 
 const bem = classes('absence-tables')
-
-interface TabTitleProps {
-  title: string,
-  count: number,
-  warning?: boolean,
-}
 
 enum Tab {
   Off = 'who-is-off',
@@ -29,7 +24,7 @@ enum Tab {
 
 interface AbsenceTablesProps {
   data: {
-    unavailability?: UnavailabilityTableItem
+    unavailability: UnavailabilityTableItem
   }
 }
 
@@ -40,22 +35,34 @@ const AbsenceTables: React.FC<AbsenceTablesProps> = ({ data: { unavailability } 
 
   const [startDate, handleDateSelect] = useState(startOfMonth(unavailability ? parseISO(unavailability.Start) : new Date()))
 
-  const conflictingJobsAllocations = useSelector((state: State) => state.conflictingJobAllocations)
+  const {
+    conflictingJobAllocations,
+    unavailabilyExceptions,
+    resources
+  } = useSelector((state: State) => ({
+    conflictingJobAllocations: state.conflictingJobAllocations || [],
+    unavailabilyExceptions: state.unavailabilyExceptions || [],
+    resources: state.resources || []
+  }))
 
   const [absenceCount, setAbsenceCount] = useState(0)
 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
-  const fetchJobAllocations = useCallback(async (start: string, end: string, resourceId: string) => {
+  const fetchAbsenceData = useCallback(async (absenceData: UnavailabilityTableItem) => {
+    const resource = resources?.find(item => item.id === absenceData.Resource.UID)
     startGlobalLoading()
-    await dispatch(getJobAllocations(start, end, resourceId))
+    await Promise.all([
+      dispatch(getJobAllocations(absenceData.Start, absenceData.Finish, absenceData.Resource.UID)),
+      dispatch(getUnavailabilityExceptions(absenceData.UID, absenceData.Resource.Name, resource?.annualLeaveRemaining))
+    ])
     endGlobalLoading()
-  }, [])
+  }, [resources])
 
   useEffect(() => {
     if (unavailability) {
       handleDateSelect(startOfMonth(parseISO(unavailability.Start)))
-      fetchJobAllocations(unavailability.Start, unavailability.Finish, unavailability.Resource.UID)
+      fetchAbsenceData(unavailability)
     }
   }, [unavailability])
 
@@ -64,8 +71,8 @@ const AbsenceTables: React.FC<AbsenceTablesProps> = ({ data: { unavailability } 
       <Tabs
         tabs={ [
           { route: Tab.Off, title: `Who's Off (${absenceCount})` },
-          { route: Tab.Conflicts, title: `Work Conflicts (${conflictingJobsAllocations.length})` },
-          { route: Tab.Exceptions, title: `Exceptions (${conflictingJobsAllocations.length})` }
+          { route: Tab.Conflicts, title: `Work Conflicts (${conflictingJobAllocations.length})` },
+          { route: Tab.Exceptions, title: `Exceptions (${unavailabilyExceptions.length})` }
         ] }
         currentActiveRoute={ tab }
         onClick={ selectedTab => setTab(selectedTab as Tab) }

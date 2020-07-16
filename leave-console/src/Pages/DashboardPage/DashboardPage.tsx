@@ -51,7 +51,7 @@ const DashboardPage: React.FC<IProps> = () => {
       setIsLoading(true)
       await dispatch(getAvailabilities())
     } catch (error) {
-      console.log('error: ', error);
+      console.log('error: ', error)
       throw error
     } finally {
       setIsLoading(false)
@@ -80,7 +80,7 @@ const DashboardPage: React.FC<IProps> = () => {
 
   useEffect(() => {
     if (region) {
-      dispatch(getResources(region, timeRange))
+      dispatch(getResources())
     }
   }, [region])
 
@@ -92,7 +92,7 @@ const DashboardPage: React.FC<IProps> = () => {
     <>
       {isLoading && <LoadingTrigger />}
       <section className={ bem('filters') }>
-        <Link to={ routes.settings() }>
+        <Link to={routes.settings()}>
           <IconButton icon="settings" tooltipContent="Setting" />
         </Link>
         <TimeRangeControl />

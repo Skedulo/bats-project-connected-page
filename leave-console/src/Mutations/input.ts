@@ -11,9 +11,10 @@ import {
   makeActionCreator } from '../common/utils/redux-helpers'
 import { getAvailabilities } from '../Store/reducers/availabilities'
 import { pushNotification } from '../Services/DataServices'
-import { toastMessage } from '../common/utils/toast';
-import { format } from 'date-fns-tz';
-import { DATE_FORMAT } from '../common/constants';
+import { toastMessage } from '../common/utils/toast'
+import { format } from 'date-fns-tz'
+import { DATE_FORMAT } from '../common/constants'
+import { getResources } from '../Store/reducers/fetch'
 
 export type UID = string
 
@@ -40,6 +41,7 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
           }
         }
       })
+      dispatch(getResources())
       dispatch(getAvailabilities())
       if (updateAvailabilities) {
         const startDate = format(new Date(updateInput.Start), DATE_FORMAT, { timeZone: store.region?.timezoneSid })
