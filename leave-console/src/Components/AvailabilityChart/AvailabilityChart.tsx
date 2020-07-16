@@ -7,11 +7,15 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Bar
+  Bar,
+  Line,
+  ComposedChart,
+  ReferenceLine,
+  Customized,
+  Cell
 } from 'recharts'
-import { toString } from 'lodash'
+import { toString, random } from 'lodash'
 
-import ChartTooltip from '../ChartTooltip'
 import { classes } from '../../common/utils/classes'
 import { AvailabilityChartData } from '../../Store/types/Availability'
 import { CHART_COLORS } from '../../common/constants'
@@ -83,7 +87,8 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
       return {
         ...item,
         resources: matchedResources,
-        resourcesCount: matchedResources.length
+        resourcesCount: matchedResources.length,
+        resourceRequirement: 3 // TODO: need to be clarified how to calculate
       }
     })
   }, [data, filter])
@@ -98,7 +103,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
         </div>
       </div>
       <ResponsiveContainer>
-        <BarChart
+        <ComposedChart
           data={displayData}
           margin={{ top: 35, right: 10, bottom: 35 }}
         >
@@ -123,8 +128,21 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
             vertical={false}
           />
           <Tooltip />
-          <Bar dataKey="resourcesCount" name="Resource(s)" fill={CHART_COLORS.bar} barSize={15} />
-        </BarChart>
+          <Line dataKey="resourceRequirement" name="Resource Requirement" stroke={CHART_COLORS.warning} />
+          <Bar
+            dataKey="resourcesCount"
+            name="Resource(s)"
+            barSize={15}
+            fill={CHART_COLORS.bar}
+          >
+            {displayData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={entry.resourcesCount < entry.resourceRequirement ? CHART_COLORS.warning : CHART_COLORS.bar}
+              />
+            ))}
+          </Bar>
+        </ComposedChart>
       </ResponsiveContainer>
     </div>
   )

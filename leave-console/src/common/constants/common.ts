@@ -12,7 +12,7 @@ export const CHART_COLORS = {
   tickY: '#d4d7de',
   tickX: '#6d7991',
   grid: '#e5e7ee',
-  line: '#c0142a',
+  line: '#d55248',
   bar: '#008cff',
   warning: '#c0142a',
 }

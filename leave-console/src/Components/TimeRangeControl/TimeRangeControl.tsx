@@ -8,9 +8,10 @@ import { startOfYesterday } from 'date-fns/esm'
 import './TimeRangeControl.scss'
 
 const rangeOptions: RangeType[] = [
-  'week',
   '3-days',
-  'month'
+  'week',
+  // '2-weeks',
+  // 'month'
 ]
 
 const getRangeEndDate = (startDate: Date, range: string) => {
@@ -22,6 +23,9 @@ const getRangeEndDate = (startDate: Date, range: string) => {
       break
     case '3-days':
       endDate.setDate(endDate.getDate() + 2)
+      break
+    case '2-weeks':
+      endDate.setDate(endDate.getDate() + 13)
       break
     case 'month':
       endDate.setMonth(endDate.getMonth() + 1)
@@ -41,13 +45,21 @@ const getRangeEndDate = (startDate: Date, range: string) => {
 
 const TimeRangeControl: React.FC = () => {
   const dispatch = useDispatch()
+
   const selectedDateISO = useSelector((state: State) => state.timeRange.startDate)
+
   const selectedDate = new Date(selectedDateISO)
-  const [selectedRange, setSelectedRange] = React.useState(rangeOptions[0])
+
+  const [selectedRange, setSelectedRange] = React.useState(rangeOptions[1])
 
   const onDateSelect = (date: Date) => {
     const startDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0))
-    console.log('startDate: ', startDate);
+    dispatch(setTimeRange(startDate, getRangeEndDate(startDate, selectedRange)))
+  }
+
+  const onTodayClick = () => {
+    const date = new Date()
+    const startDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0))
     dispatch(setTimeRange(startDate, getRangeEndDate(startDate, selectedRange)))
   }
 
@@ -59,11 +71,12 @@ const TimeRangeControl: React.FC = () => {
   return (
     <div className="time-range-control__container">
       <CalendarControls
-        selected={ selectedDate }
-        onDateSelect={ onDateSelect }
-        selectedRange={ selectedRange }
-        onRangeChange={ onRangeSelect }
-        rangeOptions={ rangeOptions }
+        selected={selectedDate}
+        onDateSelect={onDateSelect}
+        selectedRange={selectedRange}
+        onRangeChange={onRangeSelect}
+        rangeOptions={rangeOptions}
+        onTodayClick={onTodayClick}
       />
     </div>
   )

@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect, useState } from 'react'
+import React, { useMemo, useEffect, useState } from 'react'
 import { keyBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import { addDays, parseISO, eachDayOfInterval } from 'date-fns'
@@ -34,6 +34,10 @@ const DashboardSummary: React.FC = () => {
     start: utcToZonedTime(parseISO(timeRange.startDate), region.timezoneSid),
     end: addDays(utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid), -1)
   }), [timeRange])
+
+  const unavailableResources = useMemo(() => {
+    return unavailabilities?.filter(item => item.Status === 'Approved').length || 0
+  }, [unavailabilities])
 
   const requestsStats = useMemo(() => {
     let requestsCount = 0
@@ -111,7 +115,7 @@ const DashboardSummary: React.FC = () => {
       <Tile
         className={ bem('tile') }
         title="Unavailable Resources"
-        amount={unavailabilities?.length || 0}
+        amount={unavailableResources}
         iconName="resourceRemove"
       />
       <Tile

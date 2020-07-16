@@ -51,7 +51,6 @@ const DashboardPage: React.FC<IProps> = () => {
       setIsLoading(true)
       await dispatch(getAvailabilities())
     } catch (error) {
-      console.log('error: ', error)
       throw error
     } finally {
       setIsLoading(false)
@@ -85,7 +84,9 @@ const DashboardPage: React.FC<IProps> = () => {
   }, [region])
 
   useEffect(() => {
-    fetchAvailabilities()
+    if (resources) {
+      fetchAvailabilities()
+    }
   }, [timeRange, resources])
 
   return (

@@ -14,7 +14,6 @@ import {
 import { classes } from '../../common/utils/classes'
 
 import './AvailabilityByTypeChart.scss'
-import ChartTooltip from '../ChartTooltip'
 import { CHART_COLORS } from '../../common/constants'
 import { ISelectItem } from '@skedulo/sked-ui'
 import Picker from '../Picker'
@@ -44,7 +43,7 @@ const COLUMN_COLORS = ['#BDE2C5', '#F4C8A4', '#F5E59F', '#EEB1AC', '#C7BEEC', '#
 
 export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChartProps> = ({ data, className, depots }) => {
   const { coreSkills } = useSelector((state: State) => ({
-    coreSkills: state.configs?.coreSkills
+    coreSkills: state.configs?.coreSkills || []
   }))
 
   const [selectedType, setSelectedType] = useState<ISelectItem>(CHART_TYPES[0])
@@ -75,7 +74,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
       <ResponsiveContainer>
         <BarChart
           data={displayData}
-          margin={ { top: 35, right: 10, bottom: 35 } }
+          margin={{ top: 35, right: 10, bottom: 35 }}
         >
           <XAxis
             dataKey="shortDate"
@@ -98,7 +97,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
             vertical={false}
           />
           <Tooltip />
-          <Legend verticalAlign="top" height={36} />
+          <Legend verticalAlign="top" align="left" layout="vertical" height={36} />
           {selectedType.value === ChartType.CoreSkill && coreSkills?.map((skill, index) => {
             return (
               <Bar
