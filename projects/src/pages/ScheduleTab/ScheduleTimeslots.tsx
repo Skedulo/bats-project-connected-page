@@ -248,10 +248,6 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
     parseDurationFromTimeRange(workingHours.startTime, workingHours.endTime) :
     1440
   const timeGap = rangeType === 'day' ? 60 : rangeType === 'week' ? 360 : 1440
-  const isWeekdayWorkingHour = rangeType === 'week' && workingHours.enabled
-
-  // width of 1 cell
-  let slotWidth = isWeekdayWorkingHour ? DEFAULT_SLOT_WIDTH * 4 : DEFAULT_SLOT_WIDTH
 
   // number of time columns
   let timeCols = useMemo(() => getTimePickerOptions(timeGap), [timeGap])
@@ -261,18 +257,19 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
       timeCols = timeCols.filter(time => {
         return time.numberValue >= workingHours.startTime && time.numberValue < workingHours.endTime
       })
-      // 32 is schedule table padding
-      slotWidth = (windowWidth - 32) * 0.7 / timeCols.length
     } else {
       timeCols = [{
         numberValue: workingHours.startTime,
         stringValue: parseTimeValue(workingHours.startTime),
         boundValue: addTimeValue(workingHours.startTime, totalMinutes)
       }]
-      slotWidth = (windowWidth - 32) * 0.7 / dateRange.length
     }
   }
+  // total columns
   const cols = timeCols.length * dateRange.length
+  // width of 1 cell
+  const slotWidth = Math.max(((windowWidth - 32) * 0.7 / cols), DEFAULT_SLOT_WIDTH)
+
   const shouldNavigateLeft = job?.startDate && format(dateRange[0], DATE_FORMAT) > job.startDate
   const shouldNavigateRight = job?.startDate && format(dateRange[dateRange.length - 1], DATE_FORMAT) < job.startDate
 

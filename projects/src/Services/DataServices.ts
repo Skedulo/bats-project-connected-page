@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mapValues, isNumber, chunk, isEmpty, values, flatten } from 'lodash/fp'
+import { mapValues, isNumber, chunk, isEmpty, values, flatten, keyBy } from 'lodash/fp'
 import { Services, credentials } from './Services'
 import {
   IProjectListItem,
@@ -211,7 +211,7 @@ export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promis
 
 export const fetchJobTemplateOptions = async (
   filterObj: IJobFilterParams,
-  ignoreIds: string
+  ignoreIds?: string
 ): Promise<ISelectItem[]> => {
   try {
     const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`,
@@ -304,18 +304,22 @@ export const getJobSuggestion = async (
       toastMessage.info('No valid suggestions')
       return []
     }
-    return suggestions.map(item => {
-      const parsedDate = utcToZonedTime(new Date(item.route.start), timezone)
 
-      return {
-        ...item,
-        ...item.route,
-        startDate: format(parsedDate, DATE_FORMAT),
-        startTimeString: format(parsedDate, TIME_FORMAT),
-        startTime: parseTimeString(format(parsedDate, TIME_FORMAT)),
-        endTime: parseTimeString(format(add(parsedDate, { minutes: item.route.duration }), TIME_FORMAT))
-      }
+    const sortedSuggestions = suggestions.sort((a, b) => {
+      return new Date(a.route.start).valueOf() - new Date(b.route.start).valueOf()
     })
+
+    const earliestSuggestion = sortedSuggestions[0]
+    const parsedDate = utcToZonedTime(new Date(earliestSuggestion.route.start), timezone)
+
+    return [{
+      ...earliestSuggestion,
+      ...earliestSuggestion.route,
+      startDate: format(parsedDate, DATE_FORMAT),
+      startTimeString: format(parsedDate, TIME_FORMAT),
+      startTime: parseTimeString(format(parsedDate, TIME_FORMAT)),
+      endTime: parseTimeString(format(add(parsedDate, { minutes: earliestSuggestion.route.duration }), TIME_FORMAT))
+    }]
   } catch (error) {
     toastMessage.info('No valid suggestions')
     return []

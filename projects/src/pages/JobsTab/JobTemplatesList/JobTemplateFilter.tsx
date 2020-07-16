@@ -2,11 +2,12 @@ import React, { useState, useCallback, memo } from 'react'
 import { isEqual } from 'lodash'
 import useJobTemplateFilter from './useJobTemplateFilter'
 import { FilterBar } from '../../../commons/components/filter-bar/FilterBar'
+import { IJobFilterParams } from '../../../commons/types'
 
 interface IJobTemplateFilterProps {
   onFilterChange: (data: any) => void
   onResetFilter: () => void
-  filterParams: any
+  filterParams: IJobFilterParams
 }
 
 const JobTemplateFilter: React.FC<IJobTemplateFilterProps> = ({ onResetFilter, onFilterChange, filterParams }) => {
@@ -14,7 +15,7 @@ const JobTemplateFilter: React.FC<IJobTemplateFilterProps> = ({ onResetFilter, o
     filterBar,
     setFilterBar,
     setAppliedFilter
-  } = useJobTemplateFilter()
+  } = useJobTemplateFilter(filterParams.projectId || '')
   const [forceUpdateFilterBar, setForceUpdateFilterBar] = useState<boolean>(false)
 
   const resetFilter = React.useCallback(() => {

@@ -49,7 +49,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
         const onCellClick = () => onViewJobDetail(row.original.id)
         return (
           <div onClick={onCellClick} className="hover:cx-cursor-pointer">
-            <h1>{row.original.name}</h1>
+            <h1 className="hover:cx-text-primary cx-font-medium">{row.original.name}</h1>
             <h2 className="cx-text-neutral-700">{row.original.description}</h2>
           </div>
         )
@@ -94,7 +94,7 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
               key={`resourcerquired-${index}`}
               className={className}
               showTooltip={!!jobAllocation?.resource?.name}
-              size="medium"
+              size="small"
               preserveName={false}
             />
           )

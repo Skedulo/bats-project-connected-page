@@ -80,7 +80,7 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
               key={`resourcerquired-${index}`}
               className="cx-ml-1 first:cx-ml-0 cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500"
               showTooltip={false}
-              size="medium"
+              size="small"
               preserveName={false}
             />
           )
@@ -95,13 +95,19 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
   const appContext = useContext(AppContext)
 
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = useMemo(() => appContext?.config || {}, [appContext])
+
   const setAppConfig = useMemo(() => appContext?.setAppConfig, [appContext])
+
   const jobTypeTemplateValueKeys = useMemo(() => Object.keys(jobTypeTemplateValues), [jobTypeTemplateValues])
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
+
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
+
   const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
+
   const [openJobTemplateModal, setOpenJobTemplateModal] = useState<boolean>(false)
 
   const getJobTemplatesList = useCallback(
@@ -220,7 +226,11 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
       <div className="cx-sticky cx-p-2 cx-top-0 cx-bg-white cx-z-10">
-        <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
+        <JobFilter
+          onResetFilter={onResetFilter}
+          onFilterChange={onFilterChange}
+          filterParams={{ ...filterParams, projectId }}
+        />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJobTemplate} icon="plus">
             New Job
