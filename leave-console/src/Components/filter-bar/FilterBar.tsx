@@ -9,6 +9,8 @@ import { FilterListWithApply } from './filter-list/FilterListWithApply'
 import { FilterSearch } from './filter-list/FilterSearch'
 import { RemoteSearch } from './filter-list/RemoteSearch'
 
+import './filter-bar.scss'
+
 export type IAppliedFilter<T extends FilterItem> = AppliedFilter<T>
 export type IFilterItem = FilterItem
 
@@ -233,7 +235,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
       // tslint:disable-next-line: jsx-no-lambda
       <PopOut trigger={this.renderAddFilterButton} popOutContainer={container => container} closeOnOuterClick={true}>
         {toggleDropdown => (
-          <div className="sk-shadow sk-mt-1">
+          <div className="cx-filter-list-wrapper sk-shadow sk-mt-1">
             <FilterSearch placeholder="filter" className="sk-rounded-t" items={filterNames}>
               {({ filteredItems }) => (
                 <FilterList
@@ -377,7 +379,7 @@ export class FilterBar<T extends IFilterItem> extends React.PureComponent<IFilte
     const { appliedFilters, addedFilter, editFilterId } = state
 
     return (
-      <div data-sk-name="filter-bar" className="sk-flex">
+      <div data-sk-name="filter-bar" className="sk-flex cx-filter-bar">
         {appliedFilters.map(filter => {
           if (filter.id === editFilterId) {
             // return in edit mode if necessary

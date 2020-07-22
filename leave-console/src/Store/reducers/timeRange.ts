@@ -10,7 +10,7 @@ const UTC_FORMAT = `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`
 export const getDefaultTimeRange = () => {
   const today = getMonday(new Date())
   const startDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0)).toISOString()
-  const endDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 7, 23, 59, 59)).toISOString()
+  const endDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate() + 6, 23, 59, 59)).toISOString()
 
   return {
     startDate,

@@ -15,7 +15,7 @@ export const getJobAllocations = makeAsyncActionCreatorSimp(JOB_ALLOCATIONS_GET,
   overlapEndDate: string,
   resourceId: string
 ) => async () => {
-  const filters = `Start < ${overlapEndDate} AND End > ${overlapStartDate} AND ResourceId == "${resourceId}"`
+  const filters = `Start < ${overlapEndDate} AND End > ${overlapStartDate} AND ResourceId == "${resourceId}" AND Status != 'Deleted'`
   const resp = await Services.graphQL.fetch<{}>({
     query: Queries.JobAllocationsQuery,
     variables: {

@@ -14,8 +14,8 @@ import {
 } from '@skedulo/sked-ui'
 import { isDate, isAfter } from 'date-fns'
 import WrappedFormInput from '../WrappedFormInput'
-import { ResourceRequirementRule, IGenericSelectItem, IBaseModel, State } from '../../Store/types'
-import { fetchGenericOptions, fetchDepotOptions } from '../../Services/DataServices'
+import { ResourceRequirementRule, IGenericSelectItem, State } from '../../Store/types'
+import { fetchGenericOptions } from '../../Services/DataServices'
 import { DATE_FORMAT, WEEKDAYS } from '../../common/constants'
 
 interface IFormChildrenProps {

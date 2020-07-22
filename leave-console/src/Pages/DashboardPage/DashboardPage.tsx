@@ -10,7 +10,7 @@ import DashboardFilter from './DashboardFilter'
 import DashboardSummary from '../../Components/DashboardSummary'
 
 import './DashboardPage.scss'
-import { IconButton } from '@skedulo/sked-ui'
+import { IconButton, Loading } from '@skedulo/sked-ui'
 import { routes } from '..'
 import { Link } from 'react-router-dom'
 import { getAvailabilities } from '../../Store/reducers/availabilities'
@@ -88,6 +88,10 @@ const DashboardPage: React.FC<IProps> = () => {
       fetchAvailabilities()
     }
   }, [timeRange, resources])
+
+  if (!resources) {
+    return <LoadingTrigger />
+  }
 
   return (
     <>

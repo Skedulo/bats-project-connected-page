@@ -158,8 +158,13 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
     setFilterParams((prev: FilterParams) => ({ ...prev, ...params }))
   }, [])
 
-  const toggleRuleModal = useCallback(() => {
-    setOpenCreateModal((prev: boolean) => !prev)
+  const openRuleModal = useCallback(() => {
+    setOpenCreateModal(true)
+  }, [])
+
+  const closeRuleModal = useCallback(() => {
+    setOpenCreateModal(false)
+    setEditingRule(null)
   }, [])
 
   const closeConfirm = useCallback(() => {
@@ -172,13 +177,13 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
     if (success) {
       await getResourceRequirementRules(filterParams)
     }
-    setOpenCreateModal(false)
+    closeRuleModal()
     setIsLoading(false)
   }, [filterParams])
 
   const onEdit = useCallback((rule: ResourceRequirementRule) => {
     setEditingRule(rule)
-    toggleRuleModal()
+    openRuleModal()
   }, [])
 
   const onDelete = useCallback(async () => {
@@ -233,7 +238,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
               value={filterParams.searchText || ''}
               autoFocus={false}
             />
-            <Button buttonType="primary" onClick={toggleRuleModal}>
+            <Button buttonType="primary" onClick={openRuleModal}>
               New rule
             </Button>
           </div>
@@ -250,7 +255,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
         />
       )}
       {openCreateModal && (
-        <CreateRuleModal rule={editingRule} onClose={toggleRuleModal} onSubmit={onSave} />
+        <CreateRuleModal rule={editingRule} onClose={closeRuleModal} onSubmit={onSave} />
       )}
       {!!confirmId && (
         <ConfirmationModal

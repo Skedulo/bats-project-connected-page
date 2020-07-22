@@ -1,21 +1,26 @@
 import React from 'react'
+import { Icon } from '@skedulo/sked-ui';
 
 export const getColumns = () => ([
   {
     Header: 'Description',
     accessor: 'description',
     emptyPlaceholderText: '-',
+    // Cell: ({ cell }: { cell: { value: string } }) => {
+    //   return (
+    //     <div className="cx-whitespace-pre-line">
+    //       <Icon name="" />
+    //     </div>
+    //   )
+    // }
   },
   {
     Header: 'Type',
     accessor: 'exceptionType',
     emptyPlaceholderText: '-',
-    Cell: ({ cell, row }: { cell: { value: string }, row: { original: any } }) => {
+    Cell: ({ cell }: { cell: { value: string } }) => {
       return (
-        <div>
-          <div className="cx-text-primary">{cell.value}</div>
-          <div className="cx-text-neutral-600">{'-'}</div>
-        </div>
+        <div className="cx-whitespace-pre-line">{cell.value}</div>
       )
     }
   }

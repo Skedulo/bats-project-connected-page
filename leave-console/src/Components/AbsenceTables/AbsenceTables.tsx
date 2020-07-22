@@ -37,11 +37,11 @@ const AbsenceTables: React.FC<AbsenceTablesProps> = ({ data: { unavailability } 
 
   const {
     conflictingJobAllocations,
-    unavailabilyExceptions,
+    unavailabilityExceptions,
     resources
   } = useSelector((state: State) => ({
     conflictingJobAllocations: state.conflictingJobAllocations || [],
-    unavailabilyExceptions: state.unavailabilyExceptions || [],
+    unavailabilityExceptions: state.unavailabilityExceptions || [],
     resources: state.resources || []
   }))
 
@@ -72,7 +72,7 @@ const AbsenceTables: React.FC<AbsenceTablesProps> = ({ data: { unavailability } 
         tabs={ [
           { route: Tab.Off, title: `Who's Off (${absenceCount})` },
           { route: Tab.Conflicts, title: `Work Conflicts (${conflictingJobAllocations.length})` },
-          { route: Tab.Exceptions, title: `Exceptions (${unavailabilyExceptions.length})` }
+          { route: Tab.Exceptions, title: `Exceptions (${unavailabilityExceptions.length})` }
         ] }
         currentActiveRoute={ tab }
         onClick={ selectedTab => setTab(selectedTab as Tab) }

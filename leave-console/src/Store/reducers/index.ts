@@ -12,6 +12,7 @@ import regionReducers from './region'
 import timeRangeReducers, { getDefaultTimeRange } from './timeRange'
 import availabilityReducers from './availabilities'
 import conflictingJobAllocations, { getDefaultConflictingJobAllocations } from './conflictingJobAllocations'
+import unavailabilyExceptionReducers from './unavailabilyExceptions'
 
 const DEF_STATE: State = {
   ...DEF_RES_STATE,
@@ -29,7 +30,8 @@ const reducer = makeReducer(
     ...timeRangeReducers,
     ...availabilityReducers,
     ...conflictingJobAllocations,
-    ...regionReducers
+    ...regionReducers,
+    ...unavailabilyExceptionReducers
   },
   DEF_STATE
 )

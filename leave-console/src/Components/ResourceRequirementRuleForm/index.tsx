@@ -66,7 +66,8 @@ const ResourceRequirementRuleForm: React.FC<IResourceRequirementRuleFormProps> =
       config={ResourceRequirementRuleFormConfig}
       options={{ clickToEdit: false }}
       onSubmit={handleSubmit}
-      initialValues={rule || undefined}
+      key={rule?.id}
+      initialValues={rule || {}}
     >
       {(formParams: SkedFormChildren<ResourceRequirementRule>) => (
         <ResourceRequirementRuleFormChildren

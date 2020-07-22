@@ -88,7 +88,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
         ...item,
         resources: matchedResources,
         resourcesCount: matchedResources.length,
-        resourceRequirement: 3 // TODO: need to be clarified how to calculate
+        // resourceRequirement: 3 // TODO: need to be clarified how to calculate
       }
     })
   }, [data, filter])
@@ -138,7 +138,8 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
             {displayData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={entry.resourcesCount < entry.resourceRequirement ? CHART_COLORS.warning : CHART_COLORS.bar}
+                fill={CHART_COLORS.bar}
+                // fill={entry.resourcesCount < entry.resourceRequirement ? CHART_COLORS.warning : CHART_COLORS.bar}
               />
             ))}
           </Bar>

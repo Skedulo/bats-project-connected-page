@@ -1,5 +1,5 @@
 import React, { memo } from 'react'
-import { format } from 'date-fns-tz'
+import { format, utcToZonedTime } from 'date-fns-tz'
 
 import { classes } from '../../../common/utils/classes'
 import { LONG_DATE_FORMAT } from '../../../common/constants/date'
@@ -18,18 +18,20 @@ interface ScheduledCellProps {
 
 const ScheduledCell: React.FC<ScheduledCellProps> = ({ schedule }) => {
   const { region } = useSelector((state: State) => ({ region: state.region || {} }))
+  const startDate = utcToZonedTime(schedule.start, region.timezoneSid)
+  const endDate = utcToZonedTime(schedule.end, region.timezoneSid)
 
   return (
     <div className={ bem() }>
       <span className={ bem('first-line') }>
-        {format(new Date(schedule.start), LONG_DATE_FORMAT, { timeZone: region.timezoneSid })}
+        {`${format(startDate, LONG_DATE_FORMAT, { timeZone: region.timezoneSid })} `}
       </span>
       <span className={ bem('second-line') }>
-        { format(new Date(schedule.start), 'h:mm aaa', { timeZone: region.timezoneSid }) }
+        { format(startDate, 'h:mm aaa', { timeZone: region.timezoneSid }) }
         { ' ' }-{ ' ' }
-        { format(new Date(schedule.end), 'h:mm aaa', { timeZone: region.timezoneSid }) }
+        { format(endDate, 'h:mm aaa', { timeZone: region.timezoneSid }) }
         { ' ' }
-        { format(new Date(schedule.end), '(O)', { timeZone: region.timezoneSid }) }
+        { format(endDate, '(O)', { timeZone: region.timezoneSid }) }
       </span>
     </div>
   )

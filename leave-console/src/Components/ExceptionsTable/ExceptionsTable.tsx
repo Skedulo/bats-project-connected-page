@@ -14,14 +14,16 @@ interface Props {
 const ExceptionsTable: React.FC<Props> = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
 
-  const unavailabilityExceptions = useSelector((state: State) => state.unavailabilityExceptions || [])
+  const { unavailabilityExceptions } = useSelector((state: State) => ({
+    unavailabilityExceptions: state.unavailabilityExceptions || []
+  }))
 
   const tableColumns = useMemo(() => getColumns(), [])
 
   return (
     <>
       <DynamicTable
-        data={unavailabilityExceptions }
+        data={unavailabilityExceptions}
         columns={tableColumns}
         initialRowStateKey="UID"
       />

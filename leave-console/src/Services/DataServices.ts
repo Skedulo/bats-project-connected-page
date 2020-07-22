@@ -314,7 +314,7 @@ export const fetchUnavailabilityExceptions = async (
       availabilityId
     } })
 
-    return res.data.data
+    return res.data.data.results
   } catch (error) {
     return []
   }

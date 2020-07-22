@@ -20,6 +20,7 @@ const ModalHeader: React.FC<ICreateRuleModalProp> = ({ onClose, rule }) => {
 
 const CreateRuleModal: React.FC<ICreateRuleModalProp> = props => {
   const { onClose, onSubmit, rule } = props
+  console.log('rule: ', rule);
   return (
     <DynamicModal
       header={<ModalHeader {...props} />}
