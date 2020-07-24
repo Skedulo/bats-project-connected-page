@@ -15,7 +15,7 @@ interface IJobRowProps {
   dateRange: Date[]
   rangeType: RangeType
   swimlaneSettings: ISwimlaneSettings
-  openAllocationModal: (job: IJobDetail, zonedDate: string, zonedTime: number) => void
+  openAllocationModal: (job: IJobDetail, zonedDate?: string, zonedTime?: number) => void
   navigateToJob: (startDate: Date) => void
   onDragJob: (job: IJobDetail, newDate: string, newTime: number) => void
   onViewJobDetail: (jobId: string) => void

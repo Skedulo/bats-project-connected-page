@@ -132,7 +132,6 @@ export const cancelProject = async (projectId: string): Promise<boolean> => {
 
     return response.data.success
   } catch (error) {
-    console.log('error: ', error)
     return false
   }
 }
