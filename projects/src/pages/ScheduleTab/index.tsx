@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
 import { debounce, uniq, keyBy, truncate, xor, fill, pickBy } from 'lodash/fp'
-import classnames from 'classnames'
 import { format, zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz'
-import { getDaysInMonth, add, isAfter, set, eachDayOfInterval, isBefore, isEqual } from 'date-fns'
+import { getDaysInMonth, add, isAfter, set, eachDayOfInterval } from 'date-fns'
 import {
   Button,
   CalendarControls,
@@ -12,6 +11,8 @@ import {
   PopOut,
   IconButton,
   Tooltip,
+  FormInputElement,
+  ButtonGroup
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import SwimlaneSetting from './SwimlaneSetting'
@@ -34,14 +35,26 @@ import {
   DEFAULT_LIST,
   DATE_FORMAT,
   DEFAULT_SWIMLANE_SETTINGS,
-  LOCAL_STORAGE_KEY
+  LOCAL_STORAGE_KEY,
+  ALLOWED_DISPATCH_STATUS,
+  ALLOWED_DEALLOCATE_STATUS,
+  ALLOWED_UNSCHEDULE_STATUS
 } from '../../commons/constants'
-import { fetchListJobs, fetchJobTypeTemplateValues, getJobSuggestion, updateJobTime, allocationResources } from '../../Services/DataServices'
+import {
+  fetchListJobs,
+  fetchJobTypeTemplateValues,
+  getJobSuggestion,
+  updateJobTime,
+  allocationResources,
+  dispatchMutipleJobs,
+  deallocateMutipleJobs,
+  unscheduleMutipleJobs
+} from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
+import JobRow from './JobRow'
 import { createJobPath, jobDetailPath } from '../routes'
-import { parseDurationValue, getLocalStorage,  setLocalStorage, parseTimeValue, extractTimeValue } from '../../commons/utils'
-
+import { parseDurationValue, getLocalStorage,  setLocalStorage, parseTimeValue, extractTimeValue, toastMessage } from '../../commons/utils'
 import './styles.scss'
 
 interface IScheduleTabProps {
@@ -87,7 +100,17 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   const [selectedRangeType, setSelectedRangeType] = useState<RangeType>('day')
 
+  const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
+
   const [suggestions, setSuggestions] = useState<IJobSuggestion[]>([])
+
+  const [canDeallocate, setCanDeallocate] = useState<boolean>(true)
+
+  const [canDispatch, setCanDispatch] = useState<boolean>(true)
+
+  const [canUnschedule, setCanUnschedule] = useState<boolean>(true)
+
+  const selectedRowIds = useMemo(() => selectedRows.map(item => item.id), [selectedRows])
 
   const dateRange = useMemo(() => {
     let range = eachDayOfInterval({
@@ -259,15 +282,30 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setSelectedDate(new Date())
   }, [])
 
-  const openAllocationModal = useCallback(async (job: IJobDetail, zonedDate: string, zonedTime: number) => {
-    // await handleDragJob(job, zonedDate, zonedTime)
+  // handle open allocation modal, if the date time params are passed, we will schedule job first,
+  // then open the modal to make sure the resource suggestion api works correctly
+  const openAllocationModal = useCallback(async (job: IJobDetail, zonedDate?: string, zonedTime?: number) => {
+    if (zonedDate && zonedTime) {
+      const success = await handleDragJob(job, zonedDate, zonedTime)
+      if (success) {
+        await getJobsList({...filterParams, projectId: project.id })
+        getSuggestions(job, true)
+        setAllocationModal({
+          isOpen: true,
+          job,
+          zonedDate,
+          zonedTime
+        })
+      }
+      return
+    }
     setAllocationModal({
       isOpen: true,
       job,
-      zonedDate,
-      zonedTime
+      zonedDate: job.startDate,
+      zonedTime: job.startTime
     })
-  }, [])
+  }, [filterParams, project.id])
 
   const closeAllocationModal = useCallback(() => {
     setAllocationModal(prev => ({ ...prev, isOpen: false }))
@@ -298,32 +336,21 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           startTimeString: parseTimeValue(newTime)
         }, prev.results)
       }))
+    } else {
+      toastMessage.error('Somethings went wrong!')
     }
     setIsLoading(false)
+    return success
   }, [jobs])
 
-  const handleAllocation = useCallback(async (
-    job: IJobDetail,
-    newDate: string,
-    newTime: number,
-    resourceIds: string[]
-  ) => {
+  const handleAllocation = useCallback(async (job: IJobDetail, resourceIds: string[]) => {
     setIsLoading(true)
     const allocatedResourceIds = allocationModal.job?.allocations?.map(item => item.resource.id) || []
     const needingAllocationResources = xor(allocatedResourceIds, resourceIds)
-    const [isUpdateJob, isAllocationSuccess] = await Promise.all([
-      updateJobTime({
-        id: job.id,
-        timezoneSid: job.timezoneSid,
-        duration: job.duration,
-        startDate: newDate,
-        startTime: newTime,
-      }),
-      allocationResources(job.id, needingAllocationResources)
-    ])
+    const isAllocationSuccess = await allocationResources(job.id, needingAllocationResources)
     closeAllocationModal()
     setIsLoading(false)
-    if (isAllocationSuccess || isUpdateJob) {
+    if (isAllocationSuccess) {
       getJobsList({...filterParams, projectId: project.id })
       getSuggestions(job, true)
     }
@@ -339,10 +366,70 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     )
   }, [])
 
-  const applySwimlaneSetting = (settings: ISwimlaneSettings) => {
+  const applySwimlaneSetting = useCallback((settings: ISwimlaneSettings) => {
     setSwimlaneSettings(settings)
     setLocalStorage(LOCAL_STORAGE_KEY.PROJECT_SWIMLANE_SETTINGS, JSON.stringify(settings))
-  }
+  }, [])
+
+  const handleSelectAllRows = React.useCallback(e => {
+    setSelectedRows(e.target.checked ? jobs.results : [])
+  }, [jobs.results])
+
+  const handleSelectRow = React.useCallback((job: IJobDetail) => {
+    setSelectedRows(prev => {
+      const newSelectedRow = [...prev]
+
+      if (prev.find(item => item.id === job.id)) {
+        return newSelectedRow.filter(item => item.id !== job.id)
+      }
+      newSelectedRow.push(job)
+      return newSelectedRow
+    })
+  }, [setSelectedRows])
+
+  const handleDispatchResource = useCallback(async () => {
+    const jobIds = selectedRows.filter(job => ALLOWED_DISPATCH_STATUS.includes(job.status)).map(job => job.id).join(',')
+    setIsLoading(true)
+    const success = await dispatchMutipleJobs(jobIds)
+    setIsLoading(false)
+    if (success) {
+      getJobsList({ ...filterParams, projectId: project.id })
+      toastMessage.success('Dispatched successfully!')
+    } else {
+      toastMessage.success('Dispatched unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, project.id])
+
+  const handleDeallocate = useCallback(async () => {
+    const jobIds = selectedRows
+      .filter(job => ALLOWED_DEALLOCATE_STATUS.includes(job.status))
+      .map(job => job.id).join(',')
+    setIsLoading(true)
+    const success = await deallocateMutipleJobs(jobIds)
+    setIsLoading(false)
+    if (success) {
+      getJobsList({ ...filterParams, projectId: project.id })
+      toastMessage.success('Deallocated successfully!')
+    } else {
+      toastMessage.success('Deallocated unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, project])
+
+  const handleUnschedule = useCallback(async () => {
+    const jobIds = selectedRows
+      .filter(job => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+      .map(job => job.id).join(',')
+    setIsLoading(true)
+    const success = await unscheduleMutipleJobs(jobIds)
+    setIsLoading(false)
+    if (success) {
+      setSelectedRows([])
+      getJobsList({ ...filterParams, projectId: project.id })
+      toastMessage.success('Unscheduled successfully!')
+    } else {
+      toastMessage.success('Unscheduled unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, project])
 
   useEffect(() => {
     if (!isLoading && project.id) {
@@ -356,6 +443,17 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
       setSwimlaneSettings(JSON.parse(savedSettings))
     }
   }, [])
+
+  useEffect(() => {
+    const shouldDeallocation = !!selectedRows.find(
+      (job: IJobDetail) => job.allocations?.length > 0 && ALLOWED_DEALLOCATE_STATUS.includes(job.status))
+    const shouldDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
+    const shouldUnschedule = !!selectedRows.find((job: IJobDetail) => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+
+    setCanDeallocate(shouldDeallocation)
+    setCanDispatch(shouldDispatch)
+    setCanUnschedule(shouldUnschedule)
+  }, [selectedRows])
 
   return (
     <div className="scroll">
@@ -372,6 +470,19 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
             New Job
           </Button>
           <div className="cx-flex cx-aligns-center cx-pr-4">
+            {selectedRows.length > 0 && (
+              <ButtonGroup className="cx-mr-2">
+                <Button buttonType="secondary" disabled={!canUnschedule} onClick={handleUnschedule}>
+                  Unschedule
+                </Button>
+                <Button buttonType="secondary" disabled={!canDeallocate} onClick={handleDeallocate}>
+                  Deallocate
+                </Button>
+                <Button buttonType="primary" disabled={!canDispatch} onClick={handleDispatchResource}>
+                  Dispatch
+                </Button>
+              </ButtonGroup>
+            )}
             <CalendarControls
               rangeOptions={['day', 'week', 'month']}
               selected={selectedDate}
@@ -442,8 +553,17 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         </div>
         <div className="cx-text-neutral-700 cx-overflow-x-scroll schedule-table cx-relative">
           <div className="schedule-row">
-            <div className="schedule-item-job cx-flex cx-uppercase">
-              <div className="cx-w-2/3">Name/Description</div>
+            <div className="schedule-item-job cx-flex cx-uppercase cx-items-center cx-font-medium">
+              <div className="cx-w-1/3 cx-flex cx-items-center">
+                <FormInputElement
+                  type="checkbox"
+                  onChange={handleSelectAllRows}
+                  checked={jobs.results.length === selectedRows.length && jobs.results.length > 0}
+                  className="cx-mr-4"
+                />
+                <span>Name/Description</span>
+              </div>
+              <div className="cx-w-1/3">Status</div>
               <div className="cx-w-1/3">Job Type</div>
             </div>
             <div className="schedule-item-weekday">
@@ -455,52 +575,25 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
               />
             </div>
           </div>
-          {
-            jobs.results.map(job => {
-              const jobSuggestions = suggestions.filter(suggestion => suggestion.jobId === job.id)
-              const hasSuggestions = jobSuggestions.length > 0
-              return (
-                <div key={job.id} className="schedule-row">
-                  <div className="cx-flex schedule-item-job cx-text-neutral-900">
-                    <div className="cx-w-2/3">
-                      <p>{job.name}</p>
-                      <p>
-                        {truncate({ length: 50 }, job.description)}
-                      </p>
-                    </div>
-                    <div className="cx-w-1/3">
-                      <p>{job.jobType}</p>
-                    </div>
-                    <div className="cx-min-w-36px">
-                      {!job.startDate && shouldSuggest && (
-                        <IconButton
-                          buttonType="transparent"
-                          icon="suggest"
-                          tooltipContent={hasSuggestions ? 'Hide suggestions' : 'Show suggestions'}
-                          active={hasSuggestions}
-                          // tslint:disable-next-line: jsx-no-lambda
-                          onClick={() => getSuggestions(job, hasSuggestions)}
-                        />
-                      )}
-                    </div>
-                  </div>
-                  <div className="schedule-item-weekday">
-                    <ScheduleTimeslots
-                      projectTimezone={project.timezoneSid}
-                      dateRange={dateRange}
-                      rangeType={selectedRangeType}
-                      swimlaneSettings={swimlaneSettings}
-                      openAllocationModal={openAllocationModal}
-                      job={job}
-                      navigateToJob={navigateToJob}
-                      suggestions={jobSuggestions}
-                      dragJob={handleDragJob}
-                    />
-                  </div>
-                </div>
-              )
-            })
-          }
+          {jobs.results.map(job => (
+            <JobRow
+              key={job.id}
+              job={job}
+              suggestions={suggestions}
+              getSuggestions={getSuggestions}
+              shouldSuggest={shouldSuggest}
+              projectTimezone={project.timezoneSid}
+              dateRange={dateRange}
+              rangeType={selectedRangeType}
+              swimlaneSettings={swimlaneSettings}
+              openAllocationModal={openAllocationModal}
+              navigateToJob={navigateToJob}
+              onDragJob={handleDragJob}
+              onViewJobDetail={onViewJobDetail}
+              onSelectRow={handleSelectRow}
+              isSelectedRow={selectedRowIds.includes(job.id)}
+            />
+          ))}
         </div>
 
         {!jobs.results.length && (

@@ -242,7 +242,7 @@ export const dispatchMutipleJobs = async (jobIds: string) => {
     const res = await salesforceApi.get('/services/apexrest/sked/job/dispatch', { params: { ids: jobIds } })
     return res.data.success
   } catch (error) {
-    console.log('error: ', error)
+    toastMessage.error('Something went wrong!')
     return false
   }
 }
@@ -252,7 +252,17 @@ export const deallocateMutipleJobs = async (jobIds: string): Promise<boolean> =>
     const res = await salesforceApi.get('/services/apexrest/sked/job/deallocate', { params: { ids: jobIds } })
     return res.data.success
   } catch (error) {
-    console.log('error: ', error)
+    toastMessage.error('Something went wrong!')
+    return false
+  }
+}
+
+export const unscheduleMutipleJobs = async (jobIds: string): Promise<boolean> => {
+  try {
+    const res = await salesforceApi.get('/services/apexrest/sked/job/unschedule', { params: { ids: jobIds } })
+    return res.data.success
+  } catch (error) {
+    toastMessage.error('Something went wrong!')
     return false
   }
 }

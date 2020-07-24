@@ -1,6 +1,6 @@
 .schedule-general-info {
   display: grid;
-  grid-template-columns: 30% 70%;
+  grid-template-columns: 40% 60%;
   align-items: center;
   .general-info-item {
     border: 1px  solid #E5E7EE;
@@ -12,7 +12,7 @@
 .schedule-table {
   .schedule-row {
     display: grid;
-    grid-template-columns: 30% 70%;
+    grid-template-columns: 40% 60%;
     grid-template-rows: auto;
 
     .schedule-item-job {

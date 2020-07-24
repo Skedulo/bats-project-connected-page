@@ -35,3 +35,9 @@ export const RESOURCE_SORT_OPTIONS = [
   { value: ResourceSortType.Rating, label: 'Highest Rating' },
   { value: ResourceSortType.Utilised, label: 'Least Utilised' }
 ]
+
+export const ALLOWED_DEALLOCATE_STATUS = ['Dispatched', 'Pending Dispatch']
+
+export const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
+
+export const ALLOWED_UNSCHEDULE_STATUS = ['Dispatched', 'Pending Dispatch', 'Pending Allocation']

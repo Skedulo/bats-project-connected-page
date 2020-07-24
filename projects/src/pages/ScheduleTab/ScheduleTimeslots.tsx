@@ -16,7 +16,6 @@ import {
   getTimePickerOptions,
   parseTimeValue,
   parseDurationFromTimeRange,
-  parseTimeString,
   addTimeValue
 } from '../../commons/utils'
 
@@ -112,7 +111,7 @@ const generateScheduleDataCell = (
   job: IJobDetail,
   suggestions?: IJobSuggestion[],
   handleDragJob?: (newZonedDate: string, newZonedTime: number) => void,
-  handleAllocation?: (zonedDate: string, zonedTime: number) => void,
+  handleAllocation?: (zonedDate?: string, zonedTime?: number) => void,
 ) => {
   const { workingHours, snapUnitConsole } = swimlaneSettings
   const enableWorkingHourDay = rangeType === 'day' && workingHours.enabled
@@ -160,7 +159,7 @@ const generateScheduleDataCell = (
         dateCols.push(
           <Timeslot
             key={`${item.stringValue}-${dateRangeIndex}`}
-            handleClick={isUnscheduled && !suggestions?.length ? handleAllocation : undefined}
+            handleAllocation={isUnscheduled && !suggestions?.length ? handleAllocation : undefined}
             slotDate={formattedDateString}
             slotTime={item}
           >
@@ -188,6 +187,7 @@ const generateScheduleDataCell = (
                 }}
                 draggable={DRAGGABLE_JOB_STATUS.includes(job.status)}
                 handleDrag={handleDragJob}
+                handleAllocation={handleAllocation}
               />
             )}
             {matchedSuggestion && (
@@ -223,7 +223,7 @@ interface IScheduleTimeslotsProps {
   dateRange: Date[],
   rangeType: RangeType,
   swimlaneSettings: ISwimlaneSettings,
-  openAllocationModal?: (job: IJobDetail, zonedDate: string, zonedTime: number) => void,
+  openAllocationModal?: (job: IJobDetail, zonedDate?: string, zonedTime?: number) => void,
   job?: IJobDetail,
   navigateToJob?: (startDate: Date) => void,
   suggestions?: IJobSuggestion[]
@@ -268,7 +268,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
   // total columns
   const cols = timeCols.length * dateRange.length
   // width of 1 cell
-  const slotWidth = Math.max(((windowWidth - 32) * 0.7 / cols), DEFAULT_SLOT_WIDTH)
+  const slotWidth = Math.max(((windowWidth - 32) * 0.6 / cols), DEFAULT_SLOT_WIDTH)
 
   const shouldNavigateLeft = job?.startDate && format(dateRange[0], DATE_FORMAT) > job.startDate
   const shouldNavigateRight = job?.startDate && format(dateRange[dateRange.length - 1], DATE_FORMAT) < job.startDate
@@ -285,7 +285,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
     }
   }, [job])
 
-  const handleAllocation = useCallback((zonedDate: string, zonedTime: number) => {
+  const handleAllocation = useCallback((zonedDate?: string, zonedTime?: number) => {
     if (typeof openAllocationModal === 'function' && job) {
       openAllocationModal(job, zonedDate, zonedTime)
     }
@@ -375,7 +375,7 @@ const ScheduleTimeslots: React.FC<IScheduleTimeslotsProps> = ({
         <div
           className="cx-absolute cx-h-full current-time-indicator cx-z-1"
           style={{
-            left: `calc(30% + ${currentTimePosition}px)`,
+            left: `calc(40% + ${currentTimePosition}px)`,
           }}
         />
       )}

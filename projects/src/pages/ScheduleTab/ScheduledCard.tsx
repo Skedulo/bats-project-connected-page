@@ -15,7 +15,7 @@ interface IScheduledCardProps {
   travelTimeStyle: Record<string, string>
   durationStyle: Record<string, string>
   travelTime: number
-  handleClick?: () => void
+  handleAllocation?: (zonedDate?: string, zonedTime?: number) => void
   handleDrag?: (newDate: string, newTime: number) => void
   draggable?: boolean
   slotUnit: string
@@ -34,7 +34,7 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
     travelTime,
     travelTimeStyle,
     durationStyle,
-    handleClick,
+    handleAllocation,
     handleDrag,
     slotUnit,
     draggable,
@@ -48,7 +48,7 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
   const [jobPos, setJobPos] = React.useState<number>(cardPosition)
   const dragGrid = widthPerMin * toNumber(snapUnit)
 
-  const onStartDrag = () => {
+  const onStartDrag = (e: DraggableEvent) => {
     setJobPos(prev => ++prev)
   }
 
@@ -84,9 +84,9 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
     }
   }
 
-  const onCardClick = () => {
-    if (typeof handleClick === 'function') {
-      handleClick()
+  const onCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (typeof handleAllocation === 'function' && job.status === 'Pending Allocation') {
+      handleAllocation()
     }
   }
 
@@ -116,22 +116,23 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
       onStop={onStopDrag}
       grid={[dragGrid, dragGrid]}
       disabled={!draggable}
-      // bounds={{ left: '30%' }}
     >
       <div
-        onClick={onCardClick}
         className={classnames('cx-flex cx-items-center cx-absolute cx-z-1', {
-          'cx-cursor-pointer': draggable || handleClick
+          'cx-cursor-pointer': draggable || handleAllocation
         })}
         style={{
           height: '80%',
           left: cardPosition + slotUnit,
         }}
-        >
+      >
         {travelTime > 0 && (
-          <span className="cx-bg-neutral-500" style={travelTimeStyle} />
+          <span
+            className="cx-bg-neutral-500"
+            style={travelTimeStyle}
+          />
         )}
-        <span className="cx-h-full" style={durationStyle} />
+        <span className="cx-h-full" style={durationStyle} onDoubleClick={onCardClick} />
         <span className="cx-flex">
           {resources}
         </span>

@@ -23,7 +23,7 @@ import {
   IConfig,
   IProjectDetail,
 } from '../../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
+import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR, ALLOWED_DISPATCH_STATUS, ALLOWED_DEALLOCATE_STATUS } from '../../../commons/constants'
 import {
   fetchListJobs,
   deallocateMutipleJobs,
@@ -108,9 +108,6 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
     }
   ]
 }
-
-const ALLOWED_DEALLOCATE_STATUS = ['Dispatched', 'Pending Dispatch']
-const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
 
 const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   const projectId = project.id

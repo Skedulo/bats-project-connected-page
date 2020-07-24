@@ -39,7 +39,7 @@ interface IAllocationModalProps {
   isOpen: boolean
   zonedDate: string
   zonedTime: number
-  handleAllocation: (job: IJobDetail, newDate: string, newTime: number, resourcesIds: string[]) => void
+  handleAllocation: (job: IJobDetail, resourcesIds: string[]) => void
 }
 
 const AllocationModal: React.FC<IAllocationModalProps> = ({
@@ -130,13 +130,8 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   }, [selectedResources])
 
   const onSave = useCallback(async () => {
-    handleAllocation(
-      job,
-      zonedDate,
-      zonedTime,
-      selectedResources.map(item => item.id)
-    )
-  }, [selectedResources, job, zonedDate, zonedTime])
+    handleAllocation(job, selectedResources.map(item => item.id))
+  }, [selectedResources, job])
 
   useEffect(() => {
     setDisplayResources(sortedResources)
