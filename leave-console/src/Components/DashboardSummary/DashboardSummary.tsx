@@ -10,7 +10,7 @@ import AvailabilityByTypeChart from '../AvailabilityByTypeChart'
 import { State, Resource, IResource, IBaseModel } from '../../Store/types'
 import './DashboardSummary.scss'
 import { AvailabilityChartData } from '../../Store/types/Availability'
-import { fetchDepotByRegion } from '../../Services/DataServices'
+import { fetchDepotByRegion, fetchGenericOptions } from '../../Services/DataServices'
 import { DATE_FORMAT } from '../../common/constants'
 
 const bem = classes('dashboard-summary')
@@ -26,8 +26,9 @@ const DashboardSummary: React.FC = () => {
   const [depots, setDepots] = useState<IBaseModel[]>([])
 
   const getDepots = async(regionId: string) => {
-    const resp = await fetchDepotByRegion(regionId)
-    setDepots(resp)
+    const resp = await fetchGenericOptions({ name: '', sObjectType: 'sked_Depot__c', regionIds: regionId })
+    const formattedResp = resp.map(item => ({ id: item.value, name: item.label }))
+    setDepots(formattedResp)
   }
 
   const daysBetween = useMemo(() => eachDayOfInterval({

@@ -29,8 +29,8 @@ export const useRuleFilter = () => {
       selectedIds: [],
       inputType: 'checkbox',
       useFetch: async (searchTerm: string) => {
-        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked__Location__c' })
-        return res.filter(item => item.isDepot).map(item => ({ id: item.value, name: item.label }))
+        const res = await fetchGenericOptions({ name: searchTerm, sObjectType: 'sked_Depot__c' })
+        return res.map(item => ({ id: item.value, name: item.label }))
       }
     },
     {

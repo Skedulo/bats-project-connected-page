@@ -95,18 +95,18 @@ export const fetchGenericOptions = async (params: IGenericOptionParams): Promise
   }
 }
 
-export const fetchDepotOptions = async (params: IGenericOptionParams): Promise<ISelectItem[]> => {
-  try {
-    const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
-      params,
-    })
-    return response.data.data.results
-      .filter((item: Depot) => item.isDepot)
-      .map((item: IBaseModel) => ({ ...item, value: item.id, label: item.name }))
-  } catch (error) {
-    return []
-  }
-}
+// export const fetchDepotOptions = async (params: IGenericOptionParams): Promise<ISelectItem[]> => {
+//   try {
+//     const response: { data: ISalesforceResponse } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
+//       params,
+//     })
+//     return response.data.data.results
+//       .filter((item: Depot) => item.isDepot)
+//       .map((item: IBaseModel) => ({ ...item, value: item.id, label: item.name }))
+//   } catch (error) {
+//     return []
+//   }
+// }
 
 export const fetchConfig = async (): Promise<IConfig> => {
   const res = await salesforceApi.get('/services/apexrest/sked/config')
@@ -168,20 +168,20 @@ export const fetchResourcesByRegion = async (
   }
 }
 
-export const fetchDepotByRegion = async (regionId: string): Promise<IBaseModel[]> => {
-  try {
-    const resp = await Services.graphQL.fetch<{ locations: IGraphqlBaseModal[] }>({
-      query: LocationsQuery,
-      variables: {
-        filters: `IsDepot == true AND RegionId == '${regionId}'`
-      }
-    })
+// export const fetchDepotByRegion = async (regionId: string): Promise<IBaseModel[]> => {
+//   try {
+//     const resp = await Services.graphQL.fetch<{ locations: IGraphqlBaseModal[] }>({
+//       query: LocationsQuery,
+//       variables: {
+//         filters: `IsDepot == true AND RegionId == '${regionId}'`
+//       }
+//     })
 
-    return resp.locations.map(item => ({ id: item.UID, name: item.Name }))
-  } catch (error) {
-    return []
-  }
-}
+//     return resp.locations.map(item => ({ id: item.UID, name: item.Name }))
+//   } catch (error) {
+//     return []
+//   }
+// }
 
 export const getResourceSuggestions = async (
   jobId: string,

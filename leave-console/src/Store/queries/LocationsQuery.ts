@@ -1,6 +1,6 @@
 export const LocationsQuery = `
-query getLocations ($filters: EQLQueryFilterLocations!) {
-  locations (filter: $filters) {
+query getLocations ($filters: EQLQueryFilterDepot!) {
+  depot (filter: $filters) {
     edges {
       node {
         UID

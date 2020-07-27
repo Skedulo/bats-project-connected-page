@@ -70,14 +70,14 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
     []
   )
 
-  const handleFetchLocations = React.useCallback(
+  const handleFetchDepots = React.useCallback(
     async (searchTerm: string) => {
       const res = await fetchGenericOptions({
         name: searchTerm,
-        sObjectType: 'sked__Location__c',
+        sObjectType: 'sked_Depot__c',
         regionIds: fields.region?.id || ''
       })
-      return res.filter(item => item.isDepot)
+      return res
     },
     [fields.region]
   )
@@ -273,7 +273,7 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
           >
             <AsyncSearchSelect
               name="depotId"
-              fetchItems={handleFetchLocations}
+              fetchItems={handleFetchDepots}
               key={`${fields.region?.id}${fields.depot?.id}`}
               debounceTime={300}
               onSelectedItemChange={onSelectLookupField('depot')}

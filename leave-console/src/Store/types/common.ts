@@ -49,7 +49,8 @@ export enum GenericOptionObjects {
   Account,
   Contact,
   sked__Region__c,
-  sked__Location__c
+  sked__Location__c,
+  sked_Depot__c
 }
 
 export declare type GenericObjectTypes = keyof typeof GenericOptionObjects
@@ -66,7 +67,6 @@ export interface IGenericSelectItem extends ISelectItem {
   contact?: IBaseModel
   region?: IBaseModel
   fieldName?: string
-  isDepot?: boolean
 }
 
 export interface IRegion extends IBaseModel {
