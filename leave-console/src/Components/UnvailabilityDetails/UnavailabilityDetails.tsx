@@ -9,6 +9,7 @@ import './UnavailabilityDetails.scss'
 import { useSelector } from 'react-redux'
 import { State, Resource } from '../../Store/types'
 import { LONG_DATE_FORMAT } from '../../common/constants'
+import { extractRemainingALDaysWithHours } from '../../common/utils/dateTimeHelpers'
 
 const bem = classes('unavailability-details')
 
@@ -43,7 +44,9 @@ const UnavailabilityDetails: React.FC<UnavailabilityDetailsProps> = ({ data: {
     if (!resource) {
       return '-- --'
     }
-    return `${resource.annualLeaveRemaining} of ${resource.annualLeaveAllowance} days remaining`
+    const leaveAllowance = resource.annualLeaveAllowance || 0
+    const remainingDaysWithHours = extractRemainingALDaysWithHours(resource.annualLeaveRemaining, resource.dailyHours)
+    return `${remainingDaysWithHours} of ${leaveAllowance} day${leaveAllowance > 1 ? 's' : ''} remaining`
   }, [resources, Resource])
 
   return (

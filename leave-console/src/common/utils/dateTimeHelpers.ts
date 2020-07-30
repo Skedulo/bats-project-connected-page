@@ -1,4 +1,6 @@
 import { differenceInMinutes, parseISO } from 'date-fns'
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz/fp'
+import { flow, isNumber, toNumber } from 'lodash/fp'
 
 export const calculateDurationInMinutes = (startISO?: string, endISO?: string) => {
   if (!startISO || !endISO) {
@@ -63,9 +65,6 @@ export const instantToDateTime = (instant: string) => {
     time.slice(0, -1)
   ]
 }
-
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz/fp'
-import { flow, isNumber, toNumber } from 'lodash/fp'
 
 export type getTime = (timezone: string, date: Date) => string
 
@@ -186,4 +185,20 @@ export const extractTimeValue = (timeValue: number) => {
     return { hours: toNumber(hVal), minutes: toNumber(mVal), seconds: 0 }
   }
   return { hours: 0, minutes: 0, seconds: 0 }
+}
+
+/**
+ * extract decimal remaining Annual Leave to days with hours
+ */
+
+export const extractRemainingALDaysWithHours = (remainingDay: number, dailyHours: number) => {
+  if (!isNumber(remainingDay) || !isNumber(dailyHours)) return '0 day'
+
+  const days = Math.floor(remainingDay / 1)
+  const hours = Math.round((remainingDay % 1) * dailyHours)
+
+  const dayString = `${days} day${days > 1 ? 's' : ''}`
+  const hourString = `${hours} hour${hours > 1 ? 's' : ''}`
+
+  return hours > 0 ? `${dayString} & ${hourString}` : dayString
 }

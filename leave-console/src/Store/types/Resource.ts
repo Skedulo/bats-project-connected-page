@@ -56,6 +56,7 @@ export interface IResource {
   depot?: IBaseModel
   suggestion?: IResourceSuggestion
   isSuggested: boolean
-  annualLeaveRemaining?: number
-  annualLeaveAllowance?: number
+  annualLeaveRemaining: number
+  annualLeaveAllowance: number
+  dailyHours: number
 }

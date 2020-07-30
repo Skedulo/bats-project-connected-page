@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, memo } from 'react'
-import { groupBy, mapValues } from 'lodash'
+import { groupBy, mapValues, truncate } from 'lodash'
 import classNames from 'classnames'
 import {
   XAxis,
@@ -103,7 +103,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
               <Bar
                 key={`${skill.id}-${index}`}
                 dataKey={`${ChartType.CoreSkill}.${skill.id}`}
-                name={skill.name}
+                name={truncate(skill.name, { length: 25 })}
                 fill={COLUMN_COLORS[index]}
                 barSize={5}
               />
@@ -114,7 +114,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
               <Bar
                 key={`${depot.id}-${index}`}
                 dataKey={`${ChartType.Depot}.${depot.id}`}
-                name={depot.name}
+                name={truncate(depot.name, { length: 25 })}
                 fill={COLUMN_COLORS[index]}
                 barSize={5}
               />
