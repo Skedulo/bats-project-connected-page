@@ -14,8 +14,8 @@ import { IconButton, Loading } from '@skedulo/sked-ui'
 import { routes } from '..'
 import { Link } from 'react-router-dom'
 import { getAvailabilities } from '../../Store/reducers/availabilities'
-import LoadingTrigger from '../../Components/GlobalLoading/LoadingTrigger';
-import UnavailabilityTable from '../../Components/UnavailabilityTable';
+import LoadingTrigger from '../../Components/GlobalLoading/LoadingTrigger'
+import UnavailabilityTable from '../../Components/UnavailabilityTable'
 
 const bem = classes('dashboard-page')
 
@@ -36,14 +36,17 @@ const DashboardPage: React.FC<IProps> = () => {
     region,
     regions,
     timeRange,
-    resources
+    resources,
+    canSeeRRRSetting
   } = useSelector((state: State) => ({
     subscriptionStatus: state.subscriptionStatus,
     regions: state.configs?.regions || [],
     region: state.region,
     timeRange: state.timeRange,
-    resources: state.resources
+    resources: state.resources,
+    canSeeRRRSetting: state.configs?.canSeeRRRSetting || false
   }))
+
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const fetchAvailabilities = useCallback(async () => {
@@ -97,9 +100,11 @@ const DashboardPage: React.FC<IProps> = () => {
     <>
       {isLoading && <LoadingTrigger />}
       <section className={ bem('filters') }>
-        <Link to={routes.settings()}>
-          <IconButton icon="settings" tooltipContent="Setting" />
-        </Link>
+        {canSeeRRRSetting && (
+          <Link to={routes.settings()}>
+            <IconButton icon="settings" tooltipContent="Setting" />
+          </Link>
+        )}
         <TimeRangeControl />
         {regions.length > 0 && region && <DashboardFilter />}
       </section>

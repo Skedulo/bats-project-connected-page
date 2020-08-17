@@ -31,9 +31,9 @@ export interface FilterParams {
 export interface IConfig {
   coreSkills: IBaseModel[],
   regions: IRegion[],
-  resourceCategories: IBaseModel[]
+  resourceCategories: IBaseModel[],
+  canSeeRRRSetting: boolean
 }
-
 
 export interface IBaseModel {
   name: string
