@@ -1,9 +1,11 @@
 import React, { useState, memo, useCallback } from 'react'
 import { Icon, Tabs } from '@skedulo/sked-ui'
 import { Link } from 'react-router-dom'
+import GeneralSettings from '../GeneralSettings'
 import ResourceRequirementRules from '../ResourceRequirementRules'
 
 const TAB_ROUTES = [
+  { route: 'general', title: 'General' },
   { route: 'resource_requirements_rule', title: 'Resource Requirement Rules' }
 ]
 
@@ -32,7 +34,8 @@ const SettingPage: React.FC = () => {
         currentActiveRoute={activeTab}
         onClick={onChangeTab}
       />
-      {activeTab === TAB_ROUTES[0].route && <ResourceRequirementRules />}
+      {activeTab === TAB_ROUTES[0].route && <GeneralSettings />}
+      {activeTab === TAB_ROUTES[1].route && <ResourceRequirementRules />}
     </div>
   )
 }

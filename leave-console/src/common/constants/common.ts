@@ -1,6 +1,6 @@
 import { ResourceSortType } from '../../Store/types/Resource'
-import { WeekdayOption, JobStatusKey } from '../../Store/types'
-import { LozengeColors } from '@skedulo/sked-ui';
+import { WeekdayOption, JobStatusKey, Option } from '../../Store/types'
+import { LozengeColors } from '@skedulo/sked-ui'
 
 export const DEFAULT_FILTER = {
   searchText: '',
@@ -49,3 +49,45 @@ export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors>  = {
   'Cancelled': 'red',
 }
 
+export const MESSAGE_VARIABLES: Option[] = [
+  {
+    label: 'Job ID',
+    value: '{{ UID }}'
+  },
+  {
+    label: 'Job Name',
+    value: '{{ Name }}'
+  },
+  {
+    label: 'Job Start Time',
+    value: '{{ Start }}'
+  },
+  {
+    label: 'Job End Time',
+    value: '{{ End }}'
+  },
+  {
+    label: 'Job Type',
+    value: '{{ Type }}'
+  },
+  {
+    label: 'Job Duration',
+    value: '{{ Duration }}'
+  },
+  {
+    label: 'Job Status',
+    value: '{{ JobStatus }}'
+  },
+  {
+    label: 'Job Region',
+    value: '{{ Region.Name }}'
+  },
+  {
+    label: 'Account Name',
+    value: '{{ Account.Name }}'
+  },
+  {
+    label: 'Contact Full Name',
+    value: '{{ Contact.FullName }}'
+  }
+]

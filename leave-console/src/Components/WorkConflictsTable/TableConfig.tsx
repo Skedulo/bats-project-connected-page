@@ -63,7 +63,7 @@ export const getColumns = (unavailability: UnavailabilityTableItem) => ([
     Cell: ({ cell }: { cell: { value: { Resource: Resource }[] } }) => {
       const resources = cell.value?.map(item => ({
         name: item.Resource.Name,
-        avatarUrl: item.Resource.User.SmallPhotoUrl || getDefaultAvatar()
+        avatarUrl: item.Resource.User?.SmallPhotoUrl || getDefaultAvatar()
       }))
       return <AvailableResourcesCell resources={resources} />
     }

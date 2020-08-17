@@ -9,8 +9,8 @@ const DateRangeCell = ({ startDate, endDate }: { startDate: string, endDate: str
   const { region } = useSelector((state: State) => ({ region: state.region }))
   const zonedStartDate = utcToZonedTime(startDate, region?.timezoneSid)
   const zonedEndDate = utcToZonedTime(endDate, region?.timezoneSid)
-  const startDateLabel = startDate ? format(zonedStartDate, `${LONG_DATE_FORMAT} K:mm aaa`) : '-- -- ----'
-  const endDateLabel = endDate ? format(zonedEndDate, `${LONG_DATE_FORMAT} K:mm aaa`) : '-- -- ----'
+  const startDateLabel = startDate ? format(zonedStartDate, `${LONG_DATE_FORMAT} hh:mm aaa`) : '-- -- ----'
+  const endDateLabel = endDate ? format(zonedEndDate, `${LONG_DATE_FORMAT} hh:mm aaa`) : '-- -- ----'
 
   return (
     <span>
