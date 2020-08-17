@@ -8,6 +8,7 @@ const JobTemplateFormConfig = {
   jobType: { isRequired: 'Job type is required' },
   description: {},
   jobConstraints: {},
+  resourceId: {}
 }
 
 interface IJobTemplateFormProps {
@@ -16,6 +17,7 @@ interface IJobTemplateFormProps {
   onCancel?: () => void
   totalJobTemplates: number
   projectId: string
+  projectRegionId: string
 }
 
 const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
@@ -24,6 +26,7 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
   onCancel,
   totalJobTemplates,
   projectId,
+  projectRegionId
 }) => {
   const [jobConstraints, setJobConstraints] = React.useState<IJobConstraint[]>(jobTemplate?.jobConstraints || [])
 
@@ -87,6 +90,7 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
           setJobConstraints={setJobConstraints}
           totalJobTemplates={totalJobTemplates}
           projectId={projectId}
+          projectRegionId={projectRegionId}
         />
       )}
     </SkedFormValidation>

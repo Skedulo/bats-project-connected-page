@@ -6,11 +6,14 @@ import {
   SearchSelect,
   ISelectItem,
   AsyncSearchSelect,
+  AsyncMultiSearchSelect,
+  FormLabel,
 } from '@skedulo/sked-ui'
 import WrappedFormInput from '../WrappedFormInput'
 import { AppContext } from '../../../App'
 import JobTemplateConstraint from '../JobTemplateConstraint'
 import { IJobConstraint, IJobTemplate, IBaseModel } from '../../types'
+import { fetchGenericOptions } from '../../../Services/DataServices'
 
 interface IJobTemplateFormChildrenProps {
   formParams: SkedFormChildren<IJobTemplate>
@@ -20,6 +23,7 @@ interface IJobTemplateFormChildrenProps {
   setJobConstraints: React.Dispatch<React.SetStateAction<IJobConstraint[]>>
   totalJobTemplates: number
   projectId: string
+  projectRegionId: string
 }
 
 const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
@@ -30,6 +34,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   setJobConstraints,
   totalJobTemplates,
   projectId,
+  projectRegionId
 }) => {
   const appContext = React.useContext(AppContext)
   const { jobTypes = [] } = React.useMemo(() => appContext?.config || {}, [appContext])
@@ -65,7 +70,20 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   }, [displayJobConstraints, jobTemplate])
 
   const handleJobType = React.useCallback((jobType: ISelectItem) => {
-    customFieldUpdate('jobType')(jobType.value)
+    customFieldUpdate('jobType')(jobType?.value || '')
+  }, [])
+
+  const handleFetchResources = React.useCallback((searchTerm: string) => {
+    return fetchGenericOptions({
+      name: searchTerm,
+      sObjectType: 'sked__Resource__c',
+      regionIds: projectRegionId
+    })
+  },
+  [projectRegionId])
+
+  const handleSelectResource = React.useCallback((item: ISelectItem) => {
+    customFieldUpdate('resourceId')(item.value)
   }, [])
 
   const handleAddConstraint = React.useCallback(() => {
@@ -111,7 +129,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
 
   return (
     <>
-      <div className="vertical-panel cx-p-4">
+      <div className="cx-p-4">
         <div className="cx-mb-4">
           <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Type</span>
           <FormElementWrapper
@@ -139,6 +157,21 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
           maxLength={255}
           isRequired={false}
         />
+        <div className="cx-mb-4">
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Resources</span>
+          <AsyncSearchSelect
+            name="resourceId"
+            fetchItems={handleFetchResources}
+            debounceTime={300}
+            placeholder="Select a resource"
+            onSelectedItemChange={handleSelectResource}
+            initialSelectedItem={
+              jobTemplate?.resource ? { value: jobTemplate.resource.id, label: jobTemplate.resource.name } : undefined
+            }
+            useCache={true}
+            icon="chevronDown"
+          />
+        </div>
         <div className="cx-mb-4">
           <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Job Dependencies</span>
           {displayJobConstraints.map((jobConstraint: IJobConstraint) => (

@@ -10,7 +10,7 @@ interface IJobsTabProps {
 
 const JobsTab: React.FC<IJobsTabProps> = ({ project }) => {
   if (project.isTemplate) {
-    return <JobTemplatesList projectId={project.id} isTemplate={project.isTemplate} />
+    return <JobTemplatesList project={project} isTemplate={project.isTemplate} />
   }
   return <JobsList project={project} />
 }

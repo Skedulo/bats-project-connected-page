@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, useContext } from 'react'
 import { debounce, uniq, keyBy, times } from 'lodash/fp'
-import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors, Avatar } from '@skedulo/sked-ui'
+import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors, Avatar, GroupAvatars } from '@skedulo/sked-ui'
 import JobFilter from './JobTemplateFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
 import {
@@ -13,6 +13,7 @@ import {
   IJobTypeTemplate,
   IConfig,
   IJobConstraint,
+  IProjectDetail,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
 import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
@@ -22,7 +23,7 @@ import { AppContext } from '../../../App'
 import { toastMessage } from '../../../commons/utils'
 
 interface IJobTemplatesListProps {
-  projectId: string
+  project: IProjectDetail
   isTemplate: boolean
 }
 
@@ -47,14 +48,6 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
       accessor: 'jobType',
       width: '30%',
     },
-    // {
-    //   Header: 'Status',
-    //   accessor: 'status',
-    //   Cell: ({ cell }: { cell: { value: JobStatusKey } }) => {
-    //     const color: LozengeColors = JOB_STATUS_COLOR[cell.value] || 'neutral'
-    //     return <Lozenge label={cell.value} color={color} size="small" solid={false} border={false} />
-    //   },
-    // },
     {
       Header: 'Constrains',
       accessor: 'jobConstraints',
@@ -71,27 +64,24 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
     {
       Header: 'Resource/s',
       accessor: 'resourceRequirement',
-      Cell: ({ cell }: { cell: { value: number } }) => {
-        const resources: React.ReactNode[] = []
-        times((index: number) => {
-          resources.push(
-            <Avatar
-              name={''}
-              key={`resourcerquired-${index}`}
-              className="cx-ml-1 first:cx-ml-0 cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500"
-              showTooltip={false}
-              size="small"
-              preserveName={false}
-            />
-          )
-        }, cell.value)
-        return <div className="sk-flex sk-items-center">{resources}</div>
+      Cell: ({ cell, row }: { cell: { value: number }, row: { original: IJobTemplate } }) => {
+        const avatarInfo = row.original.resource ?
+          [{ name: row.original.resource.name, tooltipText: row.original.resource.name }] :
+          []
+        return (
+          <GroupAvatars
+            totalSlots={cell.value}
+            avatarInfo={avatarInfo}
+            maxVisibleSlots={5}
+          />
+        )
       },
     },
   ]
 }
 
-const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
+const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
+  const { id: projectId, region } = project
   const appContext = useContext(AppContext)
 
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = useMemo(() => appContext?.config || {}, [appContext])
@@ -225,7 +215,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-p-2 cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-p-2 cx-bg-white cx-z-10">
         <JobFilter
           onResetFilter={onResetFilter}
           onFilterChange={onFilterChange}
@@ -236,7 +226,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
             New Job
           </Button>
           <SearchBox
-            className="searchbox searchbox--w240 cx-mb-0 cx-border cx-mr-2"
+            className="cx-px-4 cx-py-0 cx-mb-0 cx-border cx-mr-2"
             onChange={onSearchTextChange}
             placeholder="jobs"
             clearable={!!filterParams.searchText}
@@ -261,6 +251,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ projectId }) => {
           onClose={onCloseJobTemplateModal}
           jobTemplate={selectedJobTemplate}
           projectId={projectId}
+          projectRegionId={region?.id || ''}
           totalJobTemplates={jobTemplates.totalItems}
         />
       )}

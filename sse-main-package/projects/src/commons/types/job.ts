@@ -43,6 +43,7 @@ export interface IJobTemplate {
   project: IBaseModel
   projectId?: string
   resourceRequirement?: number
+  resource?: IBaseModel
 }
 
 export interface IJobDetail {

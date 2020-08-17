@@ -10,6 +10,7 @@ import {
   LozengeColors,
   ButtonGroup,
   Avatar,
+  GroupAvatars,
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
@@ -83,26 +84,16 @@ const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
       Header: 'Resource/s',
       accessor: 'resourceRequirement',
       Cell: ({ row }: { row: { original: IJobDetail } }) => {
-        const resources: React.ReactNode[] = []
-        const time = Math.max(row.original.allocations?.length || 0, toNumber(row.original.resourceRequirement))
-        times(index => {
-          const jobAllocation = row.original.allocations ? row.original.allocations[index] : null
-          const className = jobAllocation ? 'cx-ml-1 first:cx-ml-0' : 'cx-ml-1 first:cx-ml-0 cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500'
-          resources.push(
-            <Avatar
-              name={jobAllocation?.resource?.name || ''}
-              key={`resourcerquired-${index}`}
-              className={className}
-              showTooltip={!!jobAllocation?.resource?.name}
-              size="small"
-              preserveName={false}
-            />
-          )
-        }, time > 0 ? time : 1)
+        const totalSlots = Math.max(row.original.allocations?.length || 0, toNumber(row.original.resourceRequirement))
+        const avatarInfo = row.original.allocations?.length > 0 ?
+          row.original.allocations.map(item => ({ name: item.resource?.name || '', tooltipText: item.resource?.name || '' })) :
+          []
         return (
-          <div className="sk-flex sk-items-center">
-            {resources}
-          </div>
+          <GroupAvatars
+            totalSlots={totalSlots > 0 ? totalSlots : 1}
+            avatarInfo={avatarInfo}
+            maxVisibleSlots={5}
+          />
         )
       }
     }
@@ -287,7 +278,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-p-2 cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-p-2 cx-bg-white cx-z-10">
         <JobFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-aligns-center cx-justify-between">
           <Button buttonType="transparent" onClick={onCreateJob} icon="plus">
@@ -305,7 +296,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
               </ButtonGroup>
             )}
             <SearchBox
-              className="searchbox searchbox--w240 cx-mb-0 cx-border cx-mr-2"
+              className="cx-px-4 cx-py-0 cx-mb-0 cx-border cx-mr-2"
               onChange={onSearchTextChange}
               placeholder="jobs"
               clearable={!!filterParams.searchText}

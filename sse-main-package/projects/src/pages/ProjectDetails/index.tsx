@@ -55,26 +55,28 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="cx-flex cx-flex-col cx-h-full">
-      <div className="cx-p-8 cx-pb-0">
-        <Link to="/" className="cx-flex">
-          <Icon name="chevronLeft" className="cx-text-primary" />
-          <span className="cx-text-primary cx-capitalize">Projects</span>
-        </Link>
-        <div>
-          <div className="cx-flex cx-justify-start cx-items-center cx-mb-4">
-            <h1 className="cx-text-xl cx-font-semibold cx-mr-4">
-              {project.projectName}
-            </h1>
-            {project.projectStatus && (
-              <Lozenge label={project.projectStatus} color={statusColor} solid={false} border={false} />
-            )}
+      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-1">
+        <div className="cx-p-8 cx-pb-0">
+          <Link to="/" className="cx-flex cx-items-center">
+            <Icon name="chevronLeft" className="cx-text-primary" />
+            <span className="cx-text-primary cx-capitalize">Projects</span>
+          </Link>
+          <div>
+            <div className="cx-flex cx-justify-start cx-items-center cx-mb-4">
+              <h1 className="cx-text-xl cx-font-semibold cx-mr-4">
+                {project.projectName}
+              </h1>
+              {project.projectStatus && (
+                <Lozenge label={project.projectStatus} color={statusColor} solid={false} border={false} />
+              )}
+            </div>
+            <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
+              {project.projectDescription}
+            </p>
           </div>
-          <p className="cx-text-sm cx-text-neutral-700 cx-mb-4">
-            {project.projectDescription}
-          </p>
         </div>
+        <Tabs tabs={tabOptions} currentActiveRoute={activeTab} onClick={onChangeTab} />
       </div>
-      <Tabs tabs={tabOptions} currentActiveRoute={activeTab} onClick={onChangeTab} />
       {activeTab === PROJECT_TAB_ROUTES.DETAILS && <DetailTab project={project} onSubmit={onSaveProject} />}
       {activeTab === PROJECT_TAB_ROUTES.JOBS && <JobsTab project={project} />}
       {activeTab === PROJECT_TAB_ROUTES.SCHEDULE && <ScheduleTab project={project} />}

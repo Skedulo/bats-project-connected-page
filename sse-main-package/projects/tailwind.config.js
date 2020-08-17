@@ -511,7 +511,7 @@ module.exports = {
     lineHeight: [],
     listStylePosition: [],
     listStyleType: [],
-    margin: ['hover'],
+    margin: ['hover', 'first'],
     maxHeight: [],
     maxWidth: [],
     minHeight: [],
