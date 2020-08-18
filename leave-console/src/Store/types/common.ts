@@ -32,7 +32,8 @@ export interface IConfig {
   coreSkills: IBaseModel[],
   regions: IRegion[],
   resourceCategories: IBaseModel[],
-  canSeeRRRSetting: boolean
+  canSeeRRRSetting: boolean,
+  availabilityNotificationTemplate: string
 }
 
 export interface IBaseModel {

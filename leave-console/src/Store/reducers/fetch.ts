@@ -26,6 +26,7 @@ export const clearNewEntrState = makeActionCreator(CLEAR_NEW_ENTRY_STATE)
 export const getConfigs = makeAsyncActionCreatorSimp(
   CONFIGS, () => async (dispatch: Dispatch) => {
     const resp = await fetchConfig()
+    console.log('resp---config: ', resp);
     if (resp.regions.length) {
       dispatch(setRegionSimp(resp.regions[0]))
     }

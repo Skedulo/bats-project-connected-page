@@ -67,7 +67,9 @@ const DashboardPage: React.FC<IProps> = () => {
         UID: unavailability.UID,
         Status: 'Pending',
         Resource: unavailability!.Resource,
-        Start: unavailability!.Start
+        Start: unavailability!.Start,
+        Finish: unavailability!.Finish,
+        Type: unavailability!.Type
       }))
     } catch (error) {
       throw error

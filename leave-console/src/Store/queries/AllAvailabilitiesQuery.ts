@@ -32,8 +32,12 @@ query getAvailabilities ($filters: EQLQueryFilterAvailabilities!) {
               Name
             }
           }
+          CountryCode
+          MobilePhone
+          NotificationType
+          AnnualLeaveAllowance
+          AnnualLeaveRemaining
         }
-        Type
       }
     }
   }

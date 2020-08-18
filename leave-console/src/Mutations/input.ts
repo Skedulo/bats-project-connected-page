@@ -1,19 +1,19 @@
-import { pick } from 'lodash'
+import { pick, get } from 'lodash'
 import { Dispatch } from 'redux'
-
+import PhoneNumber from 'awesome-phonenumber'
 import { Services } from '../Services/Services'
 import { updateAvailabilityQuery } from './inputQueries'
-import { Availability, State } from '../Store/types'
+import { Availability, State, IResource } from '../Store/types'
 import {
   makeActionsSet,
   makeReducers,
-  makeAsyncActionCreatorSimp,
-  makeActionCreator } from '../common/utils/redux-helpers'
+  makeAsyncActionCreatorSimp
+} from '../common/utils/redux-helpers'
 import { getAvailabilities } from '../Store/reducers/availabilities'
-import { pushNotification } from '../Services/DataServices'
+import { pushNotification, sendSMS } from '../Services/DataServices'
 import { toastMessage } from '../common/utils/toast'
-import { format } from 'date-fns-tz'
-import { DATE_FORMAT } from '../common/constants'
+import { format, utcToZonedTime } from 'date-fns-tz'
+import { DATE_FORMAT, MESSAGE_VARIABLES, LONG_DATE_FORMAT } from '../common/constants'
 import { getResources } from '../Store/reducers/fetch'
 
 export type UID = string
@@ -28,6 +28,8 @@ const STATUS_MESSAGES = {
   Pending: 'recalled',
 }
 
+const DEFAULT_NOTIFICATION = 'Your <Unavailability Type> for <Start Date> to <Finish Date> has been <Request Status>. You have <Total Days Remaining> out of <Total Allowance in Days> holiday days remaining.'
+
 export const updateAvailability = makeAsyncActionCreatorSimp(
   UPDATE_AVAILABILITY, (updateInput: Availability) =>
     async (dispatch: Dispatch, getState: () => State) => {
@@ -41,12 +43,39 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
           }
         }
       })
-      dispatch(getResources())
+      await dispatch(getResources())
       dispatch(getAvailabilities())
       if (updateAvailabilities) {
-        const startDate = format(new Date(updateInput.Start), DATE_FORMAT, { timeZone: store.region?.timezoneSid })
-        const message = `Your leave request on ${startDate} has been ${STATUS_MESSAGES[updateInput.Status]}`
-        await pushNotification(updateInput.Resource.UID, message)
+        const resources = store.resources || [] as IResource[]
+        const matchedResource = resources.find(item => item.id === updateInput.Resource.UID)
+        const template = store.configs?.availabilityNotificationTemplate || DEFAULT_NOTIFICATION
+        const unavailability = {
+          ...updateInput,
+          Start: format(utcToZonedTime(updateInput.Start, store.region?.timezoneSid), LONG_DATE_FORMAT),
+          Finish: format(utcToZonedTime(updateInput.Finish, store.region?.timezoneSid), LONG_DATE_FORMAT),
+          Resource: {
+            ...updateInput.Resource,
+            AnnualLeaveAllowance: matchedResource?.annualLeaveAllowance,
+            AnnualLeaveRemaining: matchedResource?.annualLeaveRemaining,
+          }
+        }
+
+        const message = template.replace(/<[^<>]+>/g, (key: string) => {
+          const fieldKey = MESSAGE_VARIABLES.find(item => item.value === key)?.field || ''
+          if (fieldKey) {
+            return get(unavailability, fieldKey, '')
+          }
+          return ''
+        })
+
+        if (unavailability.Resource.NotificationType === 'sms' && unavailability.Resource.MobilePhone) {
+          const phoneNumber = unavailability.Resource.MobilePhone
+          const countryCode = unavailability.Resource.CountryCode || new PhoneNumber(phoneNumber).getRegionCode()
+          await sendSMS(phoneNumber, countryCode, message)
+        } else {
+          await pushNotification(updateInput.Resource.UID, message)
+        }
+
         return updateInput
       }
       toastMessage.error('Updated status failed!')

@@ -3,7 +3,7 @@ import { Resource, IResource } from './Resource'
 export type AvailabilityStatus = 'Pending' | 'Approved' | 'Declined'
 
 export interface Availability {
-  [key: string]: any
+  // [key: string]: any
   UID: string
   Start: string
   Finish: string
@@ -13,6 +13,8 @@ export interface Availability {
   CreatedDate: string
   Status: AvailabilityStatus
 }
+
+export type AvailabilityKey = keyof Availability
 
 export interface AvailabilityChartData {
   date: Date

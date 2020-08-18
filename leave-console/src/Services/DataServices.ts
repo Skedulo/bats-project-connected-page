@@ -302,6 +302,25 @@ export const pushNotification = async (resourceId: string, message: string) => {
   }
 }
 
+export const sendSMS = async (phoneNumber: string, countryCode: string, message: string) => {
+  if (!phoneNumber || !countryCode || !message) {
+    return
+  }
+
+  try {
+    const responses = await httpApi.post('/notifications/sms',
+      {
+        message,
+        countryCode,
+        phoneNumber
+      })
+
+    return responses
+  } catch (error) {
+    return {}
+  }
+}
+
 export const fetchUnavailabilityExceptions = async (
   availabilityId: string,
   resourceName: string,

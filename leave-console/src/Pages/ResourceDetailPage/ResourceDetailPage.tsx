@@ -46,7 +46,9 @@ const ResourceDetailPage: FC<Props> = ({ }) => {
         UID: unavailability!.UID,
         Status: status,
         Resource: unavailability!.Resource,
-        Start: unavailability!.Start
+        Start: unavailability!.Start,
+        Finish: unavailability!.Finish,
+        Type: unavailability!.Type
       }))
     } catch (error) {
       throw error

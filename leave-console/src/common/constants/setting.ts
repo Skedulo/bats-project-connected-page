@@ -2,44 +2,34 @@ import { MessageVariable } from '../../Store/types'
 
 export const MESSAGE_VARIABLES: MessageVariable[] = [
   {
-    label: 'Job ID',
-    value: '{{ UID }}'
+    label: 'Unavailability Type',
+    value: '<Unavailability Type>',
+    field: 'Type',
   },
   {
-    label: 'Job Name',
-    value: '{{ Name }}'
+    label: 'Start Date',
+    value: '<Start Date>',
+    field: 'Start'
   },
   {
-    label: 'Job Start Time',
-    value: '{{ Start }}'
+    label: 'Finish Date',
+    value: '<Finish Date>',
+    field: 'Finish',
   },
   {
-    label: 'Job End Time',
-    value: '{{ End }}'
+    label: 'Request Status',
+    value: '<Request Status>',
+    field: 'Status'
   },
   {
-    label: 'Job Type',
-    value: '{{ Type }}'
+    label: 'Total Days Remaining',
+    value: '<Total Days Remaining>',
+    field: 'Resource.AnnualLeaveRemaining'
   },
   {
-    label: 'Job Duration',
-    value: '{{ Duration }}'
-  },
-  {
-    label: 'Job Status',
-    value: '{{ JobStatus }}'
-  },
-  {
-    label: 'Job Region',
-    value: '{{ Region.Name }}'
-  },
-  {
-    label: 'Account Name',
-    value: '{{ Account.Name }}'
-  },
-  {
-    label: 'Contact Full Name',
-    value: '{{ Contact.FullName }}'
+    label: 'Total Allowance in Days',
+    value: '<Total Allowance in Days>',
+    field: 'Resource.AnnualLeaveAllowance',
   }
 ]
 

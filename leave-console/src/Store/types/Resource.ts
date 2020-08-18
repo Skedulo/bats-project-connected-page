@@ -23,6 +23,11 @@ export interface Resource {
     UID: UID
     Name: string
   }
+  CountryCode: string
+  MobilePhone: string
+  NotificationType: 'push' | 'sms'
+  AnnualLeaveAllowance: number
+  AnnualLeaveRemaining: number
 }
 
 export enum ResourceSortType {
