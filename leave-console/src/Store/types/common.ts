@@ -89,8 +89,3 @@ export interface Weekdays {
 }
 
 export type Weekday = keyof Weekdays
-
-export interface Option {
-  label: string
-  value: string
-}

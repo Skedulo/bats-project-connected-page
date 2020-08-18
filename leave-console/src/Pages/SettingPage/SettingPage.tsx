@@ -1,13 +1,13 @@
 import React, { useState, memo, useCallback } from 'react'
 import { Icon, Tabs } from '@skedulo/sked-ui'
 import { Link } from 'react-router-dom'
-// import GeneralSettings from '../GeneralSettings'
+import GeneralSettings from '../GeneralSettings'
 import ResourceRequirementRules from '../ResourceRequirementRules'
 import { useSelector } from 'react-redux'
 import { State } from '../../Store/types'
 
 const TAB_ROUTES = [
-  { route: 'general', title: 'General' },
+  // { route: 'general', title: 'General' },
   { route: 'resource_requirements_rule', title: 'Resource Requirement Rules' }
 ]
 
@@ -15,7 +15,7 @@ const SettingPage: React.FC = () => {
   const { canSeeRRRSetting } = useSelector((state: State) => ({
     canSeeRRRSetting: state.configs?.canSeeRRRSetting || false
   }))
-  const [activeTab, setActiveTab] = useState<string>(TAB_ROUTES[1].route)
+  const [activeTab, setActiveTab] = useState<string>(TAB_ROUTES[0].route)
 
   const onChangeTab = useCallback((tab: string) => setActiveTab(tab), [])
 
@@ -48,7 +48,7 @@ const SettingPage: React.FC = () => {
         onClick={onChangeTab}
       />
       {/* {activeTab === TAB_ROUTES[0].route && <GeneralSettings />} */}
-      {activeTab === TAB_ROUTES[1].route && <ResourceRequirementRules />}
+      {activeTab === TAB_ROUTES[0].route && <ResourceRequirementRules />}
     </div>
   )
 }

@@ -226,7 +226,7 @@ const ResourceRequirementRules: React.FC<ResourceRequirementRulesProps> = () => 
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-bg-white cx-z-10">
         <RuleFilter onResetFilter={onResetFilter} onFilterChange={onFilterChange} filterParams={filterParams} />
         <div className="cx-flex cx-items-center cx-justify-end cx-px-4 cx-mb-2">
           <div className="cx-flex">

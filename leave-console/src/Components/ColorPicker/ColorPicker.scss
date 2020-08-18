@@ -1,0 +1,61 @@
+@import 'src/variables.scss';
+
+.colorpicker {
+  &__modal {
+    @apply absolute w-full;
+
+    background-color: rgba($navy, .2);
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 11;
+  }
+
+  &__container {
+    @apply absolute p-6;
+
+    background-color: $white;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    .chrome-picker {
+      box-shadow: none !important;
+    }
+  }
+
+  &__title {
+    @apply text-sm mb-3;
+
+    color: $navy-lighter;
+    line-height: 0.86;
+  }
+
+  &__colour-wrapper {
+    @apply flex flex-wrap;
+    align-items: center;
+    flex-flow: row;
+  }
+
+  &__colour {
+    @apply rounded-full cursor-pointer mx-2 relative;
+
+    height: 12px;
+    width: 12px;
+
+    &:hover,
+    &--selected {
+      &::after {
+        @apply rounded-full absolute;
+
+        border: 2px solid #d4d7de;
+        content: '';
+        height: 18px;
+        left: 50%;
+        top: 50%;
+        transform: translate3d(-50%, -50%, 0);
+        width: 18px;
+      }
+    }
+  }
+}
