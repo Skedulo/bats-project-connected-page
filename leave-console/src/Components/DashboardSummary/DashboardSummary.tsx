@@ -26,7 +26,7 @@ const DashboardSummary: React.FC = () => {
   const [depots, setDepots] = useState<IBaseModel[]>([])
 
   const getDepots = async(regionId: string) => {
-    const resp = await fetchGenericOptions({ name: '', sObjectType: 'sked_Depot__c', regionIds: regionId })
+    const resp = await fetchGenericOptions({ name: '', sObjectType: 'sked__Region_Area__c', regionIds: regionId })
     const formattedResp = resp.map(item => ({ id: item.value, name: item.label }))
     setDepots(formattedResp)
   }

@@ -74,7 +74,7 @@ const FormChildren: React.FC<IFormChildrenProps> = ({
     async (searchTerm: string) => {
       const res = await fetchGenericOptions({
         name: searchTerm,
-        sObjectType: 'sked_Depot__c',
+        sObjectType: 'sked__Region_Area__c',
         regionIds: fields.region?.id || ''
       })
       return res

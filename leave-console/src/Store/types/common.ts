@@ -57,7 +57,7 @@ export enum GenericOptionObjects {
   Contact,
   sked__Region__c,
   sked__Location__c,
-  sked_Depot__c
+  sked__Region_Area__c
 }
 
 export declare type GenericObjectTypes = keyof typeof GenericOptionObjects
