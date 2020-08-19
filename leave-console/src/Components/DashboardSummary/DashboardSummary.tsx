@@ -10,7 +10,7 @@ import AvailabilityByTypeChart from '../AvailabilityByTypeChart'
 import { State, Resource, IResource, IBaseModel } from '../../Store/types'
 import './DashboardSummary.scss'
 import { AvailabilityChartData } from '../../Store/types/Availability'
-import { fetchDepotByRegion, fetchGenericOptions } from '../../Services/DataServices'
+import { fetchGenericOptions } from '../../Services/DataServices'
 import { DATE_FORMAT } from '../../common/constants'
 
 const bem = classes('dashboard-summary')
@@ -136,6 +136,7 @@ const DashboardSummary: React.FC = () => {
         className={bem('availability-chart')}
         data={availabilityData}
         depots={depots}
+        totalResources={resources?.length || 0}
       />
       <AvailabilityByTypeChart
         className={bem('availability-chart-by-type')}

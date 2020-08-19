@@ -31,6 +31,7 @@ interface AvailabilityChartProps {
   data: AvailabilityChartData[]
   className?: string,
   depots: IBaseModel[]
+  totalResources: number
 }
 
 interface FilterParam {
@@ -38,26 +39,45 @@ interface FilterParam {
   depot: ISelectItem
 }
 
-const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, depots }) => {
-  const { coreSkills } = useSelector((state: State) => ({
-    coreSkills: state.configs?.coreSkills
+enum ViewType {
+  Total,
+  Percentage
+}
+
+const viewOptions = [
+  { label: 'Total', value: ViewType.Total },
+  { label: 'Percentage', value: ViewType.Percentage }
+]
+
+const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, depots, totalResources }) => {
+  // const config = useSelector((state: State) => state.configs)
+  const config = useSelector((state: State) => ({
+    coreSkills: state.configs?.coreSkills,
+    maxColor: state.configs?.maxColor,
+    midColor: state.configs?.midColor,
+    minColor: state.configs?.minColor,
+    availabilityChartMaxPoint: state.configs?.availabilityChartMaxPoint || 0,
+    availabilityChartMidPoint: state.configs?.availabilityChartMidPoint || 0,
+    availabilityChartMinPoint: state.configs?.availabilityChartMinPoint || 0
   }))
+
+  const [viewType, setViewType] = useState<ISelectItem>(viewOptions[0])
 
   const depotOptions = useMemo(() => {
     let options = [{ value: '', label: 'All depots' }]
     if (depots?.length) {
-      options = [...options, ...depots.map(item => ({ value: item.id, label: item.name }))] 
+      options = [...options, ...depots.map(item => ({ value: item.id, label: item.name }))]
     }
     return options
   }, [depots])
 
   const coreSkillOptions = useMemo(() => {
     let options = [{ value: '', label: 'All skills' }]
-    if (coreSkills?.length) {
-      options = [...options, ...coreSkills.map(item => ({ value: item.id, label: item.name }))] 
+    if (config.coreSkills?.length) {
+      options = [...options, ...config.coreSkills.map(item => ({ value: item.id, label: item.name }))]
     }
     return options
-  }, [coreSkills])
+  }, [config])
 
   const [filter, setFilter] = useState<FilterParam>({
     coreSkill: coreSkillOptions[0],
@@ -71,6 +91,27 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
   const handleCoreSkillChange = useCallback((item: ISelectItem) => {
     setFilter(prev => ({ ...prev, coreSkill: item }))
   }, [])
+
+  const handleViewTypeChange = useCallback((item: ISelectItem) => {
+    setViewType(item)
+  }, [])
+
+  const getFillColor = useCallback((percent: number) => {
+    if (viewType.value === ViewType.Percentage) {
+      const { availabilityChartMidPoint, availabilityChartMaxPoint, minColor, midColor, maxColor } = config
+      if (percent < availabilityChartMidPoint) {
+        return minColor
+      }
+      if (percent >= availabilityChartMidPoint && percent <= availabilityChartMaxPoint) {
+        return midColor
+      }
+      if (percent > availabilityChartMaxPoint) {
+        return maxColor
+      }
+    }
+    return CHART_COLORS.bar
+
+  }, [viewType, config])
 
   const displayData = useMemo(() => {
     return data.map(item => {
@@ -88,15 +129,18 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
         ...item,
         resources: matchedResources,
         resourcesCount: matchedResources.length,
-        // resourceRequirement: 3 // TODO: need to be clarified how to calculate
+        percentAvailability: Math.floor((matchedResources.length * 100) / totalResources)
       }
     })
-  }, [data, filter])
+  }, [data, filter, totalResources])
 
   return (
     <div className={ classNames(className, bem()) }>
       <div className="cx-flex cx-justify-between cx-items-center">
-        <h1 className={ bem('title') }>Availability</h1>
+        <div className="cx-flex cx-items-center">
+          <h1 className={ bem('title') }>Availability</h1>
+          <Picker items={viewOptions} onSelect={handleViewTypeChange} className="cx-ml-2" />
+        </div>
         <div className="cx-flex cx-items-center">
           <Picker items={depotOptions} onSelect={handleDepotChange} className="cx-mr-2" />
           <Picker items={coreSkillOptions} onSelect={handleCoreSkillChange} />
@@ -138,8 +182,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
             {displayData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={CHART_COLORS.bar}
-                // fill={entry.resourcesCount < entry.resourceRequirement ? CHART_COLORS.warning : CHART_COLORS.bar}
+                fill={getFillColor(entry.percentAvailability)}
               />
             ))}
           </Bar>

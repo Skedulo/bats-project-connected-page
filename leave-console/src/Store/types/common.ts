@@ -34,6 +34,12 @@ export interface IConfig {
   resourceCategories: IBaseModel[],
   canSeeRRRSetting: boolean,
   availabilityNotificationTemplate: string
+  maxColor: string
+  midColor: string
+  minColor: string
+  availabilityChartMaxPoint: number
+  availabilityChartMidPoint: number
+  availabilityChartMinPoint: number
 }
 
 export interface IBaseModel {
