@@ -41,3 +41,5 @@ export const ALLOWED_DEALLOCATE_STATUS = ['Dispatched', 'Pending Dispatch']
 export const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
 
 export const ALLOWED_UNSCHEDULE_STATUS = ['Pending Allocation']
+
+export const ALLOWED_ALLOCATE_STATUS = ['Queued', 'Pending Allocation']

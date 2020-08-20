@@ -1,5 +1,5 @@
 import React, { memo, useState, useEffect, useCallback, ChangeEvent, useMemo } from 'react'
-import { sortBy, toNumber } from 'lodash/fp'
+import { sortBy } from 'lodash/fp'
 import classnames from 'classnames'
 
 import {
@@ -14,10 +14,10 @@ import {
   Button,
   LoadingSpinner
 } from '@skedulo/sked-ui'
-import { IJobDetail, IResource, ResourceSortType } from '../../commons/types'
-import { fetchGenericOptions, fetchAvailableResources } from '../../Services/DataServices'
-import { RESOURCE_SORT_OPTIONS } from '../../commons/constants'
-import SearchBox from '../../commons/components/SearchBox'
+import { IResource, ResourceSortType, IBaseModel, IJobDetail } from '../../../commons/types'
+import { fetchGenericOptions, fetchResourcesByRegionSimple, fetchAvailableResources } from '../../../Services/DataServices'
+import { RESOURCE_SORT_OPTIONS } from '../../../commons/constants'
+import SearchBox from '../SearchBox'
 
 interface IModalHeaderProp {
   onClose: () => void
@@ -34,21 +34,19 @@ const ModalHeader: React.FC<IModalHeaderProp> = ({ onClose, title }) => {
 }
 
 interface IAllocationModalProps {
-  job: IJobDetail
   onClose: () => void
   isOpen: boolean
-  zonedDate: string
-  zonedTime: number
-  handleAllocation: (job: IJobDetail, resourcesIds: string[]) => void
+  region: IBaseModel
+  handleAllocation: (resourcesIds: string[]) => void,
+  targetJob?: IJobDetail
 }
 
 const AllocationModal: React.FC<IAllocationModalProps> = ({
   isOpen,
   onClose,
-  job,
-  zonedDate,
-  zonedTime,
-  handleAllocation
+  region,
+  handleAllocation,
+  targetJob
 }) => {
   const [selectedRegion, setSelectedRegion] = useState<ISelectItem>({ label: '', value: '' })
   const [sortType, setSortType] = useState<ISelectItem>(RESOURCE_SORT_OPTIONS[0])
@@ -59,14 +57,11 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const suggestedResources = useMemo(() => sortedResources.filter(item => item.isSuggested), [sortedResources])
 
-  const getAvailableResources = async (
-    targetJob: IJobDetail,
-    regionId: string,
-    zonedStartDate: string,
-    zonedStartTime: number
-  ) => {
+  const getAvailableResources = async (regionId: string) => {
     setIsLoading(true)
-    const res = await fetchAvailableResources(targetJob, regionId, zonedStartDate, zonedStartTime)
+    const res = targetJob ?
+      await fetchAvailableResources(targetJob, region.id) :
+      await fetchResourcesByRegionSimple(regionId)
     const sortedList = handleSort(res, sortType.value)
     setIsLoading(false)
     setSortedResources(sortedList)
@@ -130,8 +125,8 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   }, [selectedResources])
 
   const onSave = useCallback(async () => {
-    handleAllocation(job, selectedResources.map(item => item.id))
-  }, [selectedResources, job])
+    handleAllocation(selectedResources.map(item => item.id))
+  }, [selectedResources])
 
   useEffect(() => {
     setDisplayResources(sortedResources)
@@ -139,20 +134,20 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
 
   useEffect(() => {
     if (selectedRegion.value) {
-      getAvailableResources(job, selectedRegion.value, zonedDate, zonedTime)
+      getAvailableResources(selectedRegion.value)
     }
-  }, [selectedRegion.value, job, zonedDate, zonedTime])
+  }, [selectedRegion.value])
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedResources([])
     } else {
-      setSelectedRegion({ label: job.region.name, value: job.region.id })
-      if (job.allocations) {
-        setSelectedResources(job.allocations.map(item => ({ ...item.resource, isSuggested: false })))
+      setSelectedRegion({ label: region.name, value: region.id })
+      if (targetJob && targetJob.allocations) {
+        setSelectedResources(targetJob.allocations.map(item => ({ ...item.resource, isSuggested: false })))
       }
     }
-  }, [isOpen, job])
+  }, [isOpen, region, targetJob])
 
   if (!isOpen) {
     return null

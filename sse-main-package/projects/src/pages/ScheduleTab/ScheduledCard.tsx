@@ -3,7 +3,7 @@ import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import { times, toNumber } from 'lodash/fp'
 import classnames from 'classnames'
 
-import { Avatar } from '@skedulo/sked-ui'
+import { Avatar, GroupAvatars } from '@skedulo/sked-ui'
 import { parseDurationValue, parseTimeString, addTimeValue } from '../../commons/utils'
 import { IJobDetail, ITimeOption } from '../../commons/types'
 import { DraggableItemTypes, DATE_FORMAT, TIME_FORMAT } from '../../commons/constants'
@@ -90,24 +90,10 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
     }
   }
 
-  const resources: React.ReactNode[] = []
-  const time = job ? Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement)) : 0
-  times(index => {
-    const jobAllocation = job?.allocations ? job?.allocations[index] : null
-
-    resources.push(
-      <Avatar
-        name={jobAllocation?.resource?.name || ''}
-        key={`resourcerquired-${index}`}
-        className={classnames('cx-ml-1 first:cx-ml-0', {
-          'cx-bg-blue-100 cx-border cx-border-dotted cx-border-blue-500': !jobAllocation
-        })}
-        showTooltip={!!jobAllocation?.resource?.name}
-        size="small"
-        preserveName={false}
-      />
-    )
-  }, time > 0 ? time : 1)
+  const totalResources = job ? Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement)) : 0
+  const avatarInfo = job.allocations?.length > 0 ?
+    job.allocations.map(item => ({ name: item.resource?.name || '', tooltipText: item.resource?.name || '' })) :
+    []
 
   return (
     <Draggable
@@ -134,9 +120,13 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
         )}
         <span className="cx-h-full" style={durationStyle} onDoubleClick={onCardClick} />
         <span className="cx-flex">
-          {resources}
+          <GroupAvatars
+            totalSlots={totalResources > 0 ? totalResources : 1}
+            avatarInfo={avatarInfo}
+            maxVisibleSlots={5}
+          />
         </span>
-        <span className="cx-pl-2" style={{ width: 'max-content' }}>
+        <span className="cx-ml-2" style={{ width: 'max-content' }}>
           {parseDurationValue(job.duration)}
         </span>
       </div>

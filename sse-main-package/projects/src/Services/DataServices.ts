@@ -266,6 +266,17 @@ export const unscheduleMutipleJobs = async (jobIds: string): Promise<boolean> =>
   }
 }
 
+export const allocateMutipleJobs = async (jobIds: string[], resourceIds: string[]): Promise<boolean> => {
+  try {
+    const data = jobIds.map(jobId => ({ id: jobId, resourceIds }))
+    const res = await salesforceApi.post('/services/apexrest/sked/job/allocate', data)
+    return res.data.success
+  } catch (error) {
+    toastMessage.error('Something went wrong!')
+    return false
+  }
+}
+
 export const updateJobTime = async (job: IJobTime): Promise<boolean> => {
   try {
     const res = await salesforceApi.post(`/services/apexrest/sked/job`, job)
@@ -393,6 +404,20 @@ export const fetchResourcesByRegion = async (
   }
 }
 
+export const fetchResourcesByRegionSimple = async (
+  regionIds: string
+  ): Promise<IResource[]> => {
+  try {
+    const res = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
+      regionIds
+    } })
+
+    return res.data.data.results
+  } catch (error) {
+    return []
+  }
+}
+
 export const getResourceAvailabilities = async (
   resourceIds: string[],
   regionIds: string[],
@@ -454,15 +479,10 @@ export const getResourceSuggestions = async (
   }
 }
 
-export const fetchAvailableResources = async (
-  job: IJobDetail,
-  regionId: string,
-  zonedStartDate: string,
-  zonedStartTime: number
-) => {
+export const fetchAvailableResources = async (job: IJobDetail, regionId: string) => {
   try {
     const scheduleStart = parse(
-      `${zonedStartDate} ${parseTimeValue(zonedStartTime)}`,
+      `${job.startDate} ${parseTimeValue(job.startTime)}`,
       `${DATE_FORMAT} ${TIME_FORMAT}`,
       new Date()
     )
@@ -477,16 +497,16 @@ export const fetchAvailableResources = async (
 
     // HARD CODE to be same with web app version, will investigate later
 
-    const scheduleStartTemp = parse(`${zonedStartDate} 00:00:00`, `${DATE_FORMAT} HH:mm:ss`, new Date())
-    const scheduleEndTemp = parse(`${zonedStartDate} 23:59:59`, `${DATE_FORMAT} HH:mm:ss`, new Date())
-    const scheduleStartUtcTemp = zonedTimeToUtc(scheduleStartTemp, job.timezoneSid).toISOString()
-    const scheduleEndUtcTemp = zonedTimeToUtc(scheduleEndTemp, job.timezoneSid).toISOString()
+    // const scheduleStartTemp = parse(`${zonedStartDate} 00:00:00`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    // const scheduleEndTemp = parse(`${zonedStartDate} 23:59:59`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    // const scheduleStartUtcTemp = zonedTimeToUtc(scheduleStartTemp, job.timezoneSid).toISOString()
+    // const scheduleEndUtcTemp = zonedTimeToUtc(scheduleEndTemp, job.timezoneSid).toISOString()
 
     const suggestedResources = await getResourceSuggestions(
       job.id,
       availabilities,
-      scheduleStartUtcTemp,
-      scheduleEndUtcTemp
+      scheduleStartUtc,
+      scheduleEndUtc
     )
     return resourcesByRegion.map(item => {
       return {

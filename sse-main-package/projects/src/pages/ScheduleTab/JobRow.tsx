@@ -57,7 +57,7 @@ const JobRow: React.FC<IJobRowProps> = props => {
           <FormInputElement checked={isSelectedRow} onChange={handleSelectRow} type="checkbox" className="cx-mr-4" />
           <div className="cx-cursor-pointer" onClick={handleViewJob}>
             <p className="cx-font-medium hover:cx-text-primary">{job.name}</p>
-            <p>{truncate({ length: 50 }, job.description)}</p>
+            <p className="cx-mt-1 cx-text-neutral-700">{truncate({ length: 50 }, job.description)}</p>
           </div>
         </div>
         <div className="cx-w-1/3">

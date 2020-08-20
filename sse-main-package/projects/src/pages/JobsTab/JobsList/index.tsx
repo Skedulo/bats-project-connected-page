@@ -14,6 +14,7 @@ import {
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
+import AllocationModal from '../../../commons/components/AllocationModal'
 import {
   IJobDetail,
   IListResponse,
@@ -24,12 +25,22 @@ import {
   IConfig,
   IProjectDetail,
 } from '../../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR, ALLOWED_DISPATCH_STATUS, ALLOWED_DEALLOCATE_STATUS } from '../../../commons/constants'
+import {
+  DEFAULT_FILTER,
+  DEFAULT_LIST,
+  JOB_STATUS_COLOR,
+  ALLOWED_DISPATCH_STATUS,
+  ALLOWED_DEALLOCATE_STATUS,
+  ALLOWED_UNSCHEDULE_STATUS,
+  ALLOWED_ALLOCATE_STATUS
+} from '../../../commons/constants'
 import {
   fetchListJobs,
   deallocateMutipleJobs,
   dispatchMutipleJobs,
   fetchJobTypeTemplateValues,
+  unscheduleMutipleJobs,
+  allocateMutipleJobs,
 } from '../../../Services/DataServices'
 import { AppContext } from '../../../App'
 import SearchBox from '../../../commons/components/SearchBox'
@@ -38,6 +49,13 @@ import { toastMessage } from '../../../commons/utils'
 
 interface IJobsListProps {
   project: IProjectDetail
+}
+
+interface ICanAction {
+  canDispatch: boolean
+  canUnschedule: boolean
+  canAllocate: boolean
+  canDeallocate: boolean
 }
 
 const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
@@ -112,8 +130,14 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
   const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
-  const [canDeallocate, setCanDeallocate] = useState<boolean>(true)
-  const [canDispatch, setCanDispatch] = useState<boolean>(true)
+  const [allocateModal, setAllocateModal] = useState<boolean>(false)
+
+  const [canAction, setCanAction] = useState<ICanAction>({
+    canAllocate: true,
+    canDeallocate: true,
+    canUnschedule: true,
+    canDispatch: true
+  })
 
   const getJobsList = useCallback(async (params: IJobFilterParams) => {
     setIsLoading(true)
@@ -232,6 +256,47 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
     }
   }, [selectedRows, filterParams, projectId])
 
+  const onUnschedule = useCallback(async () => {
+    const jobIds = selectedRows
+      .filter(job => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+      .map(job => job.id).join(',')
+    setIsLoading(true)
+    const success = await unscheduleMutipleJobs(jobIds)
+    setIsLoading(false)
+    if (success) {
+      setSelectedRows([])
+      getJobsList({ ...filterParams, projectId: project.id })
+      toastMessage.success('Unscheduled successfully!')
+    } else {
+      toastMessage.success('Unscheduled unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, project])
+
+  const openAllocateModal = useCallback(() => {
+    setAllocateModal(true)
+  }, [])
+
+  const closeAllocateModal = useCallback(() => {
+    setAllocateModal(false)
+  }, [])
+
+  const onAllocate = useCallback(async (resourceIds: string[]) => {
+    const jobIds = selectedRows
+      .filter(job => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+      .map(job => job.id)
+    setIsLoading(true)
+    const success = await allocateMutipleJobs(jobIds, resourceIds)
+    setIsLoading(false)
+    closeAllocateModal()
+    if (success) {
+      setSelectedRows([])
+      getJobsList({ ...filterParams, projectId: project.id })
+      toastMessage.success('Allocated successfully!')
+    } else {
+      toastMessage.success('Allocated unsuccessfully!')
+    }
+  }, [selectedRows, filterParams, project])
+
   const jobsTableConfig: IDynamicTable<IJobDetail> = useMemo(
     () => ({
       data: jobs.results,
@@ -258,21 +323,19 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   }, [filterParams, projectId])
 
   useEffect(() => {
-    let shouldDeallocation = true
-    let shouldDispatch = true
-    if (selectedRows.length === 1) {
-      shouldDeallocation = ALLOWED_DEALLOCATE_STATUS.includes(selectedRows[0].status) &&
-        selectedRows[0].allocations?.length > 0
-      shouldDispatch = ALLOWED_DISPATCH_STATUS.includes(selectedRows[0].status)
-    } else {
-      shouldDeallocation = !!selectedRows.find(
-        (job: IJobDetail) => job.allocations?.length > 0 && ALLOWED_DEALLOCATE_STATUS.includes(job.status)
-      )
-      shouldDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
-    }
+    const canDeallocate = !!selectedRows.find(
+      (job: IJobDetail) => job.allocations?.length > 0 && ALLOWED_DEALLOCATE_STATUS.includes(job.status))
+    const canDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
+    const canUnschedule = !!selectedRows.find((job: IJobDetail) => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+    const canAllocate = !selectedRows.find(item => !!item.allocations?.length) &&
+      !!selectedRows.find(item => ALLOWED_ALLOCATE_STATUS.includes(item.status))
 
-    setCanDeallocate(shouldDeallocation)
-    setCanDispatch(shouldDispatch)
+    setCanAction({
+      canDeallocate,
+      canDispatch,
+      canUnschedule,
+      canAllocate
+    })
   }, [selectedRows])
 
   return (
@@ -287,10 +350,16 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
           <div className="cx-flex cx-aligns-center">
             {selectedRows.length > 0 && (
               <ButtonGroup className="cx-mr-2">
-                <Button buttonType="secondary" disabled={!canDeallocate} onClick={onDeallocate}>
+                <Button buttonType="secondary" disabled={!canAction.canUnschedule} onClick={onUnschedule}>
+                  Unschedule
+                </Button>
+                <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={onDeallocate}>
                   Deallocate
                 </Button>
-                <Button buttonType="primary" disabled={!canDispatch} onClick={onDispatchResource}>
+                <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openAllocateModal}>
+                  Allocate
+                </Button>
+                <Button buttonType="primary" disabled={!canAction.canDispatch} onClick={onDispatchResource}>
                   Dispatch
                 </Button>
               </ButtonGroup>
@@ -316,6 +385,12 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
           className="cx-static"
         />
       )}
+      <AllocationModal
+        isOpen={allocateModal}
+        handleAllocation={onAllocate}
+        onClose={closeAllocateModal}
+        region={project.region!}
+      />
     </div>
   )
 }

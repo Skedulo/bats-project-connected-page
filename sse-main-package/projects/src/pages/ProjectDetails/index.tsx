@@ -55,7 +55,7 @@ const ProjectDetail: React.FC = () => {
 
   return (
     <div className="cx-flex cx-flex-col cx-h-full">
-      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-1">
+      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
         <div className="cx-p-8 cx-pb-0">
           <Link to="/" className="cx-flex cx-items-center">
             <Icon name="chevronLeft" className="cx-text-primary" />

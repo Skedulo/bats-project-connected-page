@@ -16,7 +16,7 @@ import {
 } from '@skedulo/sked-ui'
 import JobFilter from './JobFilter'
 import SwimlaneSetting from './SwimlaneSetting'
-import AllocationModal from './AllocationModal'
+import AllocationModal from '../../commons/components/AllocationModal'
 import ScheduleTimeslots from './ScheduleTimeslots'
 import LoadingTrigger from '../../commons/components/GlobalLoading/LoadingTrigger'
 import {
@@ -38,7 +38,8 @@ import {
   LOCAL_STORAGE_KEY,
   ALLOWED_DISPATCH_STATUS,
   ALLOWED_DEALLOCATE_STATUS,
-  ALLOWED_UNSCHEDULE_STATUS
+  ALLOWED_UNSCHEDULE_STATUS,
+  ALLOWED_ALLOCATE_STATUS
 } from '../../commons/constants'
 import {
   fetchListJobs,
@@ -48,7 +49,8 @@ import {
   allocationResources,
   dispatchMutipleJobs,
   deallocateMutipleJobs,
-  unscheduleMutipleJobs
+  unscheduleMutipleJobs,
+  allocateMutipleJobs
 } from '../../Services/DataServices'
 import { AppContext } from '../../App'
 import SearchBox from '../../commons/components/SearchBox'
@@ -64,15 +66,18 @@ interface IScheduleTabProps {
 interface IAllocationModal {
   isOpen: boolean
   job: IJobDetail | null
-  zonedDate: string
-  zonedTime: number
+}
+
+interface ICanAction {
+  canDispatch: boolean
+  canUnschedule: boolean
+  canAllocate: boolean
+  canDeallocate: boolean
 }
 
 const DEFAULT_ALLOCATION_MODAL = {
   isOpen: false,
-  job: null,
-  zonedDate: '',
-  zonedTime: 0
+  job: null
 }
 
 const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
@@ -104,11 +109,12 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   const [suggestions, setSuggestions] = useState<IJobSuggestion[]>([])
 
-  const [canDeallocate, setCanDeallocate] = useState<boolean>(true)
-
-  const [canDispatch, setCanDispatch] = useState<boolean>(true)
-
-  const [canUnschedule, setCanUnschedule] = useState<boolean>(true)
+  const [canAction, setCanAction] = useState<ICanAction>({
+    canAllocate: true,
+    canDeallocate: true,
+    canUnschedule: true,
+    canDispatch: true
+  })
 
   const selectedRowIds = useMemo(() => selectedRows.map(item => item.id), [selectedRows])
 
@@ -292,20 +298,24 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         getSuggestions(job, true)
         setAllocationModal({
           isOpen: true,
-          job,
-          zonedDate,
-          zonedTime
+          job
         })
       }
       return
     }
     setAllocationModal({
       isOpen: true,
-      job,
-      zonedDate: job.startDate,
-      zonedTime: job.startTime
+      job
     })
   }, [filterParams, project.id])
+
+  // handle open allocation modal when clicking Allocate button
+  const openMultiAllocationModal = useCallback(() => {
+    setAllocationModal({
+      isOpen: true,
+      job: null
+    })
+  }, [])
 
   const closeAllocationModal = useCallback(() => {
     setAllocationModal(prev => ({ ...prev, isOpen: false }))
@@ -343,18 +353,25 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     return success
   }, [jobs])
 
-  const handleAllocation = useCallback(async (job: IJobDetail, resourceIds: string[]) => {
+  const handleAllocation = useCallback(async (resourceIds: string[]) => {
     setIsLoading(true)
-    const allocatedResourceIds = allocationModal.job?.allocations?.map(item => item.resource.id) || []
-    const needingAllocationResources = xor(allocatedResourceIds, resourceIds)
-    const isAllocationSuccess = await allocationResources(job.id, needingAllocationResources)
+
+    const jobIds = allocationModal.job ? [allocationModal.job.id] : selectedRows
+      .filter(job => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+      .map(job => job.id)
+    if (!jobIds.length) {
+      return
+    }
+    const isAllocationSuccess = await allocateMutipleJobs(jobIds, resourceIds)
     closeAllocationModal()
     setIsLoading(false)
     if (isAllocationSuccess) {
       getJobsList({...filterParams, projectId: project.id })
-      getSuggestions(job, true)
+      if (selectedRows.length) {
+        setSelectedRows([])
+      }
     }
-  }, [filterParams, project.id, allocationModal.job])
+  }, [filterParams, project.id, allocationModal.job, selectedRows])
 
   const swimlaneSettingTrigger = useCallback(() => {
     return (
@@ -445,20 +462,25 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   }, [])
 
   useEffect(() => {
-    const shouldDeallocation = !!selectedRows.find(
+    const canDeallocate = !!selectedRows.find(
       (job: IJobDetail) => job.allocations?.length > 0 && ALLOWED_DEALLOCATE_STATUS.includes(job.status))
-    const shouldDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
-    const shouldUnschedule = !!selectedRows.find((job: IJobDetail) => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+    const canDispatch = !!selectedRows.find((job: IJobDetail) => ALLOWED_DISPATCH_STATUS.includes(job.status))
+    const canUnschedule = !!selectedRows.find((job: IJobDetail) => ALLOWED_UNSCHEDULE_STATUS.includes(job.status))
+    const canAllocate = !selectedRows.find(item => !!item.allocations?.length) &&
+      !!selectedRows.find(item => ALLOWED_ALLOCATE_STATUS.includes(item.status))
 
-    setCanDeallocate(shouldDeallocation)
-    setCanDispatch(shouldDispatch)
-    setCanUnschedule(shouldUnschedule)
+    setCanAction({
+      canDeallocate,
+      canDispatch,
+      canUnschedule,
+      canAllocate
+    })
   }, [selectedRows])
 
   return (
     <div className="scroll">
       {isLoading && <LoadingTrigger />}
-      <div className="cx-sticky cx-top-0 cx-bg-white cx-z-10">
+      <div className="cx-bg-white cx-z-10">
         <JobFilter
           onResetFilter={onResetFilter}
           onFilterChange={onFilterChange}
@@ -472,13 +494,16 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           <div className="cx-flex cx-aligns-center cx-pr-4">
             {selectedRows.length > 0 && (
               <ButtonGroup className="cx-mr-2">
-                <Button buttonType="secondary" disabled={!canUnschedule} onClick={handleUnschedule}>
+                <Button buttonType="secondary" disabled={!canAction.canUnschedule} onClick={handleUnschedule}>
                   Unschedule
                 </Button>
-                <Button buttonType="secondary" disabled={!canDeallocate} onClick={handleDeallocate}>
+                <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={handleDeallocate}>
                   Deallocate
                 </Button>
-                <Button buttonType="primary" disabled={!canDispatch} onClick={handleDispatchResource}>
+                <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openMultiAllocationModal}>
+                  Allocate
+                </Button>
+                <Button buttonType="primary" disabled={!canAction.canDispatch} onClick={handleDispatchResource}>
                   Dispatch
                 </Button>
               </ButtonGroup>
@@ -610,16 +635,13 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           />
         )}
       </div>
-      {allocationModal.job && (
-        <AllocationModal
-          isOpen={allocationModal.isOpen}
-          onClose={closeAllocationModal}
-          job={allocationModal.job}
-          zonedDate={allocationModal.zonedDate}
-          zonedTime={allocationModal.zonedTime}
-          handleAllocation={handleAllocation}
-        />
-      )}
+      <AllocationModal
+        isOpen={allocationModal.isOpen}
+        onClose={closeAllocationModal}
+        targetJob={allocationModal.job || undefined}
+        handleAllocation={handleAllocation}
+        region={allocationModal.job?.region || project.region!}
+      />
     </div>
   )
 }
