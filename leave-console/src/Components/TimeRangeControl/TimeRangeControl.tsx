@@ -8,6 +8,7 @@ import { startOfYesterday } from 'date-fns/esm'
 import './TimeRangeControl.scss'
 
 const rangeOptions: RangeType[] = [
+  'day',
   '3-days',
   'week',
   // '2-weeks',
@@ -18,6 +19,9 @@ const getRangeEndDate = (startDate: Date, range: string) => {
   const endDate = new Date(startDate)
 
   switch (range) {
+    case 'day':
+      endDate.setDate(endDate.getDate() + 0)
+      break
     case 'week':
       endDate.setDate(endDate.getDate() + 6)
       break
@@ -50,7 +54,7 @@ const TimeRangeControl: React.FC = () => {
 
   const selectedDate = new Date(selectedDateISO)
 
-  const [selectedRange, setSelectedRange] = React.useState(rangeOptions[1])
+  const [selectedRange, setSelectedRange] = React.useState(rangeOptions[2])
 
   const onDateSelect = (date: Date) => {
     const startDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0))

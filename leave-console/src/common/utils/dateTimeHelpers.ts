@@ -1,6 +1,7 @@
-import { differenceInMinutes, parseISO } from 'date-fns'
+import { differenceInMinutes, parseISO, isDate, format, eachDayOfInterval } from 'date-fns'
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz/fp'
 import { flow, isNumber, toNumber } from 'lodash/fp'
+import { DATE_FORMAT } from '../constants'
 
 export const calculateDurationInMinutes = (startISO?: string, endISO?: string) => {
   if (!startISO || !endISO) {
@@ -201,4 +202,22 @@ export const extractRemainingALDaysWithHours = (remainingDay: number, dailyHours
   const hourString = `${hours} hour${hours > 1 ? 's' : ''}`
 
   return hours > 0 ? `${dayString} & ${hourString}` : dayString
+}
+
+/**
+ * get day interval from date range
+ */
+export const getEachDayOfInterval = (start: Date, end: Date) => {
+  if (!start || !end || !isDate(start) || !isDate(end)) {
+    return []
+  }
+
+  if (format(start, DATE_FORMAT) === format(end, DATE_FORMAT)) {
+    return [start]
+  }
+
+  return eachDayOfInterval({
+    start,
+    end
+  })
 }

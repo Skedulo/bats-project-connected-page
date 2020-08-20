@@ -12,6 +12,7 @@ import './DashboardSummary.scss'
 import { AvailabilityChartData } from '../../Store/types/Availability'
 import { fetchGenericOptions } from '../../Services/DataServices'
 import { DATE_FORMAT } from '../../common/constants'
+import { getEachDayOfInterval } from '../../common/utils/dateTimeHelpers'
 
 const bem = classes('dashboard-summary')
 
@@ -31,10 +32,12 @@ const DashboardSummary: React.FC = () => {
     setDepots(formattedResp)
   }
 
-  const daysBetween = useMemo(() => eachDayOfInterval({
-    start: utcToZonedTime(parseISO(timeRange.startDate), region.timezoneSid),
-    end: addDays(utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid), -1)
-  }), [timeRange])
+  const daysBetween = useMemo(() => {
+    return getEachDayOfInterval(
+      utcToZonedTime(parseISO(timeRange.startDate), region.timezoneSid),
+      addDays(utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid), -1)
+    )
+  }, [timeRange])
 
   const unavailableResources = useMemo(() => {
     return unavailabilities?.filter(item => item.Status === 'Approved').length || 0
@@ -74,7 +77,8 @@ const DashboardSummary: React.FC = () => {
         Object.keys(availabilities).forEach(resourceId => {
           if (availabilities[resourceId].availability.records[0]?.length) {
             const formattedDate = format(date, DATE_FORMAT)
-            const availabilityRecords = availabilities[resourceId].availability.records[0]
+            // const availabilityRecords = availabilities[resourceId].availability.records[0]
+            const availabilityRecords = availabilities[resourceId].available
             const matchedRecord = availabilityRecords.find(item => {
               const startDate = format(parseISO(item.start), DATE_FORMAT, { timeZone: region.timezoneSid })
               const endDate = format(parseISO(item.end), DATE_FORMAT, { timeZone: region.timezoneSid })
