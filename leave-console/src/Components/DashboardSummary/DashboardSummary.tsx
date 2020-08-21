@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react'
-import { keyBy } from 'lodash'
+import { keyBy, uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 import { addDays, parseISO, eachDayOfInterval } from 'date-fns'
 import { utcToZonedTime, format } from 'date-fns-tz'
@@ -40,7 +40,10 @@ const DashboardSummary: React.FC = () => {
   }, [timeRange])
 
   const unavailableResources = useMemo(() => {
-    return unavailabilities?.filter(item => item.Status === 'Approved').length || 0
+    if (!unavailabilities) {
+      return 0
+    }
+    return uniqBy(unavailabilities.filter(item => item.Status === 'Approved'), 'Resource.UID').length
   }, [unavailabilities])
 
   const requestsStats = useMemo(() => {
@@ -71,13 +74,18 @@ const DashboardSummary: React.FC = () => {
     const data = Array.from({ length: daysBetween.length })
     const resourcesKeyById = keyBy(resources, 'id')
     daysBetween.forEach((date, i) => {
+      const formattedDate = format(date, DATE_FORMAT)
       let resourcesCount = 0
       const availabilityResources: IResource[] = []
       if (availabilities) {
         Object.keys(availabilities).forEach(resourceId => {
           if (availabilities[resourceId].availability.records[0]?.length) {
-            const formattedDate = format(date, DATE_FORMAT)
             // const availabilityRecords = availabilities[resourceId].availability.records[0]
+            // const approvedAvailability = unavailabilities.find(item => {
+            //   const startDate = format(parseISO(item.Start), DATE_FORMAT, { timeZone: region.timezoneSid })
+            //   const endDate = format(parseISO(item.Finish), DATE_FORMAT, { timeZone: region.timezoneSid })
+            //   return formattedDate >= startDate && formattedDate <= endDate && item.Status === 'Approved' && item.Resource.UID === resourceId
+            // })
             const availabilityRecords = availabilities[resourceId].available
             const matchedRecord = availabilityRecords.find(item => {
               const startDate = format(parseISO(item.start), DATE_FORMAT, { timeZone: region.timezoneSid })
@@ -101,7 +109,7 @@ const DashboardSummary: React.FC = () => {
       data[i] = chartItem
     })
     return data as AvailabilityChartData[]
-  }, [daysBetween, availabilities, resources])
+  }, [daysBetween, availabilities, resources, unavailabilities])
 
   useEffect(() => {
     if (region?.id) {

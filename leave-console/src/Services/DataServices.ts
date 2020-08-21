@@ -338,3 +338,15 @@ export const fetchUnavailabilityExceptions = async (
     return []
   }
 }
+
+export const fetchResourceById = async (resourceId: string): Promise<IResource | null> => {
+  try {
+    const res = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
+      id: resourceId
+    } })
+
+    return res.data.data
+  } catch (error) {
+    return null
+  }
+}

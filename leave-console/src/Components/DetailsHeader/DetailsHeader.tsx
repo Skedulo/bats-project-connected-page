@@ -58,7 +58,7 @@ const DetailsHeader: React.FC<DetailsHeaderProps> = ({
               </div>
               <div className="cx-flex cx-items-center">
                 <Icon name="tag" className="cx-text-neutral-700 cx-mr-2" />
-                {userData.Depot?.Name || '--'}
+                {userData.Depot?.DepotName || '--'}
               </div>
             </div>
           </div>

@@ -53,6 +53,7 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
         contactId: form.fields.contact?.id,
         regionId: form.fields.region?.id,
         locationId: form.fields.location?.id,
+        templateId: form.fields.template?.id,
         account: { id: form.fields.account?.id, name: form.fields.account?.name },
         contact: { id: form.fields.contact?.id, name: form.fields.contact?.name },
         region: { id: form.fields.region?.id, name: form.fields.region?.name },

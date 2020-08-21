@@ -201,7 +201,7 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
           </div>
           {isLoading && <LoadingSpinner color="#008CFF" />}
           {!isLoading && (
-            <div className="scroll cx-max-h-300px">
+            <div className="cx-overflow-y-scroll cx-max-h-300px">
               {!!displayResources.length && displayResources.map(item => {
                 return (
                   <div className="cx-flex cx-items-center cx-my-2 cx-w-1/2" key={item.id}>

@@ -12,9 +12,10 @@ import {
 
 import * as Queries from '../queries'
 import { Services } from '../../Services/Services'
-import { getResourceAvailabilities } from '../../Services/DataServices'
+import { getResourceAvailabilities, fetchUnavailabilityExceptions } from '../../Services/DataServices'
 import { State, Availability, JobAllocation, UnavailabilityTableItem } from '../types'
 import { IResourceAvailability } from '../types/Availability'
+import { getUnavailabilityExceptions } from './unavailabilyExceptions'
 
 const AVAILABILITY = makeActionsSet('AVAILABILITY')
 const dateFilter = (startDate: string, endDate: string) => `Start < ${endDate} AND Finish > ${startDate}`

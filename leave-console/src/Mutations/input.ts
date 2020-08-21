@@ -10,7 +10,7 @@ import {
   makeAsyncActionCreatorSimp
 } from '../common/utils/redux-helpers'
 import { getAvailabilities } from '../Store/reducers/availabilities'
-import { pushNotification, sendSMS } from '../Services/DataServices'
+import { pushNotification, sendSMS, fetchResourceById } from '../Services/DataServices'
 import { toastMessage } from '../common/utils/toast'
 import { format, utcToZonedTime } from 'date-fns-tz'
 import { DATE_FORMAT, MESSAGE_VARIABLES, LONG_DATE_FORMAT } from '../common/constants'
@@ -43,11 +43,12 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
           }
         }
       })
-      await dispatch(getResources())
       dispatch(getAvailabilities())
       if (updateAvailabilities) {
-        const resources = store.resources || [] as IResource[]
-        const matchedResource = resources.find(item => item.id === updateInput.Resource.UID)
+        // const resources = store.resources || [] as IResource[]
+        // const matchedResource = resources.find(item => item.id === updateInput.Resource.UID)
+        await new Promise(r => setTimeout(r, 5000))
+        const matchedResource = await fetchResourceById(updateInput.Resource.UID)
         const template = store.configs?.availabilityNotificationTemplate || DEFAULT_NOTIFICATION
         const unavailability = {
           ...updateInput,

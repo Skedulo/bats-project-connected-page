@@ -22,6 +22,7 @@ export interface Resource {
   Depot: {
     UID: UID
     Name: string
+    DepotName: string
   }
   CountryCode: string
   MobilePhone: string
