@@ -1,7 +1,6 @@
 import { Dispatch } from 'redux'
 import getOverlappingDaysInIntervals from 'date-fns/getOverlappingDaysInIntervals'
-import parseISO from 'date-fns/parseISO'
-import { eachDayOfInterval, startOfDay, endOfDay, areIntervalsOverlapping } from 'date-fns'
+import { eachDayOfInterval, startOfDay, endOfDay, areIntervalsOverlapping, parseISO, format, add } from 'date-fns'
 
 import {
   makeActionsSet,
@@ -16,7 +15,8 @@ import { getResourceAvailabilities, fetchUnavailabilityExceptions } from '../../
 import { State, Availability, JobAllocation, UnavailabilityTableItem } from '../types'
 import { IResourceAvailability } from '../types/Availability'
 import { getUnavailabilityExceptions } from './unavailabilyExceptions'
-
+import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
+import moment from 'moment-timezone'
 const AVAILABILITY = makeActionsSet('AVAILABILITY')
 const dateFilter = (startDate: string, endDate: string) => `Start < ${endDate} AND Finish > ${startDate}`
 const arrayFilter = (array: string[]) => `[${array.map(element => `'${element}'`).join(',')}]`
@@ -25,13 +25,20 @@ const formatFilterValue = (valueArray: string[]) => valueArray.length === 1
   : `IN ${arrayFilter(valueArray)}`
 
 const createAllAvailabilitiesFilters = (store: State) => {
-  const { timeRange: { startDate,endDate }, filters } = store
+  const { timeRange: { startDate, endDate }, filters, region } = store
+  // we have to format because the diff timezone
+  const zonedStartDate = moment.tz(startDate, region.timezoneSid)
+  const zonedEndDate = moment.tz(endDate, region.timezoneSid)
+  const formattedStartDate = zonedStartDate.subtract(zonedStartDate.utcOffset(), 'minutes')
+  const formattedEndDate = zonedEndDate.subtract(zonedEndDate.utcOffset(), 'minutes')
+
   const appliedFilters = filters
     .filter(filter => filter.value && filter.value.length > 0)
     .map(({
       value, selector
     }) => `${selector} ${formatFilterValue(value)}`)
-  const dateFilters = dateFilter(startDate,endDate)
+  const dateFilters = dateFilter(formattedStartDate.toISOString(), formattedEndDate.toISOString())
+  // const dateFilters = dateFilter(startDate, endDate)
   return [dateFilters, ...appliedFilters].join(' AND ')
 }
 

@@ -1,4 +1,4 @@
-import { pick, get } from 'lodash'
+import { pick, get, toNumber } from 'lodash'
 import { Dispatch } from 'redux'
 import PhoneNumber from 'awesome-phonenumber'
 import { Services } from '../Services/Services'
@@ -15,6 +15,7 @@ import { toastMessage } from '../common/utils/toast'
 import { format, utcToZonedTime } from 'date-fns-tz'
 import { DATE_FORMAT, MESSAGE_VARIABLES, LONG_DATE_FORMAT } from '../common/constants'
 import { getResources } from '../Store/reducers/fetch'
+import { extractRemainingALDaysWithHours } from '../common/utils/dateTimeHelpers'
 
 export type UID = string
 
@@ -43,11 +44,12 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
           }
         }
       })
-      dispatch(getAvailabilities())
+      dispatch(getResources())
       if (updateAvailabilities) {
+        // dispatch(getAvailabilities())
+        await new Promise(r => setTimeout(r, 3000))
         // const resources = store.resources || [] as IResource[]
         // const matchedResource = resources.find(item => item.id === updateInput.Resource.UID)
-        await new Promise(r => setTimeout(r, 5000))
         const matchedResource = await fetchResourceById(updateInput.Resource.UID)
         const template = store.configs?.availabilityNotificationTemplate || DEFAULT_NOTIFICATION
         const unavailability = {
@@ -56,8 +58,8 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
           Finish: format(utcToZonedTime(updateInput.Finish, store.region?.timezoneSid), LONG_DATE_FORMAT),
           Resource: {
             ...updateInput.Resource,
-            AnnualLeaveAllowance: matchedResource?.annualLeaveAllowance,
-            AnnualLeaveRemaining: matchedResource?.annualLeaveRemaining,
+            AnnualLeaveAllowance: extractRemainingALDaysWithHours(toNumber(matchedResource?.annualLeaveAllowance), toNumber(matchedResource?.dailyHours)),
+            AnnualLeaveRemaining: extractRemainingALDaysWithHours(toNumber(matchedResource?.annualLeaveRemaining), toNumber(matchedResource?.dailyHours)),
           }
         }
 

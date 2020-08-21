@@ -77,18 +77,17 @@ const updateHandlers: {[key: string]: any} = {
     if (operation === Operation.Insert) {
       return state
     }
-    const { availabilities } = state
-
-    if (availabilities && availabilities.length) {
-      const availability = availabilities.find(({ UID: savedUID }) => UID === savedUID)
-      if (availability) {
+    const { unavailabilities } = state
+    if (unavailabilities && unavailabilities.length) {
+      const unavailability = unavailabilities.find(({ UID: savedUID }) => UID === savedUID)
+      if (unavailability) {
         const newData = {
-          ...availability,
-          Status: Status || availability.Status
+          ...unavailability,
+          Status: Status || unavailability.Status
         }
         return {
           ...state,
-          availabilities: insertByKey(availabilities, 'UID', newData)
+          unavailabilities: insertByKey(unavailabilities, 'UID', newData)
         }
       }
     }

@@ -79,7 +79,7 @@ const DashboardPage: React.FC<IProps> = () => {
   }, [])
 
   useEffect(() => {
-    registerNewSubscription('AvailabilityUpdate', undefined, true)
+    dispatch(registerNewSubscription('AvailabilityUpdate', undefined, true))
   }, [subscriptionStatus])
 
   useEffect(() => {

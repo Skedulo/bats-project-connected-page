@@ -4,6 +4,7 @@ import { Dispatch } from 'redux'
 import { makeActionCreator } from '../../common/utils/redux-helpers'
 import { getAvailabilities } from './availabilities'
 import { State, IRegion } from '../types'
+import { utcToZonedTime } from 'date-fns-tz'
 
 const REGION_SET = 'REGION_SET'
 

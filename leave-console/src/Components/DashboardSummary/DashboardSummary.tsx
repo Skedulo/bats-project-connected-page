@@ -35,6 +35,7 @@ const DashboardSummary: React.FC = () => {
   const daysBetween = useMemo(() => {
     return getEachDayOfInterval(
       utcToZonedTime(parseISO(timeRange.startDate), region.timezoneSid),
+      // utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid)
       addDays(utcToZonedTime(parseISO(timeRange.endDate), region.timezoneSid), -1)
     )
   }, [timeRange])
@@ -81,7 +82,7 @@ const DashboardSummary: React.FC = () => {
         Object.keys(availabilities).forEach(resourceId => {
           if (availabilities[resourceId].availability.records[0]?.length) {
             // const availabilityRecords = availabilities[resourceId].availability.records[0]
-            // const approvedAvailability = unavailabilities.find(item => {
+            // const approvedUnavailability = unavailabilities.find(item => {
             //   const startDate = format(parseISO(item.Start), DATE_FORMAT, { timeZone: region.timezoneSid })
             //   const endDate = format(parseISO(item.Finish), DATE_FORMAT, { timeZone: region.timezoneSid })
             //   return formattedDate >= startDate && formattedDate <= endDate && item.Status === 'Approved' && item.Resource.UID === resourceId

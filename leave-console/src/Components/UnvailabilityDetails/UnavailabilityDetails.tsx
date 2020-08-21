@@ -33,21 +33,20 @@ const UnavailabilityDetails: React.FC<UnavailabilityDetailsProps> = ({ data: {
   Resource
 } }) => {
   const { region, resources } = useSelector((state: State) => ({ region: state.region, resources: state.resources || [] }))
+  const leaveResource = useMemo(() => resources.find(item => item.id === Resource.UID), [resources])
   const durationNumber = differenceInCalendarDays(new Date(Finish), new Date(Start))
   const submittedNumber = differenceInCalendarDays(Date.now(), new Date(CreatedDate))
-
   const Duration = `${durationNumber} ${durationNumber === 1 ? 'day' : 'days'}`
   const SubmittedDiff = submittedNumber === 0 ? 'today' : `${submittedNumber} ${submittedNumber === 1 ? 'day' : 'days'} ago`
 
   const LeaveRemaining = useMemo(() => {
-    const resource = resources.find(item => item.id === Resource.UID)
-    if (!resource) {
+    if (!leaveResource) {
       return '-- --'
     }
-    const leaveAllowance = resource.annualLeaveAllowance || 0
-    const remainingDaysWithHours = extractRemainingALDaysWithHours(resource.annualLeaveRemaining, resource.dailyHours)
+    const leaveAllowance = leaveResource.annualLeaveAllowance || 0
+    const remainingDaysWithHours = extractRemainingALDaysWithHours(leaveResource.annualLeaveRemaining, leaveResource.dailyHours)
     return `${remainingDaysWithHours} of ${leaveAllowance} day${leaveAllowance > 1 ? 's' : ''} remaining`
-  }, [resources, Resource])
+  }, [resources, leaveResource])
 
   return (
     <div className={ bem() }>

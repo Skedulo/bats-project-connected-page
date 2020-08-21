@@ -211,7 +211,6 @@ export const getEachDayOfInterval = (start: Date, end: Date) => {
   if (!start || !end || !isDate(start) || !isDate(end)) {
     return []
   }
-
   if (format(start, DATE_FORMAT) === format(end, DATE_FORMAT)) {
     return [start]
   }
