@@ -32,23 +32,26 @@ interface AvailabilityByCoreSkillChartProps {
 enum ChartType {
   CoreSkill = 'AvailableByCoreSkill',
   Depot = 'AvailableByDepot',
+  Category = 'AvailableByCategory',
 }
 
 const CHART_TYPES = [
   { value: ChartType.CoreSkill, label: 'Core Skill' },
-  { value: ChartType.Depot, label: 'Depot' }
+  { value: ChartType.Depot, label: 'Depot' },
+  { value: ChartType.Category, label: 'Category' },
 ]
 
 const COLUMN_COLORS = ['#BDE2C5', '#F4C8A4', '#F5E59F', '#EEB1AC', '#C7BEEC', '#B0DDEA', '#99D1FF', '#A7D4CF', '#E4ADCB']
 
 export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChartProps> = ({ data, className, depots }) => {
-  const { coreSkills } = useSelector((state: State) => ({
-    coreSkills: state.configs?.coreSkills || []
+  const { coreSkills, categories } = useSelector((state: State) => ({
+    coreSkills: state.configs?.coreSkills || [],
+    categories: [state.configs?.resourceCategories[0], state.configs?.resourceCategories[1], state.configs?.resourceCategories[2]] || [],
   }))
 
   const [selectedType, setSelectedType] = useState<ISelectItem>(CHART_TYPES[0])
 
-  const handleCoreSkillChange = useCallback((item: ISelectItem) => {
+  const handleChartTypeChange = useCallback((item: ISelectItem) => {
     setSelectedType(item)
   }, [])
 
@@ -56,10 +59,12 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
     return data.map(item => {
       const resourceByCoreSkill = groupBy(item.resources, 'coreSkill')
       const resourceByDepot = groupBy(item.resources, 'depot.id')
+      const resourceByCategory = groupBy(item.resources, 'category')
       return {
         ...item,
         [ChartType.CoreSkill]: mapValues(resourceByCoreSkill, value => value.length),
         [ChartType.Depot]: mapValues(resourceByDepot, value => value.length),
+        [ChartType.Category]: mapValues(resourceByCategory, value => value.length),
       }
     })
 
@@ -69,7 +74,7 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
     <div className={classNames('cx-p-8 cx-bg-white', className, bem())}>
       <div className="cx-flex cx-justify-between cx-items-center">
         <h1 className={ bem('title') }>{`Availability by ${selectedType.label}`}</h1>
-        <Picker items={CHART_TYPES} onSelect={handleCoreSkillChange} />
+        <Picker items={CHART_TYPES} onSelect={handleChartTypeChange} />
       </div>
       <ResponsiveContainer>
         <BarChart
@@ -115,6 +120,17 @@ export const AvailabilityByCoreSkillChart: React.FC<AvailabilityByCoreSkillChart
                 key={`${depot.id}-${index}`}
                 dataKey={`${ChartType.Depot}.${depot.id}`}
                 name={truncate(depot.name, { length: 25 })}
+                fill={COLUMN_COLORS[index]}
+                barSize={5}
+              />
+            )
+          })}
+          {selectedType.value === ChartType.Category && categories?.map((category, index) => {
+            return (
+              <Bar
+                key={`${category?.id}-${index}`}
+                dataKey={`${ChartType.Category}.${category?.id}`}
+                name={truncate(category?.name, { length: 25 })}
                 fill={COLUMN_COLORS[index]}
                 barSize={5}
               />

@@ -13,6 +13,8 @@ import { Avatars, UID, State, TimeRange, IRegion } from '../types'
 import { Services } from '../../Services/Services'
 import { fetchConfig, fetchResourcesByRegion, fetchResourceRequirementRules } from '../../Services/DataServices'
 import { setRegionSimp } from './region'
+import { getLocalStorage } from '../../common/utils/common'
+import { STORAGE_KEYS } from '../../common/constants'
 
 const RESOURCE = makeActionsSet('RESOURCE')
 const CLEAR_NEW_ENTRY_STATE = 'CLEAR_NEW_ENTRY_STATE'
@@ -26,7 +28,9 @@ export const getConfigs = makeAsyncActionCreatorSimp(
   CONFIGS, () => async (dispatch: Dispatch) => {
     const resp = await fetchConfig()
     if (resp.regions.length) {
-      dispatch(setRegionSimp(resp.regions[0]))
+      const latestRegionId = getLocalStorage(STORAGE_KEYS.LATEST_REGION)
+      const defaultRegion = resp.regions.find(item => item.id === latestRegionId) || resp.regions[0]
+      dispatch(setRegionSimp(defaultRegion))
     }
     return { configs: resp }
   }

@@ -12,6 +12,7 @@ export interface Availability {
   Resource: Resource
   CreatedDate: string
   Status: AvailabilityStatus
+  Exceptions: number
 }
 
 export type AvailabilityKey = keyof Availability

@@ -1,7 +1,7 @@
 import { Dispatch } from 'redux'
 import getOverlappingDaysInIntervals from 'date-fns/getOverlappingDaysInIntervals'
 import { eachDayOfInterval, startOfDay, endOfDay, areIntervalsOverlapping, parseISO, format, add } from 'date-fns'
-
+import { uniq } from 'lodash'
 import {
   makeActionsSet,
   makeAsyncActionCreatorSimp,
@@ -11,7 +11,7 @@ import {
 
 import * as Queries from '../queries'
 import { Services } from '../../Services/Services'
-import { getResourceAvailabilities, fetchUnavailabilityExceptions } from '../../Services/DataServices'
+import { getResourceAvailabilities, fetchUnavailabilityExceptions, countUnavailabilityExceptions } from '../../Services/DataServices'
 import { State, Availability, JobAllocation, UnavailabilityTableItem } from '../types'
 import { IResourceAvailability } from '../types/Availability'
 import { getUnavailabilityExceptions } from './unavailabilyExceptions'
@@ -59,9 +59,14 @@ export const getAvailabilities = makeAsyncActionCreatorSimp(
       getResourceAvailabilities(resourceIds, [region?.id], timeRange.startDate, timeRange.endDate)
     ])
 
+    const unavailabilityIds = unavailabilitiesResp.availabilities.map(item => item.UID)
+    const unavailabilyExceptions = await countUnavailabilityExceptions(unavailabilityIds)
     return {
       availabilities: availabilitiesResp,
-      unavailabilities: unavailabilitiesResp.availabilities,
+      unavailabilities: unavailabilitiesResp.availabilities.map(item => ({
+        ...item,
+        Exceptions: unavailabilyExceptions[item.UID] ? unavailabilyExceptions[item.UID].length : 0
+      })),
     }
   }
 )
@@ -74,7 +79,7 @@ const availabilityTransform = (
     const { Start, Finish, Resource: { JobAllocations } } = unavailability
     const unavailabilityStart = parseISO(Start)
     const unavailabilityEnd = parseISO(Finish)
-    const conflicts = countConflicts(unavailabilityStart, unavailabilityEnd, JobAllocations)
+    const conflicts = countConflicts(unavailabilityStart, unavailabilityEnd, JobAllocations) + unavailability.Exceptions
     const conflictsByDay = getConflictsByDay(unavailabilityStart, unavailabilityEnd, JobAllocations)
 
     return {

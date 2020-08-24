@@ -48,3 +48,7 @@ export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors>  = {
   'Complete': 'green',
   'Cancelled': 'red',
 }
+
+export const STORAGE_KEYS = {
+  LATEST_REGION: 'LATEST_REGION'
+}

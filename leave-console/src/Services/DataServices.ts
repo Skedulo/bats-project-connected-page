@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { mapValues, isNumber, chunk, isEmpty, values, flatten } from 'lodash/fp'
+import { mapValues, isNumber, chunk, isEmpty, groupBy, flatten } from 'lodash/fp'
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
 import { Services, credentials } from './Services'
 import {
@@ -27,6 +27,7 @@ import { DATE_FORMAT, TIME_FORMAT } from '../common/constants'
 import { parseTimeString, parseTimeValue } from '../common/utils/dateTimeHelpers'
 import { LocationsQuery } from '../Store/queries'
 import { IResourceAvailability } from '../Store/types/Availability';
+import { LeaveRequest } from '../Components/AbsenceTable/types/LeaveRequest'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -168,20 +169,17 @@ export const fetchResourcesByRegion = async (
   }
 }
 
-// export const fetchDepotByRegion = async (regionId: string): Promise<IBaseModel[]> => {
-//   try {
-//     const resp = await Services.graphQL.fetch<{ locations: IGraphqlBaseModal[] }>({
-//       query: LocationsQuery,
-//       variables: {
-//         filters: `IsDepot == true AND RegionId == '${regionId}'`
-//       }
-//     })
+export const fetchResourceById = async (resourceId: string): Promise<IResource | null> => {
+  try {
+    const res = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
+      id: resourceId
+    } })
 
-//     return resp.locations.map(item => ({ id: item.UID, name: item.Name }))
-//   } catch (error) {
-//     return []
-//   }
-// }
+    return res.data.data
+  } catch (error) {
+    return null
+  }
+}
 
 export const getResourceSuggestions = async (
   jobId: string,
@@ -339,14 +337,23 @@ export const fetchUnavailabilityExceptions = async (
   }
 }
 
-export const fetchResourceById = async (resourceId: string): Promise<IResource | null> => {
+export const countUnavailabilityExceptions = async (availabilityIds: string[]): Promise<Record<string, UnavailabilityException[]>> => {
   try {
-    const res = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
-      id: resourceId
-    } })
-
-    return res.data.data
+    const CHUNK_SIZE = 10
+    const chunkedIds = chunk(CHUNK_SIZE, availabilityIds)
+    const promises = chunkedIds.map(ids => salesforceApi.get('/services/apexrest/sked/resource/leaveException', { params: {
+      availabilityIds: ids.join(',')
+    }}))
+    const resp = await Promise.all(promises)
+    let unavailabilityExceptions = {}
+    resp.forEach(item => {
+      unavailabilityExceptions = {
+        ...unavailabilityExceptions,
+        ...item.data.data.results
+      }
+    })
+    return unavailabilityExceptions
   } catch (error) {
-    return null
+    return {}
   }
 }

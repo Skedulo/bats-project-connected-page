@@ -14,7 +14,7 @@ export const getUnavailabilityExceptions = makeAsyncActionCreatorSimp(UNAVAILABI
   annualLeaveRemaining: number
 ) => async () => {
   const resp = await fetchUnavailabilityExceptions(unavailabilityId, resourceName, annualLeaveRemaining)
-  return { unavailabilityExceptions: resp }
+  return { unavailabilityExceptions: resp[unavailabilityId] }
 })
 
 const unavailabilityExceptionsReducers = {

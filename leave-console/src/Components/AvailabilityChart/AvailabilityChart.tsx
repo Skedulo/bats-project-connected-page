@@ -37,6 +37,7 @@ interface AvailabilityChartProps {
 interface FilterParam {
   coreSkill: ISelectItem
   depot: ISelectItem
+  category: ISelectItem
 }
 
 enum ViewType {
@@ -53,6 +54,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
   // const config = useSelector((state: State) => state.configs)
   const config = useSelector((state: State) => ({
     coreSkills: state.configs?.coreSkills,
+    categories: state.configs?.resourceCategories,
     maxColor: state.configs?.maxColor,
     midColor: state.configs?.midColor,
     minColor: state.configs?.minColor,
@@ -79,9 +81,18 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
     return options
   }, [config])
 
+  const categoryOptions = useMemo(() => {
+    let options = [{ value: '', label: 'All categories' }]
+    if (config.categories?.length) {
+      options = [...options, ...config.categories.map(item => ({ value: item.id, label: item.name }))]
+    }
+    return options
+  }, [config])
+
   const [filter, setFilter] = useState<FilterParam>({
     coreSkill: coreSkillOptions[0],
-    depot: depotOptions[0]
+    depot: depotOptions[0],
+    category: categoryOptions[0]
   })
 
   const handleDepotChange = useCallback((item: ISelectItem) => {
@@ -90,6 +101,10 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
 
   const handleCoreSkillChange = useCallback((item: ISelectItem) => {
     setFilter(prev => ({ ...prev, coreSkill: item }))
+  }, [])
+
+  const handleCategoryChange = useCallback((item: ISelectItem) => {
+    setFilter(prev => ({ ...prev, category: item }))
   }, [])
 
   const handleViewTypeChange = useCallback((item: ISelectItem) => {
@@ -123,6 +138,9 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
         if (filter.coreSkill.value) {
           isMatched = isMatched && toString(res.coreSkill) === filter.coreSkill.value
         }
+        if (filter.category.value) {
+          isMatched = isMatched && toString(res.category) === filter.category.value
+        }
         return isMatched
       })
       return {
@@ -142,6 +160,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
           <Picker items={viewOptions} onSelect={handleViewTypeChange} className="cx-ml-2" />
         </div>
         <div className="cx-flex cx-items-center">
+          <Picker items={categoryOptions} onSelect={handleCategoryChange} className="cx-mr-2" />
           <Picker items={depotOptions} onSelect={handleDepotChange} className="cx-mr-2" />
           <Picker items={coreSkillOptions} onSelect={handleCoreSkillChange} />
         </div>
@@ -166,6 +185,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
             tickMargin={12}
             axisLine={false}
             tickSize={0}
+            domain={viewType.value === ViewType.Percentage ? [0, 100] : [0, 'auto']}
           />
           <CartesianGrid
             stroke={CHART_COLORS.grid}
@@ -174,7 +194,7 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
           <Tooltip />
           <Line dataKey="resourceRequirement" name="Resource Requirement" stroke={CHART_COLORS.warning} />
           <Bar
-            dataKey="resourcesCount"
+            dataKey={viewType.value === ViewType.Percentage ? 'percentAvailability' : 'resourcesCount'}
             name="Resource(s)"
             barSize={15}
             fill={CHART_COLORS.bar}

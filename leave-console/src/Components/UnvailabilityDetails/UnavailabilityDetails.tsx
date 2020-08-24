@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from 'react'
-import { differenceInCalendarDays } from 'date-fns'
+import { differenceInCalendarDays, differenceInHours } from 'date-fns'
 import { format, utcToZonedTime } from 'date-fns-tz'
-
+import { toNumber } from 'lodash'
 import { classes } from '../../common/utils/classes'
 import UnavailabilityDetail from './UnavailabilityDetail'
 
@@ -34,9 +34,17 @@ const UnavailabilityDetails: React.FC<UnavailabilityDetailsProps> = ({ data: {
 } }) => {
   const { region, resources } = useSelector((state: State) => ({ region: state.region, resources: state.resources || [] }))
   const leaveResource = useMemo(() => resources.find(item => item.id === Resource.UID), [resources])
-  const durationNumber = differenceInCalendarDays(new Date(Finish), new Date(Start))
+  const duration = useMemo(() => {
+    const diffDays = differenceInCalendarDays(utcToZonedTime(Finish, region.timezoneSid), utcToZonedTime(Start, region.timezoneSid))
+    if (diffDays > 0) {
+      return diffDays > 1 ? `${diffDays} days` : `${diffDays} day`
+    }
+    const diffHours = differenceInHours(utcToZonedTime(Finish, region.timezoneSid), utcToZonedTime(Start, region.timezoneSid))
+    // const isOverDailyHour = toNumber(leaveResource?.dailyHours) ? Math.floor(diffHours / toNumber(leaveResource?.dailyHours)) > 0 : false
+    return diffHours > 1 ? `${diffHours} hours` : `${diffHours} hour`
+
+  }, [Start, Finish, region, leaveResource])
   const submittedNumber = differenceInCalendarDays(Date.now(), new Date(CreatedDate))
-  const Duration = `${durationNumber} ${durationNumber === 1 ? 'day' : 'days'}`
   const SubmittedDiff = submittedNumber === 0 ? 'today' : `${submittedNumber} ${submittedNumber === 1 ? 'day' : 'days'} ago`
 
   const LeaveRemaining = useMemo(() => {
@@ -53,7 +61,7 @@ const UnavailabilityDetails: React.FC<UnavailabilityDetailsProps> = ({ data: {
       <UnavailabilityDetail
         iconName="actions"
         title="requested"
-        value={Duration}
+        value={duration}
       />
       <UnavailabilityDetail
         iconName="infoFill"

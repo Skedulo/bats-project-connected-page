@@ -1,6 +1,6 @@
 export const AllAvailabilitiesQuery = `
 query getAvailabilities ($filters: EQLQueryFilterAvailabilities!) {
-  availabilities (filter: $filters) {
+  availabilities (filter: $filters, orderBy: "Start") {
     edges {
       node {
         UID
