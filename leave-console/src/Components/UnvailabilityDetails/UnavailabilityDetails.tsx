@@ -37,7 +37,7 @@ const UnavailabilityDetails: React.FC<UnavailabilityDetailsProps> = ({ data: {
   const duration = useMemo(() => {
     const diffDays = differenceInCalendarDays(utcToZonedTime(Finish, region.timezoneSid), utcToZonedTime(Start, region.timezoneSid))
     if (diffDays > 0) {
-      return diffDays > 1 ? `${diffDays} days` : `${diffDays} day`
+      return (diffDays + 1) > 1 ? `${diffDays + 1} days` : `${diffDays + 1} day`
     }
     const diffHours = differenceInHours(utcToZonedTime(Finish, region.timezoneSid), utcToZonedTime(Start, region.timezoneSid))
     // const isOverDailyHour = toNumber(leaveResource?.dailyHours) ? Math.floor(diffHours / toNumber(leaveResource?.dailyHours)) > 0 : false

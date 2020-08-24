@@ -191,7 +191,9 @@ const AvailabilityChart: React.FC<AvailabilityChartProps> = ({ data, className, 
             stroke={CHART_COLORS.grid}
             vertical={false}
           />
-          <Tooltip />
+          <Tooltip
+            formatter={(value, name, props) => viewType.value === ViewType.Percentage ? `${value}%` : value}
+          />
           <Line dataKey="resourceRequirement" name="Resource Requirement" stroke={CHART_COLORS.warning} />
           <Bar
             dataKey={viewType.value === ViewType.Percentage ? 'percentAvailability' : 'resourcesCount'}
