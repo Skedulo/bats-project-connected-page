@@ -68,6 +68,7 @@ export interface IJobDetail {
   plannedTravelTime?: number
   region: IBaseModel
   timezoneSid: string
+  tags?: IBaseModel[]
 }
 
 export interface IJobSuggestion {

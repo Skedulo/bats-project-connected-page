@@ -58,6 +58,16 @@ interface ICanAction {
   canDeallocate: boolean
 }
 
+interface IAllocationModal {
+  isOpen: boolean
+  job: IJobDetail | null
+}
+
+const DEFAULT_ALLOCATION_MODAL = {
+  isOpen: false,
+  job: null
+}
+
 const jobsTableColumns = (onViewJobDetail: (jobId: string) => void) => {
   return [
     {
@@ -130,7 +140,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   const [filterParams, setFilterParams] = useState<IJobFilterParams>(DEFAULT_FILTER)
   const [jobs, setJobs] = useState<IListResponse<IJobDetail>>(DEFAULT_LIST)
   const [selectedRows, setSelectedRows] = useState<IJobDetail[]>([])
-  const [allocateModal, setAllocateModal] = useState<boolean>(false)
+  const [allocationModal, setAllocationModal] = useState<IAllocationModal>(DEFAULT_ALLOCATION_MODAL)
 
   const [canAction, setCanAction] = useState<ICanAction>({
     canAllocate: true,
@@ -272,12 +282,15 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
     }
   }, [selectedRows, filterParams, project])
 
-  const openAllocateModal = useCallback(() => {
-    setAllocateModal(true)
-  }, [])
+  const openAllocationModal = useCallback(() => {
+    setAllocationModal({
+      isOpen: true,
+      job: selectedRows.length === 1 ? selectedRows[0] : null
+    })
+  }, [selectedRows])
 
-  const closeAllocateModal = useCallback(() => {
-    setAllocateModal(false)
+  const closeAllocationModal = useCallback(() => {
+    setAllocationModal(prev => ({ ...prev, isOpen: false }))
   }, [])
 
   const onAllocate = useCallback(async (resourceIds: string[]) => {
@@ -287,7 +300,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
     setIsLoading(true)
     const success = await allocateMutipleJobs(jobIds, resourceIds)
     setIsLoading(false)
-    closeAllocateModal()
+    closeAllocationModal()
     if (success) {
       setSelectedRows([])
       getJobsList({ ...filterParams, projectId: project.id })
@@ -356,7 +369,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
                 <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={onDeallocate}>
                   Deallocate
                 </Button>
-                <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openAllocateModal}>
+                <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openAllocationModal}>
                   Allocate
                 </Button>
                 <Button buttonType="primary" disabled={!canAction.canDispatch} onClick={onDispatchResource}>
@@ -386,10 +399,12 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
         />
       )}
       <AllocationModal
-        isOpen={allocateModal}
+        isOpen={allocationModal.isOpen}
         handleAllocation={onAllocate}
-        onClose={closeAllocateModal}
-        region={project.region!}
+        onClose={closeAllocationModal}
+        region={allocationModal.job?.region || project.region!}
+        targetJob={allocationModal.job || undefined}
+        key={allocationModal.job?.id}
       />
     </div>
   )

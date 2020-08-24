@@ -126,4 +126,5 @@ export interface IResource {
   avatarUrl?: string
   suggestion?: IResourceSuggestion
   isSuggested: boolean
+  tags?: IBaseModel[]
 }

@@ -55,17 +55,26 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   const [displayResources, setDisplayResources] = useState<IResource[]>([])
   const [selectedResources, setSelectedResources] = useState<IResource[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true)
   const suggestedResources = useMemo(() => sortedResources.filter(item => item.isSuggested), [sortedResources])
 
-  const getAvailableResources = async (regionId: string) => {
+  const getAvailableResources = useCallback(async (regionId: string) => {
     setIsLoading(true)
-    const res = targetJob ?
-      await fetchAvailableResources(targetJob, region.id) :
+    const resources = targetJob ?
+      await fetchAvailableResources(targetJob, regionId) :
       await fetchResourcesByRegionSimple(regionId)
-    const sortedList = handleSort(res, sortType.value)
+    let sortedList = handleSort(resources, sortType.value)
+    if (targetJob?.tags?.length && isFirstLoad && resources.length) {
+      const jobTagIds = targetJob.tags.map(tag => tag.id).join(',')
+      sortedList = sortedList.filter(resource => {
+        const resourceTagIds = resource.tags ? resource.tags.map(tag => tag.id).join(',') : ''
+        return resourceTagIds.includes(jobTagIds)
+      })
+      setIsFirstLoad(false)
+    }
     setIsLoading(false)
     setSortedResources(sortedList)
-  }
+  }, [isFirstLoad, targetJob])
 
   const handleSort = useCallback((resources: IResource[], type: ResourceSortType) => {
     switch (type) {
@@ -141,6 +150,7 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setSelectedResources([])
+      setIsFirstLoad(true)
     } else {
       setSelectedRegion({ label: region.name, value: region.id })
       if (targetJob && targetJob.allocations) {
@@ -204,7 +214,7 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
             <div className="cx-overflow-y-scroll cx-max-h-300px">
               {!!displayResources.length && displayResources.map(item => {
                 return (
-                  <div className="cx-flex cx-items-center cx-my-2 cx-w-1/2" key={item.id}>
+                  <div className="cx-flex cx-items-center cx-my-3 cx-w-1/2 first:cx-mt-0" key={item.id}>
                     <FormInputElement
                       id={item.id}
                       className="cx-mr-4"
@@ -212,13 +222,13 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
                       checked={selectedResources.some(({ id }) => id === item.id)}
                       onChange={onSelectResource(item)}
                     />
-                    <div className={classnames('cx-flex cx-items-center cx-p-2 cx-shadow-sm cx-w-full', {
-                      'cx-bg-neutral-200': !item.isSuggested
+                    <div className={classnames('cx-flex cx-items-center cx-p-3 cx-shadow-sm cx-w-full', {
+                      'cx-bg-neutral-100': !item.isSuggested
                     })}>
                       <Avatar name={item.name} imageUrl={item.avatarUrl || ''} />
                       <div className="cx-pl-4">
                         <div>{item.name}</div>
-                        <div className="cx-text-neutral-700">{item.category}</div>
+                        <div className="cx-text-neutral-700 cx-mt-1">{item.category}</div>
                       </div>
                     </div>
                   </div>

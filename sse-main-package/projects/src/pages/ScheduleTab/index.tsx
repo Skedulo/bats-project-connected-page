@@ -313,9 +313,9 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   const openMultiAllocationModal = useCallback(() => {
     setAllocationModal({
       isOpen: true,
-      job: null
+      job: selectedRows.length === 1 ? selectedRows[0] : null
     })
-  }, [])
+  }, [selectedRows])
 
   const closeAllocationModal = useCallback(() => {
     setAllocationModal(prev => ({ ...prev, isOpen: false }))
@@ -641,6 +641,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         targetJob={allocationModal.job || undefined}
         handleAllocation={handleAllocation}
         region={allocationModal.job?.region || project.region!}
+        key={allocationModal.job?.id}
       />
     </div>
   )
