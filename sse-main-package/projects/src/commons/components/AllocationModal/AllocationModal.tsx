@@ -58,23 +58,25 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true)
   const suggestedResources = useMemo(() => sortedResources.filter(item => item.isSuggested), [sortedResources])
 
-  const getAvailableResources = useCallback(async (regionId: string) => {
+  const getAvailableResources = useCallback(async (regionId: string, job?: IJobDetail) => {
     setIsLoading(true)
-    const resources = targetJob ?
-      await fetchAvailableResources(targetJob, regionId) :
+    const resources = job ?
+      await fetchAvailableResources(job, regionId) :
       await fetchResourcesByRegionSimple(regionId)
     let sortedList = handleSort(resources, sortType.value)
-    if (targetJob?.tags?.length && isFirstLoad && resources.length) {
-      const jobTagIds = targetJob.tags.map(tag => tag.id).join(',')
-      sortedList = sortedList.filter(resource => {
-        const resourceTagIds = resource.tags ? resource.tags.map(tag => tag.id).join(',') : ''
-        return resourceTagIds.includes(jobTagIds)
-      })
+    if (job?.tags?.length && isFirstLoad && resources.length) {
+      const jobTagIds = job.tags.filter(tag => !!tag.required).map(tag => tag.id).join(',')
+      if (jobTagIds) {
+        sortedList = sortedList.filter(resource => {
+          const resourceTagIds = resource.tags ? resource.tags.map(tag => tag.id).join(',') : ''
+          return resourceTagIds.includes(jobTagIds)
+        })
+      }
       setIsFirstLoad(false)
     }
     setIsLoading(false)
     setSortedResources(sortedList)
-  }, [isFirstLoad, targetJob])
+  }, [isFirstLoad])
 
   const handleSort = useCallback((resources: IResource[], type: ResourceSortType) => {
     switch (type) {
@@ -143,16 +145,16 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
 
   useEffect(() => {
     if (selectedRegion.value) {
-      getAvailableResources(selectedRegion.value)
+      getAvailableResources(selectedRegion.value, targetJob)
     }
-  }, [selectedRegion.value])
+  }, [selectedRegion.value, targetJob])
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedResources([])
       setIsFirstLoad(true)
     } else {
-      setSelectedRegion({ label: region.name, value: region.id })
+      setSelectedRegion({ label: region?.name, value: region?.id })
       if (targetJob && targetJob.allocations) {
         setSelectedResources(targetJob.allocations.map(item => ({ ...item.resource, isSuggested: false })))
       }

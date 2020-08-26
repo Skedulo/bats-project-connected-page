@@ -298,7 +298,11 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         getSuggestions(job, true)
         setAllocationModal({
           isOpen: true,
-          job
+          job: {
+            ...job,
+            startDate: zonedDate,
+            startTime: zonedTime
+          }
         })
       }
       return
@@ -635,14 +639,16 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           />
         )}
       </div>
-      <AllocationModal
-        isOpen={allocationModal.isOpen}
-        onClose={closeAllocationModal}
-        targetJob={allocationModal.job || undefined}
-        handleAllocation={handleAllocation}
-        region={allocationModal.job?.region || project.region!}
-        key={allocationModal.job?.id}
-      />
+      {allocationModal.isOpen && (
+        <AllocationModal
+          isOpen={allocationModal.isOpen}
+          onClose={closeAllocationModal}
+          targetJob={allocationModal.job || undefined}
+          handleAllocation={handleAllocation}
+          region={allocationModal.job?.region || project.region!}
+          key={allocationModal.job?.id}
+        />
+      )}
     </div>
   )
 }

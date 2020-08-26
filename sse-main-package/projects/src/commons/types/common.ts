@@ -17,6 +17,10 @@ export interface IBaseModel {
   id: string
 }
 
+export interface ITag extends IBaseModel {
+  required?: boolean
+}
+
 export interface IConfig extends IOrgPreference {
   jobTypes?: IBaseModel[],
   jobStatuses?: IBaseModel[],

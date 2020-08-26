@@ -498,10 +498,10 @@ export const fetchAvailableResources = async (job: IJobDetail, regionId: string)
     const availabilities = await getResourceAvailabilities(resourceIds, [regionId], scheduleStartUtc, scheduleEndUtc)
   // HARD CODE to be same with web app version, will investigate later
 
-    const scheduleStartTemp = parse(`${zonedStartDate} 00:00:00`, `${DATE_FORMAT} HH:mm:ss`, new Date())
-    const scheduleEndTemp = parse(`${zonedStartDate} 23:59:59`, `${DATE_FORMAT} HH:mm:ss`, new Date())
-    const scheduleStartUtcTemp = zonedTimeToUtc(scheduleStartTemp, job.timezoneSid).toISOString()
-    const scheduleEndUtcTemp = zonedTimeToUtc(scheduleEndTemp, job.timezoneSid).toISOString()
+    // const scheduleStartTemp = parse(`${zonedStartDate} 00:00:00`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    // const scheduleEndTemp = parse(`${zonedStartDate} 23:59:59`, `${DATE_FORMAT} HH:mm:ss`, new Date())
+    // const scheduleStartUtcTemp = zonedTimeToUtc(scheduleStartTemp, job.timezoneSid).toISOString()
+    // const scheduleEndUtcTemp = zonedTimeToUtc(scheduleEndTemp, job.timezoneSid).toISOString()
     const suggestedResources = await getResourceSuggestions(
       job.id,
       availabilities,
@@ -516,6 +516,8 @@ export const fetchAvailableResources = async (job: IJobDetail, regionId: string)
       }
     })
   } catch (error) {
+    // tslint:disable-next-line: no-console
+    console.log('error: ', error)
     return []
   }
 }

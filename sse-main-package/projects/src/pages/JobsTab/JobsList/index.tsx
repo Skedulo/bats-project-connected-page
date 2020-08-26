@@ -398,14 +398,16 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
           className="cx-static"
         />
       )}
-      <AllocationModal
-        isOpen={allocationModal.isOpen}
-        handleAllocation={onAllocate}
-        onClose={closeAllocationModal}
-        region={allocationModal.job?.region || project.region!}
-        targetJob={allocationModal.job || undefined}
-        key={allocationModal.job?.id}
-      />
+      {allocationModal.isOpen && (
+        <AllocationModal
+          isOpen={allocationModal.isOpen}
+          handleAllocation={onAllocate}
+          onClose={closeAllocationModal}
+          region={allocationModal.job?.region || project.region!}
+          targetJob={allocationModal.job || undefined}
+          key={allocationModal.job?.id}
+        />
+      )}
     </div>
   )
 }

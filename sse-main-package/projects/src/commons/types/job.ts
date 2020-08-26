@@ -1,4 +1,4 @@
-import { IBaseModel } from './common'
+import { IBaseModel, ITag } from './common'
 
 export enum JobStatusColor {
   'Queued',
@@ -68,7 +68,7 @@ export interface IJobDetail {
   plannedTravelTime?: number
   region: IBaseModel
   timezoneSid: string
-  tags?: IBaseModel[]
+  tags?: ITag[]
 }
 
 export interface IJobSuggestion {

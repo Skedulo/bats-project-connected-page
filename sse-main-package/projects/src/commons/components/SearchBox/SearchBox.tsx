@@ -29,7 +29,7 @@ const SearchBox: React.FC<ISearchBoxProps> = ({
 
   const handleClear = React.useCallback(() => {
     onChange('')
-  }, [])
+  }, [onChange])
 
   return (
     <div
