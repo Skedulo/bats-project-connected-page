@@ -1,0 +1,20 @@
+// .filter-list {
+//   @apply sk-overflow-y-auto sk-bg-white sk-border sk-border-neutral-350 sk-text-neutral-650;
+//   min-width: 12rem;
+//   max-width: 20rem;
+//   max-height: 275px;
+// }
+
+// .filter-list-item-min-height {
+//   min-height: 1.5rem;
+// }
+
+// .filter-list-input-min-width {
+//   min-width: 1rem;
+// }
+
+.cx-filter-bar {
+  > div {
+    z-index: 99 !important;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "webpage",
+  "name": "Teams",
+  "description": "Team Management page",
+  "url": "team-management",
+  "render": { "showInNavBar": true, "type": "page" },
+  "genTypes": false
+}

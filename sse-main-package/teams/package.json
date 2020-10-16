@@ -1,0 +1,120 @@
+{
+  "name": "minimal-react-typescript",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Skedulo",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^2.1.0",
+    "@types/classnames": "^2.2.10",
+    "@types/graphql": "^14.5.0",
+    "@types/lodash": "^4.14.149",
+    "@types/node": "^13.9.3",
+    "@types/react": "^16.9.25",
+    "@types/react-dom": "^16.9.5",
+    "@typescript-eslint/eslint-plugin": "3",
+    "@typescript-eslint/parser": "^3.5.0",
+    "autoprefixer": "^9.6.1",
+    "css-loader": "^3.2.0",
+    "eslint": "7",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-config-standard-with-typescript": "^18.0.2",
+    "eslint-loader": "^4.0.2",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "11",
+    "eslint-plugin-promise": "4",
+    "eslint-plugin-react": "^7.20.3",
+    "eslint-plugin-standard": "4",
+    "file-loader": "^4.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "jest": "^24.9.0",
+    "node-sass": "^4.14.x",
+    "postcss-flexbugs-fixes": "^3.3.1",
+    "postcss-import": "^12.0.1",
+    "postcss-inline-svg": "^4.1.0",
+    "postcss-loader": "^2.1.5",
+    "raw-loader": "^4.0.1",
+    "sass-loader": "^8.0.0",
+    "source-map-loader": "^0.2.3",
+    "style-loader": "^0.21.0",
+    "tailwindcss": "^1.2.0",
+    "ts-loader": "^4.3.0",
+    "typescript": "3.9.x",
+    "url-loader": "^1.0.1",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.7",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "dependencies": {
+    "@skedulo/sked-ui": "^18.2.0",
+    "@types/react-redux": "^7.1.9",
+    "@types/react-router-dom": "^5.1.5",
+    "@types/recharts": "^1.8.16",
+    "axios": "^0.19.2",
+    "classnames": "^2.2.6",
+    "date-fns": "^2.11.0",
+    "date-fns-tz": "^1.0.10",
+    "lodash": "^4.17.15",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-draggable": "^4.4.3",
+    "react-redux": "^7.2.1",
+    "react-router-dom": "^5.2.0",
+    "react-toastify": "^6.0.8",
+    "recharts": "^1.8.5",
+    "rxjs": "^6.6.0"
+  },
+  "scripts": {
+    "bootstrap": "yarn install --pure-lockfile",
+    "dev": "node -v && webpack-dev-server --config ./config/webpack.config.js",
+    "test": "node scripts/test.js --env=jsdom",
+    "compile": "webpack --config ./config/webpack.config.js --env.production"
+  },
+  "jest": {
+    "coverageReporters": [
+      "text-summary",
+      "json-summary"
+    ],
+    "setupFiles": [
+      "<rootDir>/config/jest/test-setup.js"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.ts?(x)",
+      "<rootDir>/src/**/?(*.)(spec|test).ts?(x)"
+    ],
+    "testEnvironment": "node",
+    "testURL": "http://localhost",
+    "transform": {
+      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
+      "^.+\\.tsx?$": "<rootDir>/config/jest/typescriptTransform.js",
+      "^(?!.*\\.(js|jsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$"
+    ],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web"
+    },
+    "moduleFileExtensions": [
+      "web.ts",
+      "ts",
+      "web.tsx",
+      "tsx",
+      "web.js",
+      "js",
+      "web.jsx",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "./tsconfig.test.json"
+      }
+    }
+  }
+}

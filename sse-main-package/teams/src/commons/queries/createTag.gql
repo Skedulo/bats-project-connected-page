@@ -1,0 +1,5 @@
+mutation createTag($createInput: NewTags!) {
+  schema {
+    insertTags(input: $createInput)
+  }
+}

@@ -1,0 +1,31 @@
+query getListTags(
+  $filter: EQLQueryFilterTags
+  $first: PositiveIntMax200
+  $offset: NonNegativeInt
+  $orderBy: EQLOrderByClauseTags
+) {
+  tags(
+    filter: $filter
+    first: $first
+    offset: $offset
+    orderBy: $orderBy
+  ) {
+    totalCount
+    pageInfo {
+      hasNextPage
+    }
+    edges {
+      node {
+        UID
+        Name
+        Type
+        Groups
+        Classification
+        ResourceTags {
+          UID
+          ExpiryDate
+        }
+      }
+    }
+  }
+}
