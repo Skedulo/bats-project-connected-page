@@ -195,6 +195,9 @@ module.exports = {
   important: true,
   separator: ':',
   theme: {
+    gridTemplateColumns: {
+      '2/8': '20% 80%',
+    },
     screens: {
       sm: '640px',
       md: '768px',
@@ -244,7 +247,7 @@ module.exports = {
     },
     borderColor: theme => ({
       ...theme('colors'),
-      default: theme('colors.grey-light', 'currentColor')
+      default: '#CCD3DD'
     }),
     borderRadius: {
       none: '0',
@@ -458,12 +461,15 @@ module.exports = {
       '11/12': '91.666667%',
       full: '100%',
       screen: '100vw',
+      '100px': '100px',
       '200px': '200px',
       '240px': '240px',
+      '300px': '300px',
     }),
     zIndex: {
       auto: 'auto',
       '0': '0',
+      '1': '1',
       '10': '10',
       '20': '20',
       '30': '30',

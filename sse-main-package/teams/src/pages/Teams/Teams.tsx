@@ -1,21 +1,27 @@
 import React, { memo, useState, useCallback } from 'react'
+import { startOfWeek, add } from 'date-fns'
+import { get } from 'lodash'
+import { useSelector } from 'react-redux'
 
+import { DEFAULT_FILTER } from '../../commons/constants'
+import { Config, State, TeamFilterParams } from '../../commons/types'
+
+import TeamGrid from '../../commons/components/TeamGrid'
 import ResourceSidebar from '../../commons/components/ResourceSidebar'
 import Header from '../../commons/components/Header'
-import { DEFAULT_FILTER } from '../../commons/constants'
-import { TeamFilterParams } from '../../commons/types/Team'
 
 import TeamFilter from './TeamFilter'
-import TeamGrid from '../../commons/components/TeamGrid'
-import { startOfWeek, add } from 'date-fns'
 
 interface TeamsProps {
   children?: any
 }
 
 const Teams: React.FC<TeamsProps> = () => {
+  const config = useSelector<State, Config>(state => state.config)
+
   const [filterParams, setFilterParams] = useState<TeamFilterParams>({
     ...DEFAULT_FILTER,
+    regionIds: get(config, 'regions[2].id', ''),
     startDate: startOfWeek(new Date()),
     endDate: add(startOfWeek(new Date()), { days: 6 })
   })
@@ -28,10 +34,10 @@ const Teams: React.FC<TeamsProps> = () => {
     <div>
       <div className="cx-bg-white">
         <Header />
-        <TeamFilter  onFilterChange={onFilterChange} />
+        <TeamFilter filterParams={filterParams} onFilterChange={onFilterChange} />
       </div>
       <div className="cx-bg-neutral-200 cx-flex" style={{ height: 'calc(100vh - 138px)' }}>
-        <ResourceSidebar regionId={filterParams.regionIds || 'a0M3L000000EEk4UAG'} />
+        <ResourceSidebar filterParams={filterParams} />
         <TeamGrid filterParams={filterParams} />
       </div>
     </div>

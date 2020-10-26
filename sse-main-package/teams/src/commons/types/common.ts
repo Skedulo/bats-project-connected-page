@@ -1,5 +1,6 @@
 import { BaseModel } from './BaseObject'
 import { ISelectItem } from '@skedulo/sked-ui'
+import { TeamAllocation, TeamRequirement, TeamSuggestion } from './Team'
 
 export interface PicklistItem {
   value: string
@@ -23,12 +24,23 @@ export interface PageParams {
   offset?: number
 }
 
+export interface SelectedSlot {
+  startDate: Date
+  endDate: Date
+  resource?: Resource
+}
+
 export interface State {
   config: Config
   loading: boolean
   showResourceSidebar: boolean
   swimlaneSetting: SwimlaneSetting
   resources: Resource[]
+  shouldReloadTeams: boolean
+  allocatedTeamRequirement: TeamRequirement | null
+  dateRange: Date[]
+  selectedSlot: SelectedSlot | null
+  suggestions: Record<string, TeamSuggestion>
 }
 
 export interface ObjPermission {
@@ -54,6 +66,7 @@ export interface Config extends OrgPreference {
   constraintTypes?: BaseModel[]
   dependencyTypes?: BaseModel[]
   coreSkills?: BaseModel[]
+  regions?: BaseModel[]
 }
 
 export enum GenericOptionObjects {
@@ -61,7 +74,8 @@ export enum GenericOptionObjects {
   Contact,
   sked__Region__c,
   sked__Location__c,
-  sked__Resource__c
+  sked__Resource__c,
+  sked__Tag__c
 }
 
 export declare type GenericObjectTypes = keyof typeof GenericOptionObjects
@@ -125,6 +139,16 @@ export interface Resource {
   category?: string
   avatarUrl?: string
   suggestion?: ResourceSuggestion
-  isSuggested: boolean
+  isSuggested?: boolean
   tags?: BaseModel[]
+  region?: {
+    id: string
+    name: string
+    timezoneSid: string
+  }
+}
+
+export interface HighlightDays {
+  startDate: Date
+  endDate: Date
 }

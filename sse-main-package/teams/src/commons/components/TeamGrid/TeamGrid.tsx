@@ -1,17 +1,18 @@
-import React, { memo, useState, ChangeEvent, useCallback, useMemo, useEffect } from 'react'
-import { Resource, ITimeOption, WeekDay, State, SwimlaneSetting } from '../../types'
-import { FormInputElement, SearchSelect, ISelectItem, Icon, Button, Time, PopOut, IconButton } from '@skedulo/sked-ui'
+import React, { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { fetchResourcesByRegion, fetchTeams } from '../../../Services/DataServices'
-import { startLoading, endLoading } from '../../../Store/action'
-import SearchBox from '../SearchBox'
 import { debounce, pickBy } from 'lodash'
-import ResourceCard from '../ResourceCard'
-import { TeamFilterParams, Team } from '../../types/Team'
-import './styles.scss'
-import RowTimeslots from './RowTimeslots'
 import { eachDayOfInterval, format } from 'date-fns'
-import TeamRows from './TeamRows'
+
+import { fetchTeams } from '../../../Services/DataServices'
+import { updateReloadTeamsFlag, updateAllocatedTeamRequirement, updateDateRange, updateSelectedSlot } from '../../../Store/action'
+import { TeamFilterParams, Team, State, SwimlaneSetting, TeamRequirement } from '../../types'
+import { useGlobalLoading } from '../GlobalLoading'
+
+import TeamAllocationModal from '../TeamAllocationModal'
+import SearchBox from '../SearchBox'
+import RowTimeslots from '../RowTimeslots'
+
+import TeamRow from './TeamRow'
 
 interface TeamGridProps {
   filterParams: TeamFilterParams
@@ -19,11 +20,16 @@ interface TeamGridProps {
 
 const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
   const dispatch = useDispatch()
-  const swimlaneSetting = useSelector<State, SwimlaneSetting>(state => state.swimlaneSetting)
-  const [teams, setTeams] = useState<Team[]>([])
 
+  const swimlaneSetting = useSelector<State, SwimlaneSetting>(state => state.swimlaneSetting)
+  const shouldReloadTeams = useSelector<State, boolean>(state => state.shouldReloadTeams)
+  const allocatedTeamRequirement = useSelector<State, TeamRequirement | null>(state => state.allocatedTeamRequirement)
+
+  const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
+
+  const [teams, setTeams] = useState<Team[]>([])
   const [searchText, setSearchText] = useState<string>('')
-  const [timeError, setTimeError] = useState<string>('')
+
   const dateRange = useMemo(() => {
     let range = eachDayOfInterval({
       start: filterParams.startDate,
@@ -39,9 +45,10 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
   }, [filterParams, swimlaneSetting])
 
   const getTeams = useCallback(async (filterParams) => {
-    dispatch(startLoading())
-    const res = await fetchTeams(filterParams.regionIds)
-    dispatch(endLoading())
+    startGlobalLoading()
+    const res = await fetchTeams(filterParams)
+    endGlobalLoading()
+    dispatch(updateReloadTeamsFlag(false))
     setTeams(res)
   }, [])
 
@@ -49,17 +56,26 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
     setSearchText(value)
   }, [])
 
-  const debouncedSearchTextChange = useMemo(() => debounce(onSearchTextChange), [onSearchTextChange])
+  const debouncedSearchTextChange = useMemo(() => debounce(onSearchTextChange, 700), [onSearchTextChange])
+
+  const onCloseAllocationModal = useCallback(() => {
+    dispatch(updateAllocatedTeamRequirement(null))
+    dispatch(updateSelectedSlot(null))
+  }, [])
 
   useEffect(() => {
-    getTeams(filterParams)
-  }, [filterParams])
+    getTeams({ ...filterParams, searchText })
+  }, [filterParams, shouldReloadTeams, searchText])
+
+  useEffect(() => {
+    dispatch(updateDateRange(dateRange))
+  }, [dateRange])
 
   return (
     <div className="cx-flex-1">
-      <div className="cx-overflow-x-scroll schedule-table cx-relative">
-        <div className="schedule-row">
-          <div className="schedule-item-job cx-uppercase cx-font-medium">
+      <div className="cx-overflow-x-scroll team-allocation-wrapper cx-relative">
+        <div className="cx-grid cx-grid-cols-2/8">
+          <div className="cx-font-medium cx-border-r cx-border-b">
             <SearchBox
               className="cx-border-t-0 cx-border-r-0 cx-border-l-0"
               placeholder="teams"
@@ -67,21 +83,20 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
               autoFocus={false}
             />
           </div>
-          <div className="schedule-item-weekday">
-            <RowTimeslots
-              dateRange={dateRange}
-              swimlaneSetting={swimlaneSetting}
-            />
+          <div>
+            <RowTimeslots dateRange={dateRange} />
           </div>
         </div>
         {teams.map(team => (
-          <TeamRows
+          <TeamRow
             key={team.id}
             team={team}
             dateRange={dateRange}
           />
         ))}
+        {!teams.length && <div className="cx-text-center cx-p-4">No data found.</div>}
       </div>
+      {allocatedTeamRequirement && <TeamAllocationModal onClose={onCloseAllocationModal} />}
     </div>
   )
 }

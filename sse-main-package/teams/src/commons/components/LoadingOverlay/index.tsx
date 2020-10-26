@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
+
 import LoadingIndicator from '../LoadingIndicator'
 
 const LoadingOverlay: React.FC = () => {

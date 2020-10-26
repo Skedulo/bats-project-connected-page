@@ -1,13 +1,13 @@
 import * as React from 'react'
 import { SkedFormChildren, SkedFormValidation, FormContext } from '@skedulo/sked-ui'
+import { pick, mapValues } from 'lodash'
 
-import { Team } from '../../../types/Team'
+import { Team, TeamRequirement } from '../../../types/Team'
 
 import TeamFormChildren from './TeamFormChildren'
 
 const TeamFormConfig = {
   name: { isRequired: 'Name is required' },
-  requiredPeople: { isRequired: 'Number of required people is required' },
   regionId: { isRequired: 'Region is required' }
 }
 
@@ -18,16 +18,28 @@ interface TeamFormProps {
 }
 
 const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
+  const [teamRequirements, setTeamRequirements] = React.useState<TeamRequirement[]>([
+    { tags: [], preferredResourceId: '' },
+    { tags: [], preferredResourceId: '' }
+  ])
+
   const handleSubmit = React.useCallback(
     async (form: FormContext<Team>) => {
+      const formattedTeamRequirements = teamRequirements.map(item => mapValues(pick(item, ['tags', 'preferredResourceId']), value => {
+        if (!value || (Array.isArray(value) && !value.length)) {
+          return null
+        }
+        return value
+      }))
       const formData = {
-        ...form.fields
+        ...form.fields,
+        teamRequirements: formattedTeamRequirements as TeamRequirement[]
       }
 
       const submitData = !team ? { ...formData } : { ...formData, id: team.id }
       onSubmit(submitData)
     },
-    [team]
+    [team, teamRequirements]
   )
 
   return (
@@ -43,6 +55,8 @@ const TeamForm: React.FC<TeamFormProps> = ({ team, onSubmit, onCancel }) => {
           formParams={formParams}
           onCancel={onCancel}
           team={team}
+          teamRequirements={teamRequirements}
+          setTeamRequirements={setTeamRequirements}
         />
       )}
     </SkedFormValidation>

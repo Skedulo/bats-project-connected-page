@@ -1,32 +1,36 @@
 import * as React from 'react'
 import { useEffect, useCallback } from 'react'
-import { Router, Route, Switch, Redirect } from 'react-router-dom'
-
-import { ToastContainer } from 'react-toastify'
+import { Router } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { withGlobalLoading, LoadingTrigger } from './commons/components/GlobalLoading'
+import { ToastContainer } from 'react-toastify'
+import { isEmpty } from 'lodash'
 
-import Page403 from './pages/403'
-import Teams from './pages/Teams'
-
-import { updateConfig, startLoading, endLoading } from './Store/action'
+import { withGlobalLoading, useGlobalLoading } from './commons/components/GlobalLoading'
+import { updateConfig, updateSwimlaneSetting } from './Store/action'
 import useSkedHistory from './commons/hooks/useSkedHistory'
-
-import { State } from './commons/types'
+import { STORAGE_KEY } from './commons/constants'
+import { getLocalStorage } from './commons/utils'
 import { fetchConfig } from './Services/DataServices'
+import { Config, State } from './commons/types'
+
+import Teams from './pages/Teams'
 
 import 'react-toastify/dist/ReactToastify.css'
 
 const App: React.FC = () => {
   const history = useSkedHistory()
   const dispatch = useDispatch()
-  const loading = useSelector<State>(state => state.loading)
-
+  const config = useSelector<State, Config>(state => state.config)
+  const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const getConfig = useCallback(async () => {
-    dispatch(startLoading())
+    startGlobalLoading()
     const config = await fetchConfig()
+    const storedSwimlaneSetting = getLocalStorage(STORAGE_KEY.TEAM_SWIMLANE_SETTING)
     dispatch(updateConfig(config))
-    dispatch(endLoading())
+    if (storedSwimlaneSetting) {
+      dispatch(updateSwimlaneSetting(JSON.parse(storedSwimlaneSetting)))
+    }
+    endGlobalLoading()
   }, [])
 
   useEffect(() => {
@@ -36,8 +40,7 @@ const App: React.FC = () => {
   return (
     <Router history={history}>
       <div className="cx-bg-white">
-        {loading && <LoadingTrigger />}
-        <Teams />
+        {!isEmpty(config) && <Teams />}
       </div>
       <ToastContainer
         position="top-right"

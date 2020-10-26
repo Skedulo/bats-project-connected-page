@@ -32,3 +32,7 @@ export const DEFAULT_SWIMLANE_SETTING = {
     }
   }
 }
+
+export const STORAGE_KEY = {
+  TEAM_SWIMLANE_SETTING: 'TEAM_SWIMLANE_SETTING'
+}

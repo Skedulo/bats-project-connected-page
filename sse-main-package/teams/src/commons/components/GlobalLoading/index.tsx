@@ -1,7 +1,8 @@
-import GlobalLoading from './GlobalLoading'
-import LoadingTrigger from './LoadingTrigger'
 import withGlobalLoading from './withGlobalLoading'
 import { useGlobalLoading } from './hooks'
+
+import GlobalLoading from './GlobalLoading'
+import LoadingTrigger from './LoadingTrigger'
 
 export {
   GlobalLoading,

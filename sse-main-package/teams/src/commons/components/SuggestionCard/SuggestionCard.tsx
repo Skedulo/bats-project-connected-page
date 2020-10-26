@@ -1,51 +1,49 @@
-import React, { memo } from 'react'
-import classnames from 'classnames'
-import { IJobDetail, IJobSuggestion } from '../../commons/types'
+import React, { memo, useMemo, useCallback } from 'react'
+import { differenceInBusinessDays } from 'date-fns'
+
+import { TeamSuggestionPeriod, SelectedSlot } from '../../types'
 
 interface SuggestionCardProps {
-  suggestion: IJobSuggestion
+  suggestion: TeamSuggestionPeriod
   cardPosition: number
-  travelTimeStyle: Record<string, string>
-  durationStyle: Record<string, string>
-  travelTime: number
-  handleClick?: (zonedDate: string, zonedTime: number) => void
+  handleClick?: (selectedSlot: SelectedSlot) => void
   slotUnit: string
+  slotWidth: number
 }
 
 const SuggestionCard: React.FC<SuggestionCardProps> = props => {
   const {
     suggestion,
     cardPosition,
-    travelTime,
-    travelTimeStyle,
-    durationStyle,
-    handleClick,
     slotUnit,
+    slotWidth,
+    handleClick
   } = props
+  const duration = useMemo(() => differenceInBusinessDays(suggestion.endDate, suggestion.startDate) + 1, [suggestion])
 
-  const onCardClick = () => {
+  const onCardClick = useCallback(() => {
     if (typeof handleClick === 'function') {
-      handleClick(suggestion.startDate, suggestion.startTime)
+      handleClick(suggestion)
     }
-  }
+  }, [suggestion])
 
   return (
     <div
       onClick={onCardClick}
-      className={classnames('cx-flex cx-items-center cx-absolute cx-z-1', {
-        'cx-cursor-pointer': handleClick
-      })}
+      className={'cx-flex cx-items-center cx-absolute cx-z-1, cx-cursor-pointer'}
       style={{
-        height: '80%',
-        left: cardPosition + slotUnit,
+        height: '90%',
+        left: `${cardPosition}${slotUnit}`,
+        top: '2px'
       }}
-      >
-      {travelTime > 0 && (
-        <span className="cx-bg-neutral-500" style={travelTimeStyle} />
-      )}
+    >
       <span
         className="cx-h-full cx-flex cx-items-center cx-justify-center cx-text-primary"
-        style={durationStyle}
+        style={{
+          width: `${duration * slotWidth}${slotUnit}`,
+          backgroundColor: '#e6f4ff',
+          border: '1px dashed #008cff'
+        }}
       >
         +
       </span>

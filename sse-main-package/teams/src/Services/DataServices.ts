@@ -1,127 +1,18 @@
 import axios from 'axios'
 
 import { format } from 'date-fns'
-import { omit, fromPairs, keyBy, zip, chunk } from 'lodash'
+import { zip, omit } from 'lodash'
 
 import { Subject, animationFrameScheduler } from 'rxjs'
 import { bufferTime } from 'rxjs/operators'
-
-import { TransformedListResponse, SalesforceResponse, BaseModel } from '../commons/types/BaseObject'
-import getListTags from '../commons/queries/getListTags.gql'
-import createTag from '../commons/queries/createTag.gql'
-import {  MAX_GRAPHQL_MUTATION_SIZE } from '../commons/constants/page'
-
-import { Services, credentials, GraphQLMutationResult } from './Services'
-import { Config, GenericOptionParams, Resource } from '../commons/types'
 import { ISelectItem } from '@skedulo/sked-ui'
-import { Team, TeamFilterParams } from '../commons/types/Team'
 
-const mockTeams=  [
-  {
-    "name": "Team A",
-    "id": "a0X3L000000DtMxUAK",
-    "regionId": '122',
-    "teamRequirements": [
-      {
-        "name": "TRR-0001",
-        "id": "a1M3L0000009GeuUAE",
-        "tags": [
-          {
-            "name": "Driver",
-            "id": "a0d3L000005ApdrQAC",
-            "sObjectType": "sked__Tag__c"
-          },
-          {
-            "name": "Full time",
-            "id": "a0d3L000001yAbtQAE",
-            "sObjectType": "sked__Tag__c"
-          }
-        ],
-        "sObjectType": "sked_Team_Resource_Requirement__c",
-        "preferredResource": {
-          "name": "Skedulo Resource",
-          "id": "a0X3L000000CvrfUAC"
-        },
-        "allocations": [
-          {
-            "startTime": 552,
-            "startDate": "2020-10-12",
-            "resource": {
-              "name": "Skedulo Resource",
-              "id": "a0X3L000000CvrfUAC",
-              "category": "Full time"
-            },
-            "endTime": 552,
-            "endDate": "2020-10-12"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "name": "Team B",
-    "id": "a0X3L000000DtMxkksK",
-    "regionId": '122',
-    "teamRequirements": [
-      {
-        "name": "TRR-0002",
-        "id": "a1M3L0000009GeuU11",
-        "tags": [
-          {
-            "name": "Driver",
-            "id": "a0d3L000005ApdrQAC",
-            "sObjectType": "sked__Tag__c"
-          }
-        ],
-        "sObjectType": "sked_Team_Resource_Requirement__c",
-        "preferredResource": {
-          "name": "Skedulo Linh",
-          "id": "a0X3L000000CvrsssAC"
-        },
-        "allocations": [
-          {
-            "startTime": 552,
-            "startDate": "2020-10-12",
-            "resource": {
-              "name": "Skedulo Linh",
-              "id": "a0X3L000000CvrsssAC"
-            },
-            "endTime": 552,
-            "endDate": "2020-10-14"
-          }
-        ]
-      },
-      {
-        "name": "TRR-0003",
-        "id": "a1M3L0000009dssuU11",
-        "tags": [
-          {
-            "name": "Full time",
-            "id": "a0d3L00000ssApdrQAC",
-            "sObjectType": "sked__Tag__c"
-          }
-        ],
-        "sObjectType": "sked_Team_Resource_Requirement__c",
-        "preferredResource": {
-          "name": "Skedulo Linh 2",
-          "id": "a0X3L000000CvrsssAC"
-        },
-        "allocations": [
-          {
-            "startTime": 552,
-            "startDate": "2020-10-16",
-            "resource": {
-              "name": "Skedulo Linh 2",
-              "id": "a0X3L000000CvrsssAC"
-            },
-            "endTime": 552,
-            "endDate": "2020-10-17"
-          }
-        ]
-      }
-    ]
-  }
-]
+import { SalesforceResponse, BaseModel } from '../commons/types/BaseObject'
+import { Config, GenericOptionParams, Resource } from '../commons/types'
+import { Team, TeamFilterParams, TeamAllocation, TeamSuggestionParams, TeamSuggestion } from '../commons/types/Team'
+import { DATE_FORMAT } from '../commons/constants'
+
+import { credentials } from './Services'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -133,8 +24,8 @@ const httpApi = axios.create({
 const salesforceApi = axios.create({
   baseURL: credentials.vendor.url,
   headers: {
-    Authorization: `Bearer ${credentials.vendor.token}`,
-  },
+    Authorization: `Bearer ${credentials.vendor.token || ''}`
+  }
 })
 
 interface GraphqlResponse<T extends object = object> {
@@ -173,17 +64,6 @@ graphQlRequest$
     })
   })
 
-// eslint-disable-next-line @typescript-eslint/promise-function-async
-const makeBatchGraphQlRequest = (query: string, variables?: object) => new Promise<GraphqlResponse>(resolve => {
-  graphQlRequest$.next({
-    resolve,
-    request: {
-      query,
-      variables
-    }
-  })
-})
-
 export const fetchConfig = async (): Promise<Config> => {
   const res = await salesforceApi.get('/services/apexrest/sked/config')
   return res.data.data
@@ -192,7 +72,7 @@ export const fetchConfig = async (): Promise<Config> => {
 export const fetchGenericOptions = async (params: GenericOptionParams): Promise<ISelectItem[]> => {
   try {
     const response: { data: SalesforceResponse<{ results: BaseModel[] }> } = await salesforceApi.get('/services/apexrest/sked/genericQuery', {
-      params,
+      params
     })
     return response.data.data.results.map((item: BaseModel) => ({ ...item, value: item.id, label: item.name }))
   } catch (error) {
@@ -202,9 +82,11 @@ export const fetchGenericOptions = async (params: GenericOptionParams): Promise<
 
 export const fetchResourcesByRegion = async (regionIds: string): Promise<Resource[]> => {
   try {
-    const res: { data: SalesforceResponse<{ results: Resource[] }> } = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
-      regionIds
-    } })
+    const res: { data: SalesforceResponse<{ results: Resource[] }> } = await salesforceApi.get('/services/apexrest/sked/resource', {
+      params: {
+        regionIds
+      }
+    })
 
     return res.data.data.results
   } catch (error) {
@@ -214,12 +96,68 @@ export const fetchResourcesByRegion = async (regionIds: string): Promise<Resourc
 
 export const fetchTeams = async (filterParams: TeamFilterParams): Promise<Team[]> => {
   try {
-    // const res: { data: SalesforceResponse<{ results: Resource[] }> } = await salesforceApi.get('/services/apexrest/sked/resource', { params: {
-    //   regionIds
-    // } })
+    const res: { data: SalesforceResponse<Team[]> } = await salesforceApi.get('/services/apexrest/sked/team', {
+      params: {
+        regionIds: filterParams.regionIds,
+        name: filterParams.searchText,
+        startDate: format(filterParams.startDate, DATE_FORMAT),
+        endDate: format(filterParams.endDate, DATE_FORMAT)
+      }
+    })
 
-    return mockTeams
+    return res.data.data.map(team => ({
+      ...team,
+      teamRequirements: team.teamRequirements.map(item => ({ ...item, teamName: team.name, teamId: team.id }))
+    }))
   } catch (error) {
     return []
+  }
+}
+
+export const createUpdateTeam = async (saveData: Team): Promise<boolean> => {
+  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
+
+  try {
+    const response: {
+      data: SalesforceResponse<{}>
+    } = await salesforceApi.post('/services/apexrest/sked/team', saveData)
+    return response.data.success
+  } catch (error) {
+    return false
+  }
+}
+
+export const getTeamSuggestions = async (filterParams: TeamSuggestionParams): Promise<TeamSuggestion[]> => {
+  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
+
+  try {
+    const response: {
+      data: SalesforceResponse<TeamSuggestion[]>
+    } = await salesforceApi.get('/services/apexrest/sked/teamResource/suggestion', {
+      params: omit(filterParams, 'resource')
+    })
+    return response.data.data.map(item => ({
+      ...item,
+      periods: item.periods.map(period => ({
+        startDate: new Date(period.startDate),
+        endDate: new Date(period.endDate),
+        resource: filterParams.resource
+      }))
+    }))
+  } catch (error) {
+    return []
+  }
+}
+
+export const allocateTeamMember = async (saveData: TeamAllocation): Promise<boolean> => {
+  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
+
+  try {
+    const response: {
+      data: SalesforceResponse<{}>
+    } = await salesforceApi.post('/services/apexrest/sked/team/allocate', saveData)
+    return response.data.success
+  } catch (error) {
+    return false
   }
 }

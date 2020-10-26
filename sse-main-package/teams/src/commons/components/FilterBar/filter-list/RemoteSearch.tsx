@@ -3,8 +3,9 @@ import { debounce, uniqBy } from 'lodash'
 
 import { Loading } from '@skedulo/sked-ui'
 
-import SearchBox from '../../SearchBox'
 import { IFilterItem } from '../interfaces'
+
+import SearchBox from '../../SearchBox'
 
 export interface IRemoteSearchProps<T> {
   useFetch: (searchTerm: string) => Promise<T[]>
@@ -31,8 +32,8 @@ IRemoteSearchState
 > {
   private _fetchedItems: T[] = []
 
-  private readonly _debouncedSearch = debounce((searchTerm: string, preSelectedItems) => {
-    return this.props.useFetch(searchTerm).then(returnedItems => {
+  private readonly _debouncedSearch = debounce(async (searchTerm: string, preSelectedItems) => {
+    return await this.props.useFetch(searchTerm).then(returnedItems => {
       this._fetchedItems = searchTerm.length
         ? uniqBy([...returnedItems, ...preSelectedItems], item => item.id).filter(item => {
           return item.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > -1

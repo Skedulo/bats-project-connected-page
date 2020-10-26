@@ -1,47 +1,40 @@
-import React, { useState, useCallback, ReactText, useMemo } from 'react'
-import {
-  SkedFormChildren,
-  Button,
-  FormLabel,
-  FormElementWrapper,
-  NumberInput,
-  AsyncSearchSelect,
-  ISelectItem,
-  AsyncMultiSearchSelect
-} from '@skedulo/sked-ui'
-import { toNumber, times } from 'lodash'
+import React, { useState, useCallback, ReactText, useMemo, useEffect } from 'react'
+import { SkedFormChildren, Button, FormLabel, FormElementWrapper, NumberInput, AsyncSearchSelect, ISelectItem, AsyncMultiSearchSelect, SearchSelect } from '@skedulo/sked-ui'
+import { toNumber, times, fill } from 'lodash'
+import { useSelector } from 'react-redux'
 
-import { Team, TeamRequirement } from '../../../types'
-import { fetchGenericOptions } from '../../../../Services/DataServices'
+import { Team, TeamRequirement, State, Resource } from '../../types'
+import { fetchGenericOptions } from '../../../Services/DataServices'
 
-import WrappedFormInput from '../../WrappedFormInput'
+import WrappedFormInput from '../WrappedFormInput'
 
-interface TeamChildrenProps {
+interface TeamAllocationFormChildrenProps {
   formParams: SkedFormChildren<Team>
   onCancel?: () => void
   team?: Team
   teamRequirements: TeamRequirement[]
-  setTeamRequirements: React.Dispatch<React.SetStateAction<TeamRequirement[]>>
+  handleChangeTeamRequirements: (newTeamRequirements: TeamRequirement[]) => void
 }
 
-const TeamChildren: React.FC<TeamChildrenProps> = ({
+const TeamAllocationFormChildren: React.FC<TeamAllocationFormChildrenProps> = ({
   formParams,
   onCancel,
   teamRequirements,
-  setTeamRequirements
+  handleChangeTeamRequirements
 }) => {
+  const storeResources = useSelector<State, Resource[]>(state => state.resources)
   const { fields, resetFieldsToInitialValues, errors, submitted, customFieldUpdate } = formParams
   const [requiredPeople, setRequiredPeople] = useState<number>(2)
 
   const isReadonly = false
-  const { selectedRequiredTags, selectedPreferredResource } = useMemo(() => {
-    const tags: string[] = []
+  const { selectedRequiredTags, selectedPreferredResource} = useMemo(() => {
+    let tags: string[] = []
     let resources: string[] = []
     teamRequirements.forEach(item => {
       if (item.tags?.length) {
-        item.tags.forEach(item => {
-          if (item.tagId) {
-            tags.push(item.tagId)
+        item.tags.forEach(tag => {
+          if (tag.tagId) {
+            tags.push(tag.tagId)
           }
         })
       }
@@ -49,6 +42,11 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
     })
     return { selectedRequiredTags: tags, selectedPreferredResource: resources }
   }, [teamRequirements])
+
+  const resourceOptions = useMemo(() => {
+    return storeResources.map(item => ({ value: item.id, label: item.name }))
+    // return storeResources.filter(item => !selectedPreferredResource.includes(item.id)).map(item => ({ value: item.id, label: item.name }))
+  }, [storeResources, selectedPreferredResource])
 
   const handleCancel = useCallback(() => {
     if (typeof onCancel === 'function') {
@@ -60,58 +58,39 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
   const handleChangeRequiredPeople = useCallback((value: ReactText) => {
     const numOfPeople = toNumber(value)
     setRequiredPeople(numOfPeople)
-    const newTeamRequirements = teamRequirements.length > numOfPeople
-      ? teamRequirements.slice(0, numOfPeople)
-      : [...teamRequirements, { tags: [], preferredResourceId: '' }]
-    setTeamRequirements(newTeamRequirements)
-  }, [teamRequirements, setTeamRequirements])
+    const newTeamRequirements = teamRequirements.length > numOfPeople ?
+      teamRequirements.slice(0, numOfPeople) :
+      [...teamRequirements, { tags: [], preferredResourceId: '' }]
+    handleChangeTeamRequirements(newTeamRequirements)
+  }, [teamRequirements, handleChangeTeamRequirements])
 
-  const fetchRegions = useCallback(async (input: string) => {
-    return await fetchGenericOptions({ sObjectType: 'sked__Region__c', name: input })
-  }, [selectedRequiredTags])
+  const fetchRegions = useCallback((input: string) => {
+    return fetchGenericOptions({ sObjectType: 'sked__Region__c', name: input })
+  }, [])
 
-  const fetchTags = useCallback(async (input: string) => {
-    const res = await fetchGenericOptions({ sObjectType: 'sked__Tag__c', name: input })
-    return res?.filter(item => !selectedRequiredTags.includes(item.value)) || []
-  }, [selectedRequiredTags])
-
-  const fetchResources = useCallback(async (input: string) => {
-    const res = await fetchGenericOptions({ sObjectType: 'sked__Resource__c', name: input, regionIds: fields.regionId })
-    return res?.filter(item => !selectedPreferredResource.includes(item.value)) || []
-  }, [fields.regionId, selectedPreferredResource])
+  const fetchTags = useCallback((input: string) => {
+    return fetchGenericOptions({ sObjectType: 'sked__Tag__c', name: input })
+  }, [])
 
   const onRegionSelect = useCallback((selectedRegion: ISelectItem) => {
     customFieldUpdate('regionId')(selectedRegion?.value || '')
-    setTeamRequirements(prev => prev.map(item => ({ ...item, preferredResource: undefined, preferredResourceId: '' })))
   }, [])
 
   const onTagsSelect = useCallback((index: number) => (selectedTags: ISelectItem[]) => {
-    setTeamRequirements((prev: TeamRequirement[]) => prev.map((item, arrIndex) => {
-      if (index !== arrIndex) {
-        return item
-      }
-      return {
-        ...item,
-        tags: selectedTags.map(item => ({ name: item.label, tagId: item.value }))
-      }
-    }))
-  }, [teamRequirements, setTeamRequirements])
+    const requirement = { ...teamRequirements[index], tags: selectedTags.map(item => ({ tagId: item.value })) }
+    const newTeamRequirements = fill(teamRequirements, requirement, index, index + 1)
+    handleChangeTeamRequirements(newTeamRequirements)
+  }, [teamRequirements, handleChangeTeamRequirements])
 
   const onResourceSelect = useCallback((index: number) => (selectedResource: ISelectItem) => {
-    setTeamRequirements((prev: TeamRequirement[]) => prev.map((item, arrIndex) => {
-      if (index !== arrIndex) {
-        return item
-      }
-      return {
-        ...item,
-        preferredResourceId: selectedResource.value,
-        preferredResource: {
-          id: selectedResource.value,
-          name: selectedResource.label
-        }
-      }
-    }))
-  }, [teamRequirements, setTeamRequirements])
+    const requirement = { ...teamRequirements[index], preferredResourceId: selectedResource.value }
+    const newTeamRequirements = fill(teamRequirements, requirement, index, index + 1)
+    handleChangeTeamRequirements(newTeamRequirements)
+  }, [teamRequirements, handleChangeTeamRequirements])
+
+  useEffect(() => {
+    console.log('change teamRequirements', teamRequirements);
+  }, [teamRequirements])
 
   return (
     <>
@@ -171,21 +150,18 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
                     fetchItems={fetchTags}
                     debounceTime={300}
                     onSelectedItemsChange={onTagsSelect(index)}
-                    key={selectedRequiredTags.join(',')}
-                    initialSelectedItems={teamRequirements[index].tags?.map(item => ({ value: item.tagId || '', label: item.name || '' }))}
-                    useCache={false}
+                    useCache={true}
                   />
                 </FormElementWrapper>
               </div>
               <div className="cx-mb-4 cx-w-1/2">
                 <FormLabel>Preferred Resource</FormLabel>
                 <FormElementWrapper>
-                  <AsyncSearchSelect
+                  <SearchSelect
                     id="preferredResource"
                     name="preferredResource"
-                    fetchItems={fetchResources}
-                    key={`${selectedPreferredResource.join(',')}-${fields.regionId}`}
-                    initialSelectedItem={teamRequirements[index].preferredResource ? { value: teamRequirements[index].preferredResource?.id || '', label: teamRequirements[index].preferredResource?.name || '' } : undefined}
+                    items={resourceOptions}
+                    // key={selectedPreferredResource.join(',')}
                     onSelectedItemChange={onResourceSelect(index)}
                   />
                 </FormElementWrapper>
@@ -211,4 +187,4 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
   )
 }
 
-export default React.memo(TeamChildren)
+export default React.memo(TeamAllocationFormChildren)

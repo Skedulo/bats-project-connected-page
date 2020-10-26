@@ -29,6 +29,8 @@
         "@typescript-eslint/no-floating-promises": ["off"],
         "@typescript-eslint/explicit-function-return-type": ["off"],
         "@typescript-eslint/prefer-nullish-coalescing": ["off"],
+        "@typescript-eslint/default-param-last": ["off"],
+        "@typescript-eslint/prefer-ts-expect-error": ["off"],
         "react/prop-types": ["off"],
         "import/order": ["error", {
             "newlines-between": "always-and-inside-groups"

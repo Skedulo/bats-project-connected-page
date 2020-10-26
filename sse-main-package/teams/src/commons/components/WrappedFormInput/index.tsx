@@ -1,3 +1,1 @@
-import WrappedFormInput from './WrappedFormInput'
-
-export default WrappedFormInput
+export { default } from './WrappedFormInput'

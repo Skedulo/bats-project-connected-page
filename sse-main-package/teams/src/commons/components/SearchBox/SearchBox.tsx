@@ -21,7 +21,7 @@ const SearchBox: React.FC<ISearchBoxProps> = ({
   loading
 }) => {
   const [value, setValue] = React.useState<string>('')
-  
+
   const handleChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       if (!loading) {
