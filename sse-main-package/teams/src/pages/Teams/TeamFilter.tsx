@@ -11,7 +11,7 @@ import FilterBar from '../../commons/components/FilterBar'
 import SwimlaneSetting from '../../commons/components/SwimlaneSetting'
 
 interface ITeamFilterProps {
-  onFilterChange: (data: any) => void
+  onFilterChange: (data: Partial<TeamFilterParams>) => void
   filterParams: TeamFilterParams
 }
 
@@ -37,7 +37,8 @@ const TeamFilter: React.FC<ITeamFilterProps> = ({ onFilterChange, filterParams }
       name: 'Region',
       inputType: 'radio',
       items: config?.regions || [],
-      selectedIds: [filterParams.regionIds]
+      selectedIds: [filterParams.regionIds],
+      removable: false
     }
   ]) as Array<IFilter<{
     id: string
@@ -84,10 +85,10 @@ const TeamFilter: React.FC<ITeamFilterProps> = ({ onFilterChange, filterParams }
               rangeOptions={['week', '2-weeks']}
               selectedRange={rangeType}
               selected={filterParams.startDate}
-              selectWeek
               onRangeChange={onRangeChange}
               onDateSelect={onDateChange}
               onTodayClick={onTodayClick}
+              selectWeek
             />
           </li>
           <li className="cx-ml-4">

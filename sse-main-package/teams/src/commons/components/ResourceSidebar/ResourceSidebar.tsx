@@ -72,6 +72,7 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
         className="cx-border-t-0 cx-border-r-0 cx-border-b cx-sticky cx-top-0"
         placeholder="resources"
         onChange={onSearchTextChange}
+        autoFocus={false}
       />
       {displayResources.map(resource => (
         <ResourceCard

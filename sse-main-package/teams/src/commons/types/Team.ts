@@ -1,4 +1,4 @@
-import { PageParams, Resource } from './common'
+import { PageParams, Resource, Period } from './common'
 import { BaseModel } from './BaseObject'
 
 export interface TeamFilterParams extends PageParams {
@@ -33,11 +33,13 @@ export interface TeamAllocation {
   resourceId?: string
   teamLeader?: boolean
   teamName?: string
-  isPlanning?: boolean
+  isAvailable?: boolean
   teamRequirementId?: string
   timezoneSid?: string
   teamId?: string
   id?: string
+  unavailabilityPeriods?: Period[]
+  isPlanning?: boolean
 }
 
 export interface Team {

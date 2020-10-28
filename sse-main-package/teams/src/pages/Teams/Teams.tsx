@@ -26,7 +26,7 @@ const Teams: React.FC<TeamsProps> = () => {
     endDate: add(startOfWeek(new Date()), { days: 6 })
   })
 
-  const onFilterChange = useCallback((params) => {
+  const onFilterChange = useCallback((params: Partial<TeamFilterParams>) => {
     setFilterParams(prev => ({ ...prev, ...params }))
   }, [])
 
@@ -38,7 +38,7 @@ const Teams: React.FC<TeamsProps> = () => {
       </div>
       <div className="cx-bg-neutral-200 cx-flex" style={{ height: 'calc(100vh - 138px)' }}>
         <ResourceSidebar filterParams={filterParams} />
-        <TeamGrid filterParams={filterParams} />
+        <TeamGrid filterParams={filterParams} onFilterChange={onFilterChange} />
       </div>
     </div>
   )

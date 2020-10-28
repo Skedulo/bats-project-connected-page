@@ -1,4 +1,4 @@
-import React, { useState, useCallback, memo } from 'react'
+import React, { useState, useCallback, memo, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { CalendarControls, RangeType, SearchSelect, ISelectItem } from '@skedulo/sked-ui'
 import { startOfWeek, add, isSameWeek } from 'date-fns'
@@ -14,6 +14,8 @@ const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ onFilterCha
 
   const [rangeType, setRangeType] = useState<RangeType>(isSameWeek(dateRange[0], dateRange[dateRange.length - 1]) ? 'week' : '2-weeks')
 
+  const dayGap = useMemo(() => rangeType === 'week' ? 6 : 13, [rangeType])
+
   const onRangeChange = useCallback((range: RangeType) => {
     setRangeType(range)
   }, [])
@@ -23,8 +25,12 @@ const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ onFilterCha
   }, [])
 
   const onDateChange = useCallback((date: Date) => {
-    onFilterChange({ startDate: startOfWeek(date), endDate: add(startOfWeek(date), { days: 6 }) })
-  }, [])
+    onFilterChange({ startDate: startOfWeek(date), endDate: add(startOfWeek(date), { days: dayGap }) })
+  }, [dayGap])
+
+  const onTodayClick = useCallback(() => {
+    onFilterChange({ startDate: startOfWeek(new Date()), endDate: add(startOfWeek(new Date()), { days: dayGap }) })
+  }, [dayGap])
 
   return (
     <div className="cx-relative cx-p-4 cx-border-b cx-sticky cx-top-0 cx-left-0 cx-bg-white cx-z-1">
@@ -44,6 +50,7 @@ const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ onFilterCha
             selectWeek
             onRangeChange={onRangeChange}
             onDateSelect={onDateChange}
+            onTodayClick={onTodayClick}
           />
         </li>
       </ul>

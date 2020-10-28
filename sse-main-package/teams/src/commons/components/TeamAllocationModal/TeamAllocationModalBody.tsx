@@ -1,7 +1,7 @@
 import React, { FC, memo, useMemo, useCallback, useState, useEffect } from 'react'
 import { FormLabel, SearchSelect, Datepicker, FormInputElement, ISelectItem, Button, Lozenge } from '@skedulo/sked-ui'
 import { useSelector, useDispatch } from 'react-redux'
-import { format } from 'date-fns'
+import { format, startOfDay, endOfDay } from 'date-fns'
 import { intersection, omit } from 'lodash'
 
 import { DATE_FORMAT } from '../../constants'
@@ -76,6 +76,11 @@ const TeamAllocationModalBody: FC = () => {
     }
   }, [storeResources, allocatedTeamRequirement])
 
+  const highlightDays = useMemo(() => ({
+    startDate: startOfDay(teamAllocation.startDateObj),
+    endDate: endOfDay(teamAllocation.endDateObj)
+  }), [teamAllocation.startDateObj, teamAllocation.endDateObj])
+
   const onSelectDate = useCallback((fieldName: string) => (date: Date) => {
     setTeamAllocation(prev => ({ ...prev, [fieldName]: date }))
   }, [])
@@ -117,8 +122,9 @@ const TeamAllocationModalBody: FC = () => {
           ...prev,
           startDateObj: selectedSlot.startDate,
           endDateObj: selectedSlot.endDate,
-          resource: { id: selectedSlot.resource?.id || '', name: selectedSlot.resource?.name || '' },
-          resourceId: selectedSlot.resource?.id
+          resource: selectedSlot.resource ? { id: selectedSlot.resource?.id || '', name: selectedSlot.resource?.name || '' } : undefined,
+          resourceId: selectedSlot.resource?.id,
+          id: selectedSlot.id
         }
       }
       return {
@@ -126,7 +132,8 @@ const TeamAllocationModalBody: FC = () => {
         startDateObj: dateRange[0],
         endDateObj: dateRange[dateRange.length - 1],
         resource: undefined,
-        resourceId: ''
+        resourceId: '',
+        id: undefined
       }
     })
   }, [selectedSlot, dateRange])
@@ -177,7 +184,7 @@ const TeamAllocationModalBody: FC = () => {
             <TimePicker className="cx-ml-4" onSelect={() => {}} step={60} defaultSelected={teamAllocation.startTime} disabled />
           </div>
           <div className="cx-flex cx-mb-4">
-            <Datepicker selected={teamAllocation.endDateObj} onChange={onSelectDate('startDateObj')} dateFormat={DATE_FORMAT} />
+            <Datepicker selected={teamAllocation.endDateObj} onChange={onSelectDate('endDateObj')} dateFormat={DATE_FORMAT} />
             <TimePicker className="cx-ml-4" onSelect={() => {}} step={60} defaultSelected={teamAllocation.endTime} disabled />
           </div>
         </div>
@@ -194,7 +201,7 @@ const TeamAllocationModalBody: FC = () => {
               />
             </div>
             <div>
-              <RowTimeslots dateRange={dateRange} highlightDays={{ startDate: teamAllocation.startDateObj, endDate: teamAllocation.endDateObj }} />
+              <RowTimeslots dateRange={dateRange} highlightDays={highlightDays} />
             </div>
           </div>
           {allocatedTeamRequirement.preferredResource && (
@@ -206,7 +213,7 @@ const TeamAllocationModalBody: FC = () => {
                 teamRequirement={allocatedTeamRequirement}
                 teamAllocation={teamAllocation}
                 onSelectResource={onResourceChange}
-                highlightDays={{ startDate: teamAllocation.startDateObj, endDate: teamAllocation.endDateObj }}
+                highlightDays={highlightDays}
                 isFirstRow
               />
             </>
@@ -220,7 +227,7 @@ const TeamAllocationModalBody: FC = () => {
               teamRequirement={allocatedTeamRequirement}
               teamAllocation={teamAllocation}
               onSelectResource={onResourceChange}
-              highlightDays={{ startDate: teamAllocation.startDateObj, endDate: teamAllocation.endDateObj }}
+              highlightDays={highlightDays}
               isFirstRow={index === 0}
             />
           ))}

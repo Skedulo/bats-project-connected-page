@@ -377,10 +377,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@skedulo/sked-ui@^18.2.0":
-  version "18.3.0"
-  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-18.3.0.tgz#06a8a5a381351c976f30a504b8d6d721c24e9ec9"
-  integrity sha512-OkzWa7LTP1FFkcGgCP5SAlc/xLRkFUgpQyidYNMtL+9+UPZNc6t4YN1c4khpANaVZSs3bMniy+C3ES7LSCiYLg==
+"@skedulo/sked-ui@^19.1.0":
+  version "19.1.0"
+  resolved "https://registry.yarnpkg.com/@skedulo/sked-ui/-/sked-ui-19.1.0.tgz#830e6d3f92ecab7eabba3d88d34ed334f30377cd"
+  integrity sha512-t8Wlfo/t4wYWHmf01LBoppyVikbBvqCYCBINkvTo0DRdMQFG/nBjNIF+2RgsSj40SJoUf9Y7G7p+Hu33kjgHGw==
   dependencies:
     "@types/calidation" "^1.16.2"
     "@types/react-table" "^7.0.19"

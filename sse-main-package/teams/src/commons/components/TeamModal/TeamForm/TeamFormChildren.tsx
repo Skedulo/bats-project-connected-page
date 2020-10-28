@@ -68,17 +68,21 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
 
   const fetchRegions = useCallback(async (input: string) => {
     return await fetchGenericOptions({ sObjectType: 'sked__Region__c', name: input })
-  }, [selectedRequiredTags])
+  }, [])
 
   const fetchTags = useCallback(async (input: string) => {
-    const res = await fetchGenericOptions({ sObjectType: 'sked__Tag__c', name: input })
-    return res?.filter(item => !selectedRequiredTags.includes(item.value)) || []
-  }, [selectedRequiredTags])
+    return await fetchGenericOptions({ sObjectType: 'sked__Tag__c', name: input })
+  }, [])
 
-  const fetchResources = useCallback(async (input: string) => {
-    const res = await fetchGenericOptions({ sObjectType: 'sked__Resource__c', name: input, regionIds: fields.regionId })
+  const fetchResources = useCallback((index: number) => async (input: string) => {
+    const res = await fetchGenericOptions({
+      sObjectType: 'sked__Resource__c',
+      name: input,
+      regionIds: fields.regionId,
+      tagIds: teamRequirements[index].tags?.map(tag => tag.tagId).join(',')
+    })
     return res?.filter(item => !selectedPreferredResource.includes(item.value)) || []
-  }, [fields.regionId, selectedPreferredResource])
+  }, [fields.regionId, teamRequirements])
 
   const onRegionSelect = useCallback((selectedRegion: ISelectItem) => {
     customFieldUpdate('regionId')(selectedRegion?.value || '')
@@ -104,11 +108,11 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
       }
       return {
         ...item,
-        preferredResourceId: selectedResource.value,
-        preferredResource: {
+        preferredResourceId: selectedResource?.value || '',
+        preferredResource: selectedResource ? {
           id: selectedResource.value,
           name: selectedResource.label
-        }
+        } : undefined
       }
     }))
   }, [teamRequirements, setTeamRequirements])
@@ -183,10 +187,11 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
                   <AsyncSearchSelect
                     id="preferredResource"
                     name="preferredResource"
-                    fetchItems={fetchResources}
-                    key={`${selectedPreferredResource.join(',')}-${fields.regionId}`}
+                    fetchItems={fetchResources(index)}
+                    key={`${selectedPreferredResource.join(',')}-${fields.regionId}-${selectedRequiredTags.join(',')}`}
                     initialSelectedItem={teamRequirements[index].preferredResource ? { value: teamRequirements[index].preferredResource?.id || '', label: teamRequirements[index].preferredResource?.name || '' } : undefined}
                     onSelectedItemChange={onResourceSelect(index)}
+                    useCache={false}
                   />
                 </FormElementWrapper>
               </div>

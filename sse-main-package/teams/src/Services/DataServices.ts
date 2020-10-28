@@ -94,23 +94,36 @@ export const fetchResourcesByRegion = async (regionIds: string): Promise<Resourc
   }
 }
 
-export const fetchTeams = async (filterParams: TeamFilterParams): Promise<Team[]> => {
+export const fetchTeams = async (filterParams: TeamFilterParams): Promise<{ data: Team[], totalCount: number }> => {
   try {
-    const res: { data: SalesforceResponse<Team[]> } = await salesforceApi.get('/services/apexrest/sked/team', {
+    const res: {
+      data: SalesforceResponse<{
+        totalItems: number
+        results: Team[]
+      }>
+    } = await salesforceApi.get('/services/apexrest/sked/team', {
       params: {
         regionIds: filterParams.regionIds,
         name: filterParams.searchText,
         startDate: format(filterParams.startDate, DATE_FORMAT),
-        endDate: format(filterParams.endDate, DATE_FORMAT)
+        endDate: format(filterParams.endDate, DATE_FORMAT),
+        pageNumber: filterParams.pageNumber,
+        pageSize: filterParams.pageSize
       }
     })
 
-    return res.data.data.map(team => ({
-      ...team,
-      teamRequirements: team.teamRequirements.map(item => ({ ...item, teamName: team.name, teamId: team.id }))
-    }))
+    return {
+      totalCount: res.data.data.totalItems,
+      data: res.data.data.results.map(team => ({
+        ...team,
+        teamRequirements: team.teamRequirements.map(item => ({ ...item, teamName: team.name, teamId: team.id }))
+      }))
+    }
   } catch (error) {
-    return []
+    return {
+      totalCount: 0,
+      data: []
+    }
   }
 }
 
@@ -150,8 +163,6 @@ export const getTeamSuggestions = async (filterParams: TeamSuggestionParams): Pr
 }
 
 export const allocateTeamMember = async (saveData: TeamAllocation): Promise<boolean> => {
-  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
-
   try {
     const response: {
       data: SalesforceResponse<{}>

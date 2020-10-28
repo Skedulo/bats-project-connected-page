@@ -1,7 +1,8 @@
 import React, { memo, useState, useCallback, useMemo, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { debounce, pickBy } from 'lodash'
-import { eachDayOfInterval, format } from 'date-fns'
+import { eachDayOfInterval, format, startOfDay, endOfDay } from 'date-fns'
+import { Pagination } from '@skedulo/sked-ui'
 
 import { fetchTeams } from '../../../Services/DataServices'
 import { updateReloadTeamsFlag, updateAllocatedTeamRequirement, updateDateRange, updateSelectedSlot } from '../../../Store/action'
@@ -16,9 +17,10 @@ import TeamRow from './TeamRow'
 
 interface TeamGridProps {
   filterParams: TeamFilterParams
+  onFilterChange: (data: Partial<TeamFilterParams>) => void
 }
 
-const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
+const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => {
   const dispatch = useDispatch()
 
   const swimlaneSetting = useSelector<State, SwimlaneSetting>(state => state.swimlaneSetting)
@@ -27,8 +29,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
-  const [teams, setTeams] = useState<Team[]>([])
-  const [searchText, setSearchText] = useState<string>('')
+  const [teams, setTeams] = useState<{ totalCount: number, data: Team[]}>({ totalCount: 0, data: [] })
 
   const dateRange = useMemo(() => {
     let range = eachDayOfInterval({
@@ -53,10 +54,14 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
   }, [])
 
   const onSearchTextChange = useCallback((value: string) => {
-    setSearchText(value)
+    onFilterChange({ searchText: value, pageNumber: 1 })
   }, [])
 
   const debouncedSearchTextChange = useMemo(() => debounce(onSearchTextChange, 700), [onSearchTextChange])
+
+  const onPageChange = useCallback((pageNumber: number) => {
+    onFilterChange({ pageNumber })
+  }, [])
 
   const onCloseAllocationModal = useCallback(() => {
     dispatch(updateAllocatedTeamRequirement(null))
@@ -64,11 +69,14 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
   }, [])
 
   useEffect(() => {
-    getTeams({ ...filterParams, searchText })
-  }, [filterParams, shouldReloadTeams, searchText])
+    getTeams({ ...filterParams })
+  }, [filterParams, shouldReloadTeams])
 
   useEffect(() => {
-    dispatch(updateDateRange(dateRange))
+    const formattedPeriod = [...dateRange]
+    formattedPeriod[0] = startOfDay(dateRange[0])
+    formattedPeriod[dateRange.length - 1] = endOfDay(dateRange[dateRange.length - 1])
+    dispatch(updateDateRange(formattedPeriod))
   }, [dateRange])
 
   return (
@@ -87,15 +95,21 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams }) => {
             <RowTimeslots dateRange={dateRange} />
           </div>
         </div>
-        {teams.map(team => (
+        {teams.data.map(team => (
           <TeamRow
             key={team.id}
             team={team}
             dateRange={dateRange}
           />
         ))}
-        {!teams.length && <div className="cx-text-center cx-p-4">No data found.</div>}
+        {!teams.data.length && <div className="cx-text-center cx-p-4">No data found.</div>}
       </div>
+      <Pagination
+        onPageChange={onPageChange}
+        itemsPerPage={filterParams.pageSize}
+        currentPage={filterParams.pageNumber}
+        itemsTotal={teams.totalCount}
+      />
       {allocatedTeamRequirement && <TeamAllocationModal onClose={onCloseAllocationModal} />}
     </div>
   )

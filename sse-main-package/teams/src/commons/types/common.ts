@@ -28,6 +28,7 @@ export interface SelectedSlot {
   startDate: Date
   endDate: Date
   resource?: Resource
+  id?: string
 }
 
 export interface State {
@@ -85,6 +86,7 @@ export interface GenericOptionParams {
   name: string
   accountIds?: string
   regionIds?: string
+  tagIds?: string
 }
 
 export interface GenericSelectItem extends ISelectItem {
@@ -148,7 +150,7 @@ export interface Resource {
   }
 }
 
-export interface HighlightDays {
+export interface Period {
   startDate: Date
   endDate: Date
 }

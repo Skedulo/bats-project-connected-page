@@ -1,9 +1,9 @@
 import React, { memo, useState, useEffect, useMemo } from 'react'
 import classnames from 'classnames'
 import { format } from 'date-fns-tz'
-import { isToday, isWithinInterval, isBefore, isAfter, isSameDay } from 'date-fns'
+import { isToday, isWithinInterval, isBefore, isAfter, isSameDay, startOfDay, endOfDay } from 'date-fns'
 
-import { TeamAllocation, SelectedSlot, HighlightDays, TeamSuggestion, TeamSuggestionPeriod } from '../../types'
+import { TeamAllocation, SelectedSlot, Period, TeamSuggestion, TeamSuggestionPeriod } from '../../types'
 import { DATE_FORMAT } from '../../constants'
 
 import AllocationCard from '../AllocationCard'
@@ -14,7 +14,7 @@ const SLOT_WIDTH_UNIT = 'px'
 
 interface HeaderCellsProps {
   dateRange: Date[]
-  highlightDays?: HighlightDays
+  highlightDays?: Period
 }
 
 const HeaderCells: React.FC<HeaderCellsProps> = ({ dateRange, highlightDays }) => {
@@ -55,7 +55,7 @@ interface TimeslotCellsProps {
   slotWidth: number
   isFirstRow: boolean
   teamAllocations: TeamAllocation[]
-  highlightDays?: HighlightDays
+  highlightDays?: Period
   onSelectSlot?: (selectedSlot: SelectedSlot) => void
   suggestions: TeamSuggestionPeriod[]
 }
@@ -76,11 +76,11 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
         const matchedAllocation = teamAllocations.find(item => item.startDate === formattedDateString)
         const matchedSuggestion = suggestions.find(item => isSameDay(item.startDate, date))
         const onAllocation = () => !matchedAllocation && !matchedSuggestion && onSelectSlot ? onSelectSlot({ startDate: date, endDate: date }) : undefined
-        const isHighlight = highlightDays ? isWithinInterval(date, { start: highlightDays.startDate, end: highlightDays.endDate }) : false
+        const isHighlight = highlightDays ? isWithinInterval(date, { start: startOfDay(highlightDays.startDate), end: endOfDay(highlightDays.endDate) }) : false
 
         return (
           <div
-            className={classnames('cx-border-b cx-border-r', {
+            className={classnames('cx-border-b cx-border-r cx-relative', {
               'cx-cursor-pointer': !!onSelectSlot,
               'cx-bg-blue-100': isHighlight,
               'cx-bg-white': !isHighlight,
@@ -92,13 +92,11 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
             {matchedAllocation && (
               <AllocationCard
                 teamAllocation={matchedAllocation}
-                key={`${matchedAllocation.startDate}-${matchedAllocation.resource?.id || ''}`}
-                dateRange={dateRange}
+                key={`${slotWidth}-${matchedAllocation.startDate}-${matchedAllocation.endDate}-${matchedAllocation.resource?.id || ''}`}
                 slotUnit={SLOT_WIDTH_UNIT}
                 slotWidth={slotWidth}
-                isConflict={false}
                 draggable={true}
-                cardPosition={slotWidth * index}
+                onSelectSlot={onSelectSlot}
               />
             )}
             {!matchedAllocation && matchedSuggestion && (
@@ -124,7 +122,7 @@ interface RowTimeslotsProps {
   teamAllocations?: TeamAllocation[]
   suggestion?: TeamSuggestion
   onSelectSlot?: (selectedSlot: SelectedSlot) => void
-  highlightDays?: HighlightDays
+  highlightDays?: Period
   isFirstRow?: boolean
 }
 
@@ -153,6 +151,24 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
     return []
   }, [suggestion, dateRange])
 
+  // const validTeamAllocations = useMemo(() => {
+  //   if (teamAllocations) {
+  //     const startRange = format(dateRange[0], DATE_FORMAT)
+  //     const endRange = format(dateRange[dateRange.length - 1], DATE_FORMAT)
+  //     return teamAllocations.map(item => {
+  //       const formattedPeriod = { ...item }
+  //       if (isBefore(new Date(item.startDate), dateRange[0])) {
+  //         formattedPeriod.startDate = startRange
+  //       }
+  //       if (isAfter(new Date(item.endDate), dateRange[dateRange.length - 1])) {
+  //         formattedPeriod.endDate = endRange
+  //       }
+  //       return formattedPeriod
+  //     })
+  //   }
+  //   return []
+  // }, [teamAllocations, dateRange])
+
   // total columns
   const cols = dateRange.length
   // width of 1 cell
@@ -171,10 +187,9 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
 
   return (
     <div
-      className="cx-grid cx-h-full"
+      className="cx-grid cx-h-full cx-relative"
       style={{
-        gridTemplateColumns: `repeat(${cols}, ${slotWidth}${SLOT_WIDTH_UNIT})`,
-        position: 'relative'
+        gridTemplateColumns: `repeat(${cols}, ${slotWidth}${SLOT_WIDTH_UNIT})`
       }}
     >
       {/* {timeSlots} */}

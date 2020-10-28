@@ -330,10 +330,11 @@ module.exports = {
       full: '100%',
       screen: '100vh'
     }),
-    inset: {
+    inset: theme => ({
       '0': '0',
+      ...theme('spacing'),
       auto: 'auto'
-    },
+    }),
     letterSpacing: {
       tighter: '-0.05em',
       tight: '-0.025em',
@@ -357,6 +358,7 @@ module.exports = {
     },
     margin: (theme, { negative }) => ({
       auto: 'auto',
+      '2px': '2px',
       ...theme('spacing'),
       ...negative(theme('spacing'))
     }),
@@ -562,5 +564,11 @@ module.exports = {
       }
       addUtilities(utils)
     }
-  ]
+  ],
+  future: {
+    removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true,
+    standardFontWeights: true,
+    defaultLineHeights: true
+  }
 }

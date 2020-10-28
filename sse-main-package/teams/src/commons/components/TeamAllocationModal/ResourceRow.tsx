@@ -2,7 +2,7 @@ import React, { memo, useMemo } from 'react'
 import { Icon, StatusIcon, ISelectItem } from '@skedulo/sked-ui'
 import classnames from 'classnames'
 
-import { Resource, TeamRequirement, TeamAllocation, HighlightDays } from '../../types'
+import { Resource, TeamRequirement, TeamAllocation, Period } from '../../types'
 
 import RowTimeslots from '../RowTimeslots'
 import ResourceCard from '../ResourceCard'
@@ -13,7 +13,7 @@ interface ResourceRowProps {
   resource: Resource
   teamAllocation: TeamAllocation
   onSelectResource: (value: ISelectItem) => void
-  highlightDays: HighlightDays
+  highlightDays: Period
   isFirstRow?: boolean
 }
 
@@ -28,19 +28,29 @@ const ResourceRow: React.FC<ResourceRowProps> = ({
 }) => {
   const teamAllocations = useMemo(() => {
     const formattedTeamAllocations = teamRequirement.allocations?.filter(item => item.resource?.id === resource.id)
-      .map((item) => ({
-        ...item,
-        teamName: teamRequirement.teamName
-      })) || []
-    if (resource.id !== teamAllocation.resource?.id) {
-      return formattedTeamAllocations
-    }
-    return [
-      ...formattedTeamAllocations,
-      {
+      .map((item) => {
+        if (item.id !== teamAllocation.id) {
+          return {
+            ...item,
+            teamName: teamRequirement.teamName
+          }
+        }
+        return {
+          ...item,
+          ...teamAllocation,
+          isPlanning: true,
+          teamName: teamRequirement.teamName
+        }
+      }) || []
+
+    if (!teamAllocation.id) {
+      formattedTeamAllocations.push({
         ...teamAllocation,
+        isPlanning: true,
         teamName: teamRequirement.teamName
-      }]
+      })
+    }
+    return formattedTeamAllocations
   }, [teamRequirement, resource, teamAllocation])
 
   return (
