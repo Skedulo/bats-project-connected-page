@@ -96,7 +96,9 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
       }
       return {
         ...item,
-        tags: selectedTags.map(item => ({ name: item.label, tagId: item.value }))
+        tags: selectedTags.map(item => ({ name: item.label, tagId: item.value })),
+        preferredResource: undefined,
+        preferredResourceId: ''
       }
     }))
   }, [teamRequirements, setTeamRequirements])

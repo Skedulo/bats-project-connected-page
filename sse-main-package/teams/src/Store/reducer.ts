@@ -1,4 +1,5 @@
 import { Reducer } from 'redux'
+import { add } from 'date-fns'
 
 import { State } from '../commons/types'
 import { DEFAULT_SWIMLANE_SETTING } from '../commons/constants'
@@ -13,7 +14,10 @@ const DEFAULT_STATE: State = {
   resources: [],
   shouldReloadTeams: false,
   allocatedTeamRequirement: null,
-  dateRange: [],
+  selectedPeriod: {
+    startDate: new Date(),
+    endDate: add(new Date(), { days: 6 })
+  },
   selectedSlot: null,
   suggestions: {}
 }
@@ -76,10 +80,10 @@ const reducer: Reducer<State, AppAction> = (state = DEFAULT_STATE, action) => {
       }
     }
 
-    case ActionType.UPDATE_DATE_RANGE: {
+    case ActionType.UPDATE_SELECTED_PERIOD: {
       return {
         ...state,
-        dateRange: action.payload
+        selectedPeriod: action.payload
       }
     }
 

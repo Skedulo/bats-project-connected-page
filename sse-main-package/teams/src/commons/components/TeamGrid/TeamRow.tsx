@@ -37,12 +37,10 @@ const TeamRequirementRow: React.FC<TeamRequirementRowProps> = ({ teamRequirement
 
   const onAllocateTeamRequirement = useCallback(() => {
     dispatch(updateAllocatedTeamRequirement(teamRequirement))
-  }, [teamRequirement])
+  }, [teamRequirement, dateRange])
 
-  const onSelectSlot = useCallback((selectedSlot: SelectedSlot) => {
-    if (selectedSlot) {
-      dispatch(updateSelectedSlot(selectedSlot))
-    }
+  const onSelectSlot = useCallback((selectedSlot: SelectedSlot | null) => {
+    dispatch(updateSelectedSlot(selectedSlot || { startDate: dateRange[0], endDate: dateRange[dateRange.length - 1] }))
     onAllocateTeamRequirement()
   }, [onAllocateTeamRequirement])
 
@@ -61,7 +59,7 @@ const TeamRequirementRow: React.FC<TeamRequirementRowProps> = ({ teamRequirement
             <Icon
               className="cx-text-neutral-600 cx-cursor-pointer"
               name="plus"
-              onClick={onAllocateTeamRequirement}
+              onClick={() => onSelectSlot(null)}
             />
           )}
           {allocatedResources.length > 0 && (
@@ -74,7 +72,7 @@ const TeamRequirementRow: React.FC<TeamRequirementRowProps> = ({ teamRequirement
           )}
         </div>
       </div>
-      <div>
+      <div className="slot-wrapper">
         <RowTimeslots
           dateRange={dateRange}
           teamAllocations={teamRequirement.allocations || []}

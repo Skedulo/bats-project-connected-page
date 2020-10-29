@@ -9,7 +9,7 @@ import { ISelectItem } from '@skedulo/sked-ui'
 
 import { SalesforceResponse, BaseModel } from '../commons/types/BaseObject'
 import { Config, GenericOptionParams, Resource } from '../commons/types'
-import { Team, TeamFilterParams, TeamAllocation, TeamSuggestionParams, TeamSuggestion } from '../commons/types/Team'
+import { Team, TeamFilterParams, TeamAllocation, TeamSuggestionParams, TeamSuggestion, TeamResourceParams } from '../commons/types/Team'
 import { DATE_FORMAT } from '../commons/constants'
 
 import { credentials } from './Services'
@@ -116,7 +116,12 @@ export const fetchTeams = async (filterParams: TeamFilterParams): Promise<{ data
       totalCount: res.data.data.totalItems,
       data: res.data.data.results.map(team => ({
         ...team,
-        teamRequirements: team.teamRequirements.map(item => ({ ...item, teamName: team.name, teamId: team.id }))
+        teamRequirements: team.teamRequirements.map(item => ({
+          ...item,
+          teamName: team.name,
+          teamId: team.id,
+          regionId: team.region?.id
+        }))
       }))
     }
   } catch (error) {
@@ -151,11 +156,28 @@ export const getTeamSuggestions = async (filterParams: TeamSuggestionParams): Pr
     })
     return response.data.data.map(item => ({
       ...item,
-      periods: item.periods.map(period => ({
+      availabilities: item.availabilities.map(period => ({
         startDate: new Date(period.startDate),
         endDate: new Date(period.endDate),
         resource: filterParams.resource
       }))
+    }))
+  } catch (error) {
+    return []
+  }
+}
+
+export const getTeamResources = async (filterParams: TeamResourceParams): Promise<Resource[]> => {
+  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
+
+  try {
+    const response: {
+      data: SalesforceResponse<TeamSuggestion[]>
+    } = await salesforceApi.get('/services/apexrest/sked/teamResource', {
+      params: filterParams
+    })
+    return response.data.data.map(item => ({
+      ...item
     }))
   } catch (error) {
     return []

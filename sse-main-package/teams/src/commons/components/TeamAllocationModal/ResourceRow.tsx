@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from 'react'
-import { Icon, StatusIcon, ISelectItem } from '@skedulo/sked-ui'
+import { Icon, StatusIcon } from '@skedulo/sked-ui'
 import classnames from 'classnames'
 
 import { Resource, TeamRequirement, TeamAllocation, Period } from '../../types'
@@ -12,7 +12,7 @@ interface ResourceRowProps {
   dateRange: Date[]
   resource: Resource
   teamAllocation: TeamAllocation
-  onSelectResource: (value: ISelectItem) => void
+  onSelectResource: (value: Resource) => void
   highlightDays: Period
   isFirstRow?: boolean
 }
@@ -27,50 +27,39 @@ const ResourceRow: React.FC<ResourceRowProps> = ({
   isFirstRow
 }) => {
   const teamAllocations = useMemo(() => {
-    const formattedTeamAllocations = teamRequirement.allocations?.filter(item => item.resource?.id === resource.id)
-      .map((item) => {
-        if (item.id !== teamAllocation.id) {
-          return {
-            ...item,
-            teamName: teamRequirement.teamName
-          }
-        }
-        return {
-          ...item,
-          ...teamAllocation,
-          isPlanning: true,
-          teamName: teamRequirement.teamName
-        }
-      }) || []
+    const formattedTeamAllocations = resource.allocations?.filter(item => item.id !== teamAllocation.id) || []
 
-    if (!teamAllocation.id) {
+    if (resource.id === teamAllocation.resource?.id) {
       formattedTeamAllocations.push({
         ...teamAllocation,
         isPlanning: true,
-        teamName: teamRequirement.teamName
+        name: teamRequirement.teamName
       })
     }
+
     return formattedTeamAllocations
   }, [teamRequirement, resource, teamAllocation])
 
   return (
     <div className="cx-grid cx-grid-cols-2/8 cx-bg-white">
-      <div className={classnames('cx-flex cx-items-center cx-justify-between cx-border-b cx-border-r cx-px-2 cx-py-3', { 'cx-border-t': isFirstRow })}>
+      <div className={classnames('cx-flex cx-items-center cx-justify-between cx-border-b cx-border-r cx-px-2 cx-py-3', {
+        'cx-border-t': isFirstRow
+      })}>
         <ResourceCard
-          className="cx-w-full"
+          className="cx-w-full resource-name"
           resource={resource}
           actionButton={resource.id !== teamAllocation.resource?.id ? (
             <Icon
               className="cx-text-neutral-600 cx-cursor-pointer hover:cx-text-primary"
               name="plus"
-              onClick={() => onSelectResource({ label: resource.name, value: resource.id })}
+              onClick={() => onSelectResource(resource)}
             />
           ) : (
             <StatusIcon status="success" />
           )}
         />
       </div>
-      <div>
+      <div className="slot-wrapper">
         <RowTimeslots
           dateRange={dateRange}
           teamAllocations={teamAllocations}

@@ -30,7 +30,7 @@ const SuggestionCard: React.FC<SuggestionCardProps> = props => {
   return (
     <div
       onClick={onCardClick}
-      className={'cx-flex cx-items-center cx-absolute cx-z-1, cx-cursor-pointer'}
+      className={'cx-flex cx-items-center cx-absolute cx-z-1 cx-cursor-pointer'}
       style={{
         height: '90%',
         left: `${cardPosition}${slotUnit}`,

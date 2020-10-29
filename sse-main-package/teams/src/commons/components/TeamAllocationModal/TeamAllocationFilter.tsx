@@ -3,39 +3,41 @@ import { useSelector } from 'react-redux'
 import { CalendarControls, RangeType, SearchSelect, ISelectItem } from '@skedulo/sked-ui'
 import { startOfWeek, add, isSameWeek } from 'date-fns'
 
-import { State } from '../../types'
+import { State, Period } from '../../types'
 
 interface TeamAllocationFilterProps {
-  onFilterChange: (data: any) => void
+  onPeriodChange: (data: Period) => void
+  allocationPeriod: Period
 }
 
-const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ onFilterChange }) => {
-  const dateRange = useSelector<State, Date[]>(state => state.dateRange)
+const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ allocationPeriod, onPeriodChange }) => {
+  const selectedPeriod = useSelector<State, Period>(state => state.selectedPeriod)
 
-  const [rangeType, setRangeType] = useState<RangeType>(isSameWeek(dateRange[0], dateRange[dateRange.length - 1]) ? 'week' : '2-weeks')
+  const [rangeType, setRangeType] = useState<RangeType>(isSameWeek(selectedPeriod.startDate, selectedPeriod.endDate) ? 'week' : '2-weeks')
 
   const dayGap = useMemo(() => rangeType === 'week' ? 6 : 13, [rangeType])
 
   const onRangeChange = useCallback((range: RangeType) => {
     setRangeType(range)
-  }, [])
+    onPeriodChange({ startDate: allocationPeriod.startDate, endDate: add(allocationPeriod.startDate, { days: rangeType === 'week' ? 6 : 13 }) })
+  }, [allocationPeriod])
 
   const onSortItemChange = useCallback((item: ISelectItem) => {
     console.log('item: ', item)
   }, [])
 
   const onDateChange = useCallback((date: Date) => {
-    onFilterChange({ startDate: startOfWeek(date), endDate: add(startOfWeek(date), { days: dayGap }) })
+    onPeriodChange({ startDate: startOfWeek(date), endDate: add(startOfWeek(date), { days: dayGap }) })
   }, [dayGap])
 
   const onTodayClick = useCallback(() => {
-    onFilterChange({ startDate: startOfWeek(new Date()), endDate: add(startOfWeek(new Date()), { days: dayGap }) })
+    onPeriodChange({ startDate: startOfWeek(new Date()), endDate: add(startOfWeek(new Date()), { days: dayGap }) })
   }, [dayGap])
 
   return (
-    <div className="cx-relative cx-p-4 cx-border-b cx-sticky cx-top-0 cx-left-0 cx-bg-white cx-z-1">
+    <div className="cx-relative cx-p-4 cx-border-b cx-sticky cx-top-0 cx-left-0 cx-bg-white cx-z-10">
       <ul className="cx-flex cx-items-center cx-justify-between">
-        <li className="cx-ml-4">
+        <li>
           <SearchSelect
             items={[{ value: 'BestFit', label: 'Best Fit' }]}
             selectedItem={{ value: 'BestFit', label: 'Best Fit' }}
@@ -46,7 +48,7 @@ const TeamAllocationFilter: React.FC<TeamAllocationFilterProps> = ({ onFilterCha
           <CalendarControls
             rangeOptions={['week', '2-weeks']}
             selectedRange={rangeType}
-            selected={startOfWeek(dateRange[0])}
+            selected={allocationPeriod.startDate}
             selectWeek
             onRangeChange={onRangeChange}
             onDateSelect={onDateChange}

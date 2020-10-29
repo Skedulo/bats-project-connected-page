@@ -39,7 +39,7 @@ export interface State {
   resources: Resource[]
   shouldReloadTeams: boolean
   allocatedTeamRequirement: TeamRequirement | null
-  dateRange: Date[]
+  selectedPeriod: Period
   selectedSlot: SelectedSlot | null
   suggestions: Record<string, TeamSuggestion>
 }
@@ -148,6 +148,7 @@ export interface Resource {
     name: string
     timezoneSid: string
   }
+  allocations?: TeamAllocation[]
 }
 
 export interface Period {

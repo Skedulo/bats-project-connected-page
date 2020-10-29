@@ -1,13 +1,13 @@
 import React, { FC, memo, useMemo, useCallback, useState, useEffect } from 'react'
-import { FormLabel, SearchSelect, Datepicker, FormInputElement, ISelectItem, Button, Lozenge } from '@skedulo/sked-ui'
+import { FormLabel, SearchSelect, Datepicker, FormInputElement, Button, Lozenge, ISelectItem } from '@skedulo/sked-ui'
 import { useSelector, useDispatch } from 'react-redux'
-import { format, startOfDay, endOfDay } from 'date-fns'
-import { intersection, omit } from 'lodash'
+import { format, startOfDay, endOfDay, eachDayOfInterval, min, max, areIntervalsOverlapping } from 'date-fns'
+import { omit, pickBy } from 'lodash'
 
 import { DATE_FORMAT } from '../../constants'
 import { updateAllocatedTeamRequirement, updateSelectedSlot, updateReloadTeamsFlag, updateSuggestions } from '../../../Store/action'
-import { State, TeamRequirement, Resource, TeamAllocation, SwimlaneSetting, SelectedSlot } from '../../types'
-import { allocateTeamMember } from '../../../Services/DataServices'
+import { State, TeamRequirement, Resource, TeamAllocation, SwimlaneSetting, SelectedSlot, Period } from '../../types'
+import { allocateTeamMember, getTeamResources } from '../../../Services/DataServices'
 import { useGlobalLoading } from '../GlobalLoading'
 
 import TimePicker from '../TimePicker'
@@ -20,9 +20,8 @@ import ResourceRow from './ResourceRow'
 
 interface SelectorProps {
   allocatedTeamRequirement: TeamRequirement | null
-  storeResources: Resource[]
   swimlaneSetting: SwimlaneSetting
-  dateRange: Date[]
+  selectedPeriod: Period
   selectedSlot: SelectedSlot | null
 }
 
@@ -35,11 +34,10 @@ const TeamAllocationModalBody: FC = () => {
   const dispatch = useDispatch()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
-  const { allocatedTeamRequirement, storeResources, swimlaneSetting, dateRange, selectedSlot } = useSelector<State, SelectorProps>(state => ({
+  const { allocatedTeamRequirement, swimlaneSetting, selectedPeriod, selectedSlot } = useSelector<State, SelectorProps>(state => ({
     allocatedTeamRequirement: state.allocatedTeamRequirement,
-    storeResources: state.resources,
     swimlaneSetting: state.swimlaneSetting,
-    dateRange: state.dateRange,
+    selectedPeriod: state.selectedPeriod,
     selectedSlot: state.selectedSlot
   }))
 
@@ -47,51 +45,83 @@ const TeamAllocationModalBody: FC = () => {
     return null
   }
 
+  const [allocationPeriod, setAllocationPeriod] = useState(selectedPeriod)
+
+  const dateRange = useMemo(() => {
+    let range = eachDayOfInterval({
+      start: allocationPeriod.startDate,
+      end: allocationPeriod.endDate
+    })
+    if (swimlaneSetting.workingHours) {
+      range = range.filter(date => {
+        const excludeDays = Object.keys(pickBy(swimlaneSetting.workingHours.days, value => !value))
+        return !excludeDays.includes(format(date, 'EEEE').toLowerCase())
+      })
+    }
+    return range
+  }, [allocationPeriod, swimlaneSetting])
+
   const [teamAllocation, setTeamAllocation] = useState<TeamAllocationState>({
     startTime: swimlaneSetting.workingHours.startTime,
     endTime: swimlaneSetting.workingHours.endTime,
     startDate: '',
     endDate: '',
-    startDateObj: dateRange[0],
-    endDateObj: dateRange[dateRange.length - 1],
+    startDateObj: selectedSlot?.startDate || allocationPeriod.startDate,
+    endDateObj: selectedSlot?.endDate || allocationPeriod.endDate,
     teamLeader: false
   })
+  const [matchingResources, setMatchingResources] = useState<Resource[]>([])
 
-  const { matchedResources, resourceOptions } = useMemo(() => {
-    const requiredTags = allocatedTeamRequirement.tags?.map(item => item.tagId || item.tag?.id).filter(item => !!item) || []
-    const matchedResources = storeResources.filter(item => {
-      if (allocatedTeamRequirement.preferredResource?.id && item.id === allocatedTeamRequirement.preferredResource.id) {
-        return false
-      }
-      if (!requiredTags.length) {
-        return true
-      }
-      const resourceTags = item.tags?.map(tag => tag.id) || []
-      return intersection(requiredTags, resourceTags).length === requiredTags.length
-    })
-
+  const resourceOptions = useMemo(() => matchingResources.map(item => ({ value: item.id, label: item.name })), [matchingResources])
+  const { displayResources, preferredResource } = useMemo(() => {
     return {
-      matchedResources,
-      resourceOptions: matchedResources.map(item => ({ value: item.id, label: item.name }))
+      displayResources: matchingResources.filter(item => item.id !== allocatedTeamRequirement.preferredResource?.id),
+      preferredResource: matchingResources.find(item => item.id === allocatedTeamRequirement.preferredResource?.id)
     }
-  }, [storeResources, allocatedTeamRequirement])
+  }, [matchingResources, allocatedTeamRequirement])
 
   const highlightDays = useMemo(() => ({
     startDate: startOfDay(teamAllocation.startDateObj),
     endDate: endOfDay(teamAllocation.endDateObj)
   }), [teamAllocation.startDateObj, teamAllocation.endDateObj])
 
-  const onSelectDate = useCallback((fieldName: string) => (date: Date) => {
-    setTeamAllocation(prev => ({ ...prev, [fieldName]: date }))
+  const getMatchingResources = useCallback(async (startDate: Date, endDate: Date) => {
+    startGlobalLoading()
+    const res = await getTeamResources({
+      startDate: format(startDate, DATE_FORMAT),
+      endDate: format(endDate, DATE_FORMAT),
+      regionIds: allocatedTeamRequirement.regionId || '',
+      timezoneSid: allocatedTeamRequirement.timezoneSid,
+      tagIds: allocatedTeamRequirement.tags?.map(item => item.tag?.id).join(',') || ''
+    })
+    endGlobalLoading()
+    setMatchingResources(res)
+  }, [allocatedTeamRequirement])
+
+  const onAllocationPeriodChange = useCallback((data: Period) => {
+    setAllocationPeriod(data)
   }, [])
+
+  const onSelectStartDate = useCallback((date: Date) => {
+    setTeamAllocation(prev => ({ ...prev, startDateObj: date, endDateObj: max([date, teamAllocation.endDateObj]) }))
+  }, [teamAllocation.endDateObj])
+
+  const onSelectEndDate = useCallback((date: Date) => {
+    setTeamAllocation(prev => ({ ...prev, endDateObj: date, startDateObj: min([date, teamAllocation.endDateObj]) }))
+  }, [teamAllocation.startDateObj])
 
   const onTeamLeaderChange = useCallback(value => {
     setTeamAllocation(prev => ({ ...prev, teamLeader: value.target.checked }))
   }, [])
 
-  const onResourceChange = useCallback((resource: ISelectItem) => {
-    setTeamAllocation(prev => ({ ...prev, resource: resource ? { id: resource.value, name: resource.label } : undefined }))
+  const onResourceChange = useCallback((resource: Resource) => {
+    setTeamAllocation(prev => ({ ...prev, resource: resource }))
   }, [])
+
+  const onResourceSelectChange = useCallback((selectedResource: ISelectItem) => {
+    const matchingResource = matchingResources.find(item => item.id === selectedResource.value)
+    setTeamAllocation(prev => ({ ...prev, resource: matchingResource }))
+  }, [matchingResources])
 
   const onCancel = useCallback(() => {
     dispatch(updateAllocatedTeamRequirement(null))
@@ -129,33 +159,36 @@ const TeamAllocationModalBody: FC = () => {
       }
       return {
         ...prev,
-        startDateObj: dateRange[0],
-        endDateObj: dateRange[dateRange.length - 1],
         resource: undefined,
         resourceId: '',
         id: undefined
       }
     })
-  }, [selectedSlot, dateRange])
+  }, [selectedSlot])
 
   useEffect(() => {
     setTeamAllocation(prev => ({
       ...prev,
-      startDate: format(teamAllocation.startDateObj, DATE_FORMAT)
+      startDate: format(teamAllocation.startDateObj, DATE_FORMAT),
+      endDate: format(teamAllocation.endDateObj, DATE_FORMAT),
+      isAvailable: !teamAllocation.resource?.allocations?.find(item => areIntervalsOverlapping({
+        start: new Date(item.startDate),
+        end: new Date(item.endDate)
+      }, {
+        start: teamAllocation.startDateObj,
+        end: teamAllocation.endDateObj
+      }))
     }))
-  }, [teamAllocation.startDateObj])
+  }, [teamAllocation.startDateObj, teamAllocation.endDateObj, teamAllocation.resource])
 
   useEffect(() => {
-    setTeamAllocation(prev => ({
-      ...prev,
-      endDate: format(teamAllocation.endDateObj, DATE_FORMAT)
-    }))
-  }, [teamAllocation.endDateObj])
+    getMatchingResources(allocationPeriod.startDate, allocationPeriod.endDate)
+  }, [allocationPeriod, getMatchingResources])
 
   return (
     <div className="cx-h-full">
-      <div className="cx-flex cx-h-full">
-        <div className="cx-w-300px cx-h-full cx-p-4 cx-border-r">
+      <div className="cx-flex" style={{ height: 'calc(100% - 70px)' }}>
+        <div className="cx-w-300px cx-h-full cx-p-4 cx-border-r allocation-form">
           <WrappedFormInput
             label="Team"
             value={allocatedTeamRequirement.teamName}
@@ -168,11 +201,11 @@ const TeamAllocationModalBody: FC = () => {
             <FormLabel>Resource</FormLabel>
             <SearchSelect
               items={resourceOptions}
-              onSelectedItemChange={onResourceChange}
+              onSelectedItemChange={onResourceSelectChange}
               selectedItem={teamAllocation.resource ? { value: teamAllocation.resource.id, label: teamAllocation.resource.name } : undefined}
             />
             {allocatedTeamRequirement.tags?.map(tag => (
-              <Lozenge key={tag.tag?.id} className="cx-mt-1 cx-mr-1" label={tag.tag?.name || ''} color="sapphire" icon="tick" solid />
+              <Lozenge key={tag.tag?.id} className="cx-mt-1 cx-mr-1" label={tag.tag?.name || ''} color="sapphire" icon="tick" theme="solid" />
             ))}
           </div>
           <div className="cx-mb-4">
@@ -180,17 +213,29 @@ const TeamAllocationModalBody: FC = () => {
             <FormLabel className="cx-ml-2">Team leader</FormLabel>
           </div>
           <div className="cx-flex cx-mb-4">
-            <Datepicker selected={teamAllocation.startDateObj} onChange={onSelectDate('startDateObj')} dateFormat={DATE_FORMAT} />
+            <Datepicker
+              selected={teamAllocation.startDateObj}
+              onChange={onSelectStartDate}
+              dateFormat={DATE_FORMAT}
+              minDate={dateRange[0]}
+              maxDate={dateRange[dateRange.length - 1]}
+            />
             <TimePicker className="cx-ml-4" onSelect={() => {}} step={60} defaultSelected={teamAllocation.startTime} disabled />
           </div>
           <div className="cx-flex cx-mb-4">
-            <Datepicker selected={teamAllocation.endDateObj} onChange={onSelectDate('endDateObj')} dateFormat={DATE_FORMAT} />
+            <Datepicker
+              selected={teamAllocation.endDateObj}
+              onChange={onSelectEndDate}
+              dateFormat={DATE_FORMAT}
+              minDate={dateRange[0]}
+              maxDate={dateRange[dateRange.length - 1]}
+            />
             <TimePicker className="cx-ml-4" onSelect={() => {}} step={60} defaultSelected={teamAllocation.endTime} disabled />
           </div>
         </div>
 
         <div className="cx-flex-1 cx-overflow-x-scroll">
-          <TeamAllocationFilter onFilterChange={() => {}} />
+          <TeamAllocationFilter allocationPeriod={allocationPeriod} onPeriodChange={onAllocationPeriodChange} />
           <div className="cx-grid cx-grid-cols-2/8">
             <div className="cx-border-b cx-border-r">
               <SearchBox
@@ -204,11 +249,11 @@ const TeamAllocationModalBody: FC = () => {
               <RowTimeslots dateRange={dateRange} highlightDays={highlightDays} />
             </div>
           </div>
-          {allocatedTeamRequirement.preferredResource && (
+          {preferredResource && (
             <>
               <div className="cx-w-full cx-p-2 cx-font-semibold">Preferred Resource</div>
               <ResourceRow
-                resource={allocatedTeamRequirement.preferredResource}
+                resource={preferredResource}
                 dateRange={dateRange}
                 teamRequirement={allocatedTeamRequirement}
                 teamAllocation={teamAllocation}
@@ -219,7 +264,7 @@ const TeamAllocationModalBody: FC = () => {
             </>
           )}
           <div className="cx-w-full cx-p-2 cx-font-semibold">All Resources</div>
-          {matchedResources.map((resource, index) => (
+          {displayResources.map((resource, index) => (
             <ResourceRow
               key={resource.id}
               resource={resource}
@@ -236,7 +281,9 @@ const TeamAllocationModalBody: FC = () => {
 
       <div className="cx-flex cx-justify-end cx-p-4 cx-border-t  cx-bg-white cx-bottom-0 cx-fixed cx-w-full">
         <Button buttonType="secondary" onClick={onCancel}>Cancel</Button>
-        <Button buttonType="primary" className="cx-ml-2" type="submit" disabled={false} onClick={onSubmit}>Save</Button>
+        <Button buttonType="primary" className="cx-ml-2" type="submit" disabled={!teamAllocation.isAvailable} onClick={onSubmit}>
+          Save
+        </Button>
       </div>
     </div>
   )

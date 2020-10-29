@@ -73,9 +73,9 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
     <>
       {dateRange.map((date, index) => {
         const formattedDateString = format(date, DATE_FORMAT)
-        const matchedAllocation = teamAllocations.find(item => item.startDate === formattedDateString)
-        const matchedSuggestion = suggestions.find(item => isSameDay(item.startDate, date))
-        const onAllocation = () => !matchedAllocation && !matchedSuggestion && onSelectSlot ? onSelectSlot({ startDate: date, endDate: date }) : undefined
+        const matchingAllocation = teamAllocations.find(item => item.startDate === formattedDateString)
+        const matchingSuggestion = suggestions.find(item => isSameDay(item.startDate, date))
+        const onAllocation = () => !matchingAllocation && !matchingSuggestion && onSelectSlot ? onSelectSlot({ startDate: date, endDate: date }) : undefined
         const isHighlight = highlightDays ? isWithinInterval(date, { start: startOfDay(highlightDays.startDate), end: endOfDay(highlightDays.endDate) }) : false
 
         return (
@@ -89,19 +89,19 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
             onClick={onAllocation}
             key={`${formattedDateString}-${index}`}
           >
-            {matchedAllocation && (
+            {matchingAllocation && (
               <AllocationCard
-                teamAllocation={matchedAllocation}
-                key={`${slotWidth}-${matchedAllocation.startDate}-${matchedAllocation.endDate}-${matchedAllocation.resource?.id || ''}`}
+                teamAllocation={matchingAllocation}
+                key={`${slotWidth}-${matchingAllocation.startDate}-${matchingAllocation.endDate}-${matchingAllocation.resource?.id || ''}`}
                 slotUnit={SLOT_WIDTH_UNIT}
                 slotWidth={slotWidth}
                 draggable={true}
                 onSelectSlot={onSelectSlot}
               />
             )}
-            {!matchedAllocation && matchedSuggestion && (
+            {!matchingAllocation && matchingSuggestion && (
               <SuggestionCard
-                suggestion={matchedSuggestion}
+                suggestion={matchingSuggestion}
                 cardPosition={slotWidth * index}
                 slotUnit={SLOT_WIDTH_UNIT}
                 slotWidth={slotWidth}
@@ -136,8 +136,8 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
   const validSuggestion = useMemo(() => {
-    if (suggestion?.periods) {
-      return suggestion.periods.map(item => {
+    if (suggestion?.availabilities) {
+      return suggestion.availabilities.map(item => {
         const formattedPeriod = { ...item }
         if (isBefore(item.startDate, dateRange[0])) {
           formattedPeriod.startDate = dateRange[0]
@@ -150,24 +150,6 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
     }
     return []
   }, [suggestion, dateRange])
-
-  // const validTeamAllocations = useMemo(() => {
-  //   if (teamAllocations) {
-  //     const startRange = format(dateRange[0], DATE_FORMAT)
-  //     const endRange = format(dateRange[dateRange.length - 1], DATE_FORMAT)
-  //     return teamAllocations.map(item => {
-  //       const formattedPeriod = { ...item }
-  //       if (isBefore(new Date(item.startDate), dateRange[0])) {
-  //         formattedPeriod.startDate = startRange
-  //       }
-  //       if (isAfter(new Date(item.endDate), dateRange[dateRange.length - 1])) {
-  //         formattedPeriod.endDate = endRange
-  //       }
-  //       return formattedPeriod
-  //     })
-  //   }
-  //   return []
-  // }, [teamAllocations, dateRange])
 
   // total columns
   const cols = dateRange.length

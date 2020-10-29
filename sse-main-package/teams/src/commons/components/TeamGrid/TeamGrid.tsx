@@ -5,7 +5,7 @@ import { eachDayOfInterval, format, startOfDay, endOfDay } from 'date-fns'
 import { Pagination } from '@skedulo/sked-ui'
 
 import { fetchTeams } from '../../../Services/DataServices'
-import { updateReloadTeamsFlag, updateAllocatedTeamRequirement, updateDateRange, updateSelectedSlot } from '../../../Store/action'
+import { updateReloadTeamsFlag, updateAllocatedTeamRequirement, updateSelectedSlot, updateSelectedPeriod } from '../../../Store/action'
 import { TeamFilterParams, Team, State, SwimlaneSetting, TeamRequirement } from '../../types'
 import { useGlobalLoading } from '../GlobalLoading'
 
@@ -73,11 +73,8 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
   }, [filterParams, shouldReloadTeams])
 
   useEffect(() => {
-    const formattedPeriod = [...dateRange]
-    formattedPeriod[0] = startOfDay(dateRange[0])
-    formattedPeriod[dateRange.length - 1] = endOfDay(dateRange[dateRange.length - 1])
-    dispatch(updateDateRange(formattedPeriod))
-  }, [dateRange])
+    dispatch(updateSelectedPeriod({ startDate: startOfDay(filterParams.startDate), endDate: endOfDay(filterParams.endDate) }))
+  }, [filterParams.startDate, filterParams.endDate])
 
   return (
     <div className="cx-flex-1">

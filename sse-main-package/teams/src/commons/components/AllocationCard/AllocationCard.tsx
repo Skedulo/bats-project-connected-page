@@ -1,16 +1,17 @@
 import React, { memo, useMemo, useState, useCallback } from 'react'
-import { Rnd, DraggableData, RndDragEvent } from 'react-rnd'
+import { Rnd } from 'react-rnd'
 import classnames from 'classnames'
 import { differenceInCalendarDays, add, format, isSameDay, isAfter, isBefore } from 'date-fns'
 import { Avatar, StatusIcon, Tooltip } from '@skedulo/sked-ui'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import { TeamAllocation } from '../../types/Team'
 import { allocateTeamMember } from '../../../Services/DataServices'
 import { LEAVE_DATE_FORMAT, DATE_FORMAT } from '../../constants'
 import { useGlobalLoading } from '../GlobalLoading'
 import { toastMessage } from '../../utils'
-import { SelectedSlot, State } from '../../types'
+import { SelectedSlot, State, Period } from '../../types'
+import { updateReloadTeamsFlag } from '../../../Store/action'
 
 interface TeamAllocationCardProps {
   teamAllocation: TeamAllocation
@@ -28,18 +29,19 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     slotWidth,
     draggable
   } = props
+  const dispatch = useDispatch()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const selectedSlot = useSelector<State, SelectedSlot | null>(state => state.selectedSlot)
-  const dateRange = useSelector<State, Date[]>(state => state.dateRange)
+  const selectedPeriod = useSelector<State, Period>(state => state.selectedPeriod)
   const { startDate, endDate } = useMemo(() => ({ startDate: new Date(teamAllocation.startDate), endDate: new Date(teamAllocation.endDate) }), [teamAllocation])
   const duration = useMemo(() => differenceInCalendarDays(endDate, startDate) + 1, [startDate, endDate])
 
   const { isConflict, conflictContent } = useMemo(() => {
     return {
       isConflict: teamAllocation.isAvailable === false,
-      conflictContent: teamAllocation.unavailabilityPeriods?.map(period => {
+      conflictContent: teamAllocation.unavailabilities?.map(period => {
         return `Unavailability: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
-      }).join('\n')
+      }).join('\n') || 'Conflicted'
     }
   }, [teamAllocation])
 
@@ -48,10 +50,10 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     height: '100%'
   })
 
-  const [allocationPosition, setAllocationPosition] = useState<{ x: number, y: number }>({
-    x: 0,
-    y: 0
-  })
+  // const [allocationPosition, setAllocationPosition] = useState<{ x: number, y: number }>({
+  //   x: 0,
+  //   y: 0
+  // })
 
   const updateAllocation = useCallback(async (id: string, newStartDate: Date, newEndDate: Date) => {
     startGlobalLoading()
@@ -62,6 +64,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     })
     endGlobalLoading()
     if (success) {
+      dispatch(updateReloadTeamsFlag(true))
     } else {
       toastMessage.error('Unsuccessfully!')
     }
@@ -74,30 +77,6 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
       onSelectSlot({ startDate, endDate, id: teamAllocation.id, resource: teamAllocation.resource })
     }
   }, [startDate, endDate, teamAllocation])
-
-  const onDragStop = (e: RndDragEvent, data: DraggableData) => {
-    e.stopPropagation()
-    if (!data.deltaX) {
-      return
-    }
-    const draggedDays = Math.round(data.lastX / slotWidth)
-    const newStartDate = add(startDate, { days: draggedDays })
-    const newEndDate = add(endDate, { days: draggedDays })
-
-    if (isSameDay(newStartDate, startDate)) {
-      return
-    }
-    if (isAfter(newEndDate, dateRange[dateRange.length - 1]) || isBefore(newStartDate, dateRange[0])) {
-      return
-    }
-
-    setAllocationPosition({ x: draggedDays * slotWidth, y: 0 })
-    if (!selectedSlot && teamAllocation.id) {
-      updateAllocation(teamAllocation.id, newStartDate, newEndDate)
-    } else {
-      console.log('newStartDate: ', newStartDate)
-    }
-  }
 
   const onStopResize = useCallback((e: MouseEvent | TouchEvent, direction: string, ref: HTMLElement, delta: any, position: any) => {
     e.stopPropagation()
@@ -113,14 +92,20 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     if (direction === 'right') {
       newEndDate = add(endDate, { days: newDuration })
     }
+
+    if (isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) {
+      return
+    }
+
+    if (isAfter(newEndDate, selectedPeriod.endDate) || isBefore(newStartDate, selectedPeriod.startDate)) {
+      return
+    }
+
     setAllocationSize({
       width: ref.style.width,
       height: ref.style.height
     })
-    setAllocationPosition(position)
-    if (isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) {
-      return
-    }
+
     if (!selectedSlot && teamAllocation.id) {
       updateAllocation(teamAllocation.id, newStartDate, newEndDate)
     } else {
@@ -131,14 +116,14 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   return (
     <Rnd
       size={allocationSize}
-      position={allocationPosition}
+      // position={allocationPosition}
       onResizeStop={onStopResize}
-      resizeGrid={[slotWidth, slotWidth]}
+      resizeGrid={[slotWidth, 0]}
       dragGrid={[slotWidth, slotWidth]}
       dragAxis="x"
       minHeight='100%'
-      onDragStop={onDragStop}
-      disableDragging={!!selectedSlot}
+      // onDragStop={onDragStop}
+      disableDragging={true}
       enableResizing={!selectedSlot && {
         bottom: false,
         bottomLeft: false,
@@ -152,14 +137,15 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
       style={{
         height: '100%',
         width: (slotWidth * duration) - 2,
-        zIndex: 1
+        zIndex: teamAllocation.isPlanning ? 2 : 1
       }}
+      bounds=".slot-wrapper"
     >
       <div
         className={classnames('cx-flex cx-items-center cx-full cx-p-1 cx-m-2px cx-rounded', {
           'cx-cursor-pointer': draggable || onSelectSlot
         })}
-        onDoubleClickCapture={onCardClick}
+        onClick={onCardClick}
         style={{
           height: 'calc(100% - 4px)',
           backgroundColor: isConflict ? 'white' : teamAllocation.isPlanning ? '#008CFF' : '#4A556A',
@@ -170,11 +156,11 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
         {!selectedSlot && <Avatar name={teamAllocation.resource?.name || ''} size="tiny" />}
         <div className="cx-ml-2 cx-truncate">
           <div className="cx-text-xs cx-font-semibold cx-truncate">
-            {!selectedSlot ? teamAllocation.resource?.name : teamAllocation.teamName}
+            {!selectedSlot ? teamAllocation.resource?.name : teamAllocation.name}
           </div>
           {!selectedSlot && <div className="cx-text-xxs cx-mt-2px">{teamAllocation.resource?.category}</div>}
         </div>
-        {isConflict && (
+        {isConflict && conflictContent && (
           <Tooltip content={conflictContent} position="top" className="cx-absolute cx-right-1 cx-top-1 cx-z-10">
             <StatusIcon status="error" />
           </Tooltip>

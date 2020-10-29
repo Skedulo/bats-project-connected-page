@@ -7,6 +7,14 @@ export interface TeamFilterParams extends PageParams {
   endDate: Date
 }
 
+export interface TeamResourceParams {
+  tagIds: string
+  regionIds: string
+  startDate: string
+  endDate: string
+  timezoneSid?: string
+}
+
 export interface TeamRequirement {
   id?: string
   name?: string
@@ -22,9 +30,11 @@ export interface TeamRequirement {
   teamName?: string
   timezoneSid?: string
   teamId?: string
+  regionId?: string
 }
 
 export interface TeamAllocation {
+  name?: string
   startDate: string
   startTime?: number
   endDate: string
@@ -38,14 +48,14 @@ export interface TeamAllocation {
   timezoneSid?: string
   teamId?: string
   id?: string
-  unavailabilityPeriods?: Period[]
+  unavailabilities?: Period[]
   isPlanning?: boolean
 }
 
 export interface Team {
   id: string
   name: string
-  region?: string
+  region?: BaseModel
   regionId: string
   teamRequirements: TeamRequirement[]
 }
@@ -64,7 +74,7 @@ export interface TeamSuggestionParams {
 export interface TeamSuggestion {
   id: string
   name: string
-  periods: TeamSuggestionPeriod[]
+  availabilities: TeamSuggestionPeriod[]
 }
 
 export interface TeamSuggestionPeriod {

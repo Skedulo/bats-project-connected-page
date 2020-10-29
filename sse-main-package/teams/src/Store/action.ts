@@ -1,6 +1,6 @@
 import { Action } from 'redux'
 
-import { Config, SwimlaneSetting, Resource, TeamAllocation, TeamRequirement, SelectedSlot, TeamSuggestion } from '../commons/types'
+import { Config, SwimlaneSetting, Resource, TeamAllocation, TeamRequirement, SelectedSlot, TeamSuggestion, Period } from '../commons/types'
 
 export enum ActionType {
   UPDATE_CONFIG = 'UPDATE_CONFIG',
@@ -11,7 +11,7 @@ export enum ActionType {
   UPDATE_RESOURCES = 'UPDATE_RESOURCES',
   UPDATE_RELOAD_TEAMS_FLAG = 'UPDATE_RELOAD_TEAMS_FLAG',
   UPDATE_ALLOCATED_TEAM_REQUIREMENT = 'UPDATE_ALLOCATED_TEAM_REQUIREMENT',
-  UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE',
+  UPDATE_SELECTED_PERIOD = 'UPDATE_SELECTED_PERIOD',
   UPDATE_SELECTED_SLOT = 'UPDATE_SELECTED_SLOT',
   UPDATE_SUGGESTIONS = 'UPDATE_SUGGESTIONS'
 }
@@ -53,9 +53,9 @@ interface UpdateAllocatedTeamRequirement extends Action {
   payload: TeamAllocation | null
 }
 
-interface UpdateDateRange extends Action {
-  type: ActionType.UPDATE_DATE_RANGE
-  payload: Date[]
+interface UpdateSelectedPeriod extends Action {
+  type: ActionType.UPDATE_SELECTED_PERIOD
+  payload: Period
 }
 
 interface UpdateSelectedSlot extends Action {
@@ -77,7 +77,7 @@ export type AppAction =
   | UpdateResources
   | UpdateReloadTeamsFlag
   | UpdateAllocatedTeamRequirement
-  | UpdateDateRange
+  | UpdateSelectedPeriod
   | UpdateSelectedSlot
   | UpdateSuggestions
 
@@ -134,9 +134,9 @@ export const updateAllocatedTeamRequirement = (payload: TeamRequirement | null) 
   }
 }
 
-export const updateDateRange = (payload: Date[]) => {
+export const updateSelectedPeriod = (payload: Period) => {
   return {
-    type: ActionType.UPDATE_DATE_RANGE,
+    type: ActionType.UPDATE_SELECTED_PERIOD,
     payload: payload
   }
 }
