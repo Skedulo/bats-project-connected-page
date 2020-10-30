@@ -129,3 +129,10 @@ export const extractTimeValue = (timeValue: number) => {
   }
   return { hours: 0, minutes: 0, seconds: 0 }
 }
+
+export const checkOverlapPeriodString = (period1: { start: string, end: string }, period2: { start: string, end: string}) => {
+  if (period1.start <= period2.start) {
+    return period1.start <= period2.start && period1.end >= period2.start
+  }
+  return period2.start <= period1.start && period2.end >= period1.start
+}

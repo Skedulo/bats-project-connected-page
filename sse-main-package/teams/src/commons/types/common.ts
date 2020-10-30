@@ -123,15 +123,11 @@ export interface IUser {
   SmallPhotoUrl: string
 }
 
-export interface ResourceSuggestion {
-  score: {
-    soft: number
-  }
-  travel: {
-    distanceFromHome: number
-    durationFromHome: number
-  }
-  currentCapacityInSeconds: number
+export interface Unavailability {
+  endDate: string
+  id: string
+  startDate: string
+  name: string
 }
 
 export interface Resource {
@@ -140,8 +136,6 @@ export interface Resource {
   rating?: number
   category?: string
   avatarUrl?: string
-  suggestion?: ResourceSuggestion
-  isSuggested?: boolean
   tags?: BaseModel[]
   region?: {
     id: string
@@ -149,6 +143,7 @@ export interface Resource {
     timezoneSid: string
   }
   allocations?: TeamAllocation[]
+  unavailabilities?: Unavailability[]
 }
 
 export interface Period {

@@ -1,5 +1,5 @@
 import React, { memo, useMemo, useCallback } from 'react'
-import { differenceInBusinessDays } from 'date-fns'
+import { differenceInCalendarDays } from 'date-fns'
 
 import { TeamSuggestionPeriod, SelectedSlot } from '../../types'
 
@@ -14,12 +14,11 @@ interface SuggestionCardProps {
 const SuggestionCard: React.FC<SuggestionCardProps> = props => {
   const {
     suggestion,
-    cardPosition,
     slotUnit,
     slotWidth,
     handleClick
   } = props
-  const duration = useMemo(() => differenceInBusinessDays(suggestion.endDate, suggestion.startDate) + 1, [suggestion])
+  const duration = useMemo(() => differenceInCalendarDays(suggestion.endDate, suggestion.startDate) + 1, [suggestion])
 
   const onCardClick = useCallback(() => {
     if (typeof handleClick === 'function') {
@@ -33,12 +32,11 @@ const SuggestionCard: React.FC<SuggestionCardProps> = props => {
       className={'cx-flex cx-items-center cx-absolute cx-z-1 cx-cursor-pointer'}
       style={{
         height: '90%',
-        left: `${cardPosition}${slotUnit}`,
         top: '2px'
       }}
     >
       <span
-        className="cx-h-full cx-flex cx-items-center cx-justify-center cx-text-primary"
+        className="cx-h-full cx-flex cx-items-center cx-justify-center cx-text-primary cx-rounded"
         style={{
           width: `${duration * slotWidth}${slotUnit}`,
           backgroundColor: '#e6f4ff',

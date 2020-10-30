@@ -1,7 +1,7 @@
 import React, { FC, memo, useMemo, useCallback, useState, useEffect } from 'react'
 import { FormLabel, SearchSelect, Datepicker, FormInputElement, Button, Lozenge, ISelectItem } from '@skedulo/sked-ui'
 import { useSelector, useDispatch } from 'react-redux'
-import { format, startOfDay, endOfDay, eachDayOfInterval, min, max, areIntervalsOverlapping } from 'date-fns'
+import { format, startOfDay, endOfDay, eachDayOfInterval, min, max, isSameDay } from 'date-fns'
 import { omit, pickBy } from 'lodash'
 
 import { DATE_FORMAT } from '../../constants'
@@ -9,6 +9,7 @@ import { updateAllocatedTeamRequirement, updateSelectedSlot, updateReloadTeamsFl
 import { State, TeamRequirement, Resource, TeamAllocation, SwimlaneSetting, SelectedSlot, Period } from '../../types'
 import { allocateTeamMember, getTeamResources } from '../../../Services/DataServices'
 import { useGlobalLoading } from '../GlobalLoading'
+import { checkOverlapPeriodString } from '../../utils'
 
 import TimePicker from '../TimePicker'
 import SearchBox from '../SearchBox'
@@ -72,7 +73,7 @@ const TeamAllocationModalBody: FC = () => {
   })
   const [matchingResources, setMatchingResources] = useState<Resource[]>([])
 
-  const resourceOptions = useMemo(() => matchingResources.map(item => ({ value: item.id, label: item.name })), [matchingResources])
+  const resourceOptions = useMemo(() => matchingResources.map(item => ({ ...item, value: item.id, label: item.name })), [matchingResources])
   const { displayResources, preferredResource } = useMemo(() => {
     return {
       displayResources: matchingResources.filter(item => item.id !== allocatedTeamRequirement.preferredResource?.id),
@@ -103,12 +104,29 @@ const TeamAllocationModalBody: FC = () => {
   }, [])
 
   const onSelectStartDate = useCallback((date: Date) => {
-    setTeamAllocation(prev => ({ ...prev, startDateObj: date, endDateObj: max([date, teamAllocation.endDateObj]) }))
-  }, [teamAllocation.endDateObj])
+    if (!date) {
+      return
+    }
+    setTeamAllocation(prev => {
+      if (!date || isSameDay(prev.startDateObj, date)) {
+        return prev
+      }
+      return { ...prev, startDateObj: date, endDateObj: max([date, prev.endDateObj]) }
+    })
+  }, [])
 
   const onSelectEndDate = useCallback((date: Date) => {
-    setTeamAllocation(prev => ({ ...prev, endDateObj: date, startDateObj: min([date, teamAllocation.endDateObj]) }))
-  }, [teamAllocation.startDateObj])
+    if (!date) {
+      return
+    }
+
+    setTeamAllocation(prev => {
+      if (!date || isSameDay(prev.endDateObj, date)) {
+        return prev
+      }
+      return { ...prev, endDateObj: date, startDateObj: min([date, prev.startDateObj]) }
+    })
+  }, [])
 
   const onTeamLeaderChange = useCallback(value => {
     setTeamAllocation(prev => ({ ...prev, teamLeader: value.target.checked }))
@@ -119,8 +137,7 @@ const TeamAllocationModalBody: FC = () => {
   }, [])
 
   const onResourceSelectChange = useCallback((selectedResource: ISelectItem) => {
-    const matchingResource = matchingResources.find(item => item.id === selectedResource.value)
-    setTeamAllocation(prev => ({ ...prev, resource: matchingResource }))
+    setTeamAllocation(prev => ({ ...prev, resource: selectedResource ? { ...selectedResource, id: selectedResource.value, name: selectedResource.label } : undefined }))
   }, [matchingResources])
 
   const onCancel = useCallback(() => {
@@ -146,13 +163,16 @@ const TeamAllocationModalBody: FC = () => {
   }, [teamAllocation, allocatedTeamRequirement])
 
   useEffect(() => {
+    if (!matchingResources.length) {
+      return
+    }
     setTeamAllocation(prev => {
       if (selectedSlot) {
         return {
           ...prev,
           startDateObj: selectedSlot.startDate,
           endDateObj: selectedSlot.endDate,
-          resource: selectedSlot.resource ? { id: selectedSlot.resource?.id || '', name: selectedSlot.resource?.name || '' } : undefined,
+          resource: selectedSlot.resource ? matchingResources.find(item => item.id === selectedSlot.resource?.id) : undefined,
           resourceId: selectedSlot.resource?.id,
           id: selectedSlot.id
         }
@@ -164,21 +184,31 @@ const TeamAllocationModalBody: FC = () => {
         id: undefined
       }
     })
-  }, [selectedSlot])
+  }, [selectedSlot, matchingResources])
 
   useEffect(() => {
-    setTeamAllocation(prev => ({
-      ...prev,
-      startDate: format(teamAllocation.startDateObj, DATE_FORMAT),
-      endDate: format(teamAllocation.endDateObj, DATE_FORMAT),
-      isAvailable: !teamAllocation.resource?.allocations?.find(item => areIntervalsOverlapping({
-        start: new Date(item.startDate),
-        end: new Date(item.endDate)
+    setTeamAllocation(prev => {
+      const startDate = format(teamAllocation.startDateObj, DATE_FORMAT)
+      const endDate = format(teamAllocation.endDateObj, DATE_FORMAT)
+      const isAllocated = teamAllocation.resource?.allocations?.find(item => item.id !== prev.id && checkOverlapPeriodString({
+        start: item.startDate, end: item.endDate
       }, {
-        start: teamAllocation.startDateObj,
-        end: teamAllocation.endDateObj
+        start: startDate, end: endDate
       }))
-    }))
+
+      const isUnavailable = teamAllocation.resource?.unavailabilities?.find(item => checkOverlapPeriodString({
+        start: item.startDate, end: item.endDate
+      }, {
+        start: startDate, end: endDate
+      }))
+
+      return {
+        ...prev,
+        startDate,
+        endDate,
+        isAvailable: !isAllocated && !isUnavailable
+      }
+    })
   }, [teamAllocation.startDateObj, teamAllocation.endDateObj, teamAllocation.resource])
 
   useEffect(() => {
@@ -246,7 +276,7 @@ const TeamAllocationModalBody: FC = () => {
               />
             </div>
             <div>
-              <RowTimeslots dateRange={dateRange} highlightDays={highlightDays} />
+              <RowTimeslots dateRange={dateRange} highlightDays={highlightDays} unavailabilities={[]} />
             </div>
           </div>
           {preferredResource && (

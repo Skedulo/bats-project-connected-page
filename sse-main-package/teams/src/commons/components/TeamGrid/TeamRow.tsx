@@ -79,6 +79,8 @@ const TeamRequirementRow: React.FC<TeamRequirementRowProps> = ({ teamRequirement
           onSelectSlot={onSelectSlot}
           isFirstRow={isFirstRow}
           suggestion={get(suggestions, `${teamRequirement.id || ''}`)}
+          timezoneSid={teamRequirement.timezoneSid}
+          unavailabilities={[]}
         />
       </div>
     </div>

@@ -89,7 +89,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
             />
           </div>
           <div>
-            <RowTimeslots dateRange={dateRange} />
+            <RowTimeslots dateRange={dateRange} unavailabilities={[]} />
           </div>
         </div>
         {teams.data.map(team => (

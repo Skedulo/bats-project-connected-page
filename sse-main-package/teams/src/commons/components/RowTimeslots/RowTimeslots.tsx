@@ -1,9 +1,10 @@
 import React, { memo, useState, useEffect, useMemo } from 'react'
 import classnames from 'classnames'
+import { Lozenge } from '@skedulo/sked-ui'
 import { format } from 'date-fns-tz'
-import { isToday, isWithinInterval, isBefore, isAfter, isSameDay, startOfDay, endOfDay } from 'date-fns'
+import { isToday, isWithinInterval, isBefore, isAfter, isSameDay, endOfDay, startOfDay } from 'date-fns'
 
-import { TeamAllocation, SelectedSlot, Period, TeamSuggestion, TeamSuggestionPeriod } from '../../types'
+import { TeamAllocation, SelectedSlot, Period, TeamSuggestion, TeamSuggestionPeriod, Unavailability } from '../../types'
 import { DATE_FORMAT } from '../../constants'
 
 import AllocationCard from '../AllocationCard'
@@ -58,6 +59,8 @@ interface TimeslotCellsProps {
   highlightDays?: Period
   onSelectSlot?: (selectedSlot: SelectedSlot) => void
   suggestions: TeamSuggestionPeriod[]
+  timezoneSid?: string
+  unavailabilities: Unavailability[]
 }
 
 const TimeslotCells: React.FC<TimeslotCellsProps> = ({
@@ -67,29 +70,34 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
   teamAllocations,
   highlightDays,
   onSelectSlot,
-  suggestions
+  suggestions,
+  timezoneSid,
+  unavailabilities
 }) => {
   return (
     <>
       {dateRange.map((date, index) => {
         const formattedDateString = format(date, DATE_FORMAT)
-        const matchingAllocation = teamAllocations.find(item => item.startDate === formattedDateString)
+        const matchingAllocations = teamAllocations.filter(item => item.startDate === formattedDateString)
         const matchingSuggestion = suggestions.find(item => isSameDay(item.startDate, date))
-        const onAllocation = () => !matchingAllocation && !matchingSuggestion && onSelectSlot ? onSelectSlot({ startDate: date, endDate: date }) : undefined
-        const isHighlight = highlightDays ? isWithinInterval(date, { start: startOfDay(highlightDays.startDate), end: endOfDay(highlightDays.endDate) }) : false
+        const onAllocation = () => !matchingAllocations.length && !matchingSuggestion && onSelectSlot ? onSelectSlot({ startDate: date, endDate: date }) : undefined
+        const isHighlight = highlightDays ? isWithinInterval(date, { start: highlightDays.startDate, end: highlightDays.endDate }) : false
+        const unavailability = unavailabilities ? unavailabilities.find(item => isWithinInterval(date, { start: startOfDay(new Date(item.startDate)), end: endOfDay(new Date(item.endDate)) })) : undefined
 
         return (
           <div
             className={classnames('cx-border-b cx-border-r cx-relative', {
               'cx-cursor-pointer': !!onSelectSlot,
-              'cx-bg-blue-100': isHighlight,
-              'cx-bg-white': !isHighlight,
+              'cx-bg-blue-100': isHighlight && !unavailability,
+              'cx-bg-neutral-500': !!unavailability,
+              'cx-bg-white': !isHighlight && !unavailability,
               'cx-border-t': isFirstRow
             })}
             onClick={onAllocation}
             key={`${formattedDateString}-${index}`}
           >
-            {matchingAllocation && (
+            {unavailability && <Lozenge className="cx-m-2" color="neutral-light" label={unavailability.name} />}
+            {matchingAllocations.map(matchingAllocation => (
               <AllocationCard
                 teamAllocation={matchingAllocation}
                 key={`${slotWidth}-${matchingAllocation.startDate}-${matchingAllocation.endDate}-${matchingAllocation.resource?.id || ''}`}
@@ -97,9 +105,10 @@ const TimeslotCells: React.FC<TimeslotCellsProps> = ({
                 slotWidth={slotWidth}
                 draggable={true}
                 onSelectSlot={onSelectSlot}
+                timezoneSid={timezoneSid}
               />
-            )}
-            {!matchingAllocation && matchingSuggestion && (
+            ))}
+            {!matchingAllocations.length && matchingSuggestion && (
               <SuggestionCard
                 suggestion={matchingSuggestion}
                 cardPosition={slotWidth * index}
@@ -124,6 +133,8 @@ interface RowTimeslotsProps {
   onSelectSlot?: (selectedSlot: SelectedSlot) => void
   highlightDays?: Period
   isFirstRow?: boolean
+  timezoneSid?: string
+  unavailabilities: Unavailability[]
 }
 
 const RowTimeslots: React.FC<RowTimeslotsProps> = ({
@@ -132,12 +143,14 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
   onSelectSlot,
   highlightDays,
   isFirstRow,
-  suggestion
+  suggestion,
+  timezoneSid,
+  unavailabilities
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(window.innerWidth)
   const validSuggestion = useMemo(() => {
     if (suggestion?.availabilities) {
-      return suggestion.availabilities.map(item => {
+      return suggestion.availabilities.filter(item => !isBefore(endOfDay(item.startDate), new Date())).map(item => {
         const formattedPeriod = { ...item }
         if (isBefore(item.startDate, dateRange[0])) {
           formattedPeriod.startDate = dateRange[0]
@@ -185,6 +198,8 @@ const RowTimeslots: React.FC<RowTimeslotsProps> = ({
           teamAllocations={teamAllocations}
           onSelectSlot={onSelectSlot}
           suggestions={validSuggestion}
+          timezoneSid={timezoneSid}
+          unavailabilities={unavailabilities}
         />
       )}
     </div>

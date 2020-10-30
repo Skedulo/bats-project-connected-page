@@ -19,6 +19,7 @@ interface TeamAllocationCardProps {
   draggable?: boolean
   slotUnit: string
   slotWidth: number
+  timezoneSid?: string
 }
 
 const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
@@ -27,7 +28,8 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     onSelectSlot,
     slotUnit,
     slotWidth,
-    draggable
+    draggable,
+    timezoneSid
   } = props
   const dispatch = useDispatch()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
@@ -60,7 +62,8 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     const success = await allocateTeamMember({
       id: id,
       startDate: format(newStartDate, DATE_FORMAT),
-      endDate: format(newEndDate, DATE_FORMAT)
+      endDate: format(newEndDate, DATE_FORMAT),
+      timezoneSid
     })
     endGlobalLoading()
     if (success) {
@@ -68,10 +71,9 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     } else {
       toastMessage.error('Unsuccessfully!')
     }
-  }, [])
+  }, [timezoneSid])
 
   const onCardClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    console.log('onCardClick')
     e.stopPropagation()
     if (typeof onSelectSlot === 'function') {
       onSelectSlot({ startDate, endDate, id: teamAllocation.id, resource: teamAllocation.resource })
@@ -86,18 +88,23 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     let newStartDate = startDate
     let newEndDate = endDate
     const newDuration = Math.round(delta.width / slotWidth)
+
     if (direction === 'left') {
       newStartDate = add(startDate, { days: -newDuration })
     }
     if (direction === 'right') {
       newEndDate = add(endDate, { days: newDuration })
     }
-
     if (isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) {
       return
     }
 
-    if (isAfter(newEndDate, selectedPeriod.endDate) || isBefore(newStartDate, selectedPeriod.startDate)) {
+    if ((isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) ||
+      isSameDay(newStartDate, newEndDate) ||
+      isAfter(newEndDate, selectedPeriod.endDate) ||
+      isBefore(newStartDate, selectedPeriod.startDate) ||
+      isBefore(newEndDate, newStartDate)
+    ) {
       return
     }
 
@@ -136,7 +143,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
       }}
       style={{
         height: '100%',
-        width: (slotWidth * duration) - 2,
+        width: (slotWidth * duration) - 8,
         zIndex: teamAllocation.isPlanning ? 2 : 1
       }}
       bounds=".slot-wrapper"
@@ -149,7 +156,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
         style={{
           height: 'calc(100% - 4px)',
           backgroundColor: isConflict ? 'white' : teamAllocation.isPlanning ? '#008CFF' : '#4A556A',
-          border: `1px solid ${isConflict ? 'red' : teamAllocation.isPlanning ? '#008CFF' : '#4A556A'}`,
+          border: `1px solid ${isConflict ? 'red' : 'white'}`,
           color: isConflict ? '#4A556A' : 'white'
         }}
       >

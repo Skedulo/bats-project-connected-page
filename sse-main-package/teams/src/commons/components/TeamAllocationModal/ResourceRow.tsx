@@ -28,7 +28,6 @@ const ResourceRow: React.FC<ResourceRowProps> = ({
 }) => {
   const teamAllocations = useMemo(() => {
     const formattedTeamAllocations = resource.allocations?.filter(item => item.id !== teamAllocation.id) || []
-
     if (resource.id === teamAllocation.resource?.id) {
       formattedTeamAllocations.push({
         ...teamAllocation,
@@ -63,6 +62,7 @@ const ResourceRow: React.FC<ResourceRowProps> = ({
         <RowTimeslots
           dateRange={dateRange}
           teamAllocations={teamAllocations}
+          unavailabilities={resource.unavailabilities || []}
           highlightDays={highlightDays}
           isFirstRow={!!isFirstRow}
         />

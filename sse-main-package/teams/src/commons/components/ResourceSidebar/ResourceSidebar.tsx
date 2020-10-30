@@ -23,7 +23,7 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
   const storeResources = useSelector<State, Resource[]>(state => state.resources)
   const showResourceSidebar = useSelector<State, boolean>(state => state.showResourceSidebar)
-
+  const [suggestingResource, setSuggestingResource] = useState<string>('')
   const [displayResources, setDisplayResources] = useState<Resource[]>([])
 
   // const [searchText, setSearchText] = useState<string>('')
@@ -51,6 +51,7 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
     })
     endGlobalLoading()
     dispatch(updateSuggestions(keyBy(suggestions, 'id')))
+    setSuggestingResource(resource.id)
   }, [filterParams])
 
   useEffect(() => {
@@ -82,7 +83,10 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
           actionButton={
             <Icon
               name="suggest"
-              className="cx-ml-1 cx-text-neutral-600 cx-cursor-pointer hover:cx-text-primary"
+              className={classnames('cx-ml-1 cx-cursor-pointer hover:cx-text-primary', {
+                'cx-text-primary': suggestingResource === resource.id,
+                'cx-text-neutral-600': !suggestingResource || suggestingResource !== resource.id
+              })}
               onClick={async () => await onGetResourceSuggestion(resource)}
             />
           }
