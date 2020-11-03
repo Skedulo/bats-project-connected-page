@@ -39,31 +39,31 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   const duration = useMemo(() => differenceInCalendarDays(endDate, startDate) + 1, [startDate, endDate])
 
   const { isConflict, conflictContent } = useMemo(() => {
+    const unavailabilities = teamAllocation.unavailabilities?.map(period => {
+      return `Unavailability: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
+    }) || []
+    const conflicts = teamAllocation.conflicts?.map(period => {
+      return `Team ${period.team.name}: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
+    }) || []
     return {
-      isConflict: teamAllocation.isAvailable === false,
-      conflictContent: teamAllocation.unavailabilities?.map(period => {
-        return `Unavailability: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
-      }).join('\n') || 'Conflicted'
+      isConflict: teamAllocation.isAvailable === false || !!teamAllocation.isConflict,
+      conflictContent: [...unavailabilities, ...conflicts].join('\n') || 'Conflicted'
     }
   }, [teamAllocation])
 
   const [allocationSize, setAllocationSize] = useState<{ width: string, height: string }>({
-    width: `${duration * slotWidth}${slotUnit}`,
+    width: `${(duration * slotWidth)}${slotUnit}`,
     height: '100%'
   })
 
-  // const [allocationPosition, setAllocationPosition] = useState<{ x: number, y: number }>({
-  //   x: 0,
-  //   y: 0
-  // })
-
-  const updateAllocation = useCallback(async (id: string, newStartDate: Date, newEndDate: Date) => {
+  const updateAllocation = useCallback(async (id: string, resourceId: string, newStartDate: Date, newEndDate: Date) => {
     startGlobalLoading()
     const success = await allocateTeamMember({
       id: id,
       startDate: format(newStartDate, DATE_FORMAT),
       endDate: format(newEndDate, DATE_FORMAT),
-      timezoneSid
+      timezoneSid,
+      resourceId: resourceId
     })
     endGlobalLoading()
     if (success) {
@@ -71,7 +71,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     } else {
       toastMessage.error('Unsuccessfully!')
     }
-  }, [timezoneSid])
+  }, [timezoneSid, teamAllocation])
 
   const onCardClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation()
@@ -95,12 +95,8 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     if (direction === 'right') {
       newEndDate = add(endDate, { days: newDuration })
     }
-    if (isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) {
-      return
-    }
 
     if ((isSameDay(newStartDate, startDate) && isSameDay(newEndDate, endDate)) ||
-      isSameDay(newStartDate, newEndDate) ||
       isAfter(newEndDate, selectedPeriod.endDate) ||
       isBefore(newStartDate, selectedPeriod.startDate) ||
       isBefore(newEndDate, newStartDate)
@@ -114,7 +110,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
     })
 
     if (!selectedSlot && teamAllocation.id) {
-      updateAllocation(teamAllocation.id, newStartDate, newEndDate)
+      updateAllocation(teamAllocation.id, teamAllocation.resource?.id || '', newStartDate, newEndDate)
     } else {
       console.log('newStartDate: ', newStartDate)
     }
@@ -123,13 +119,10 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   return (
     <Rnd
       size={allocationSize}
-      // position={allocationPosition}
       onResizeStop={onStopResize}
       resizeGrid={[slotWidth, 0]}
-      dragGrid={[slotWidth, slotWidth]}
       dragAxis="x"
       minHeight='100%'
-      // onDragStop={onDragStop}
       disableDragging={true}
       enableResizing={!selectedSlot && {
         bottom: false,
@@ -142,8 +135,6 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
         topRight: false
       }}
       style={{
-        height: '100%',
-        width: (slotWidth * duration) - 8,
         zIndex: teamAllocation.isPlanning ? 2 : 1
       }}
       bounds=".slot-wrapper"

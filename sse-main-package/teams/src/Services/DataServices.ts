@@ -152,7 +152,10 @@ export const getTeamSuggestions = async (filterParams: TeamSuggestionParams): Pr
     const response: {
       data: SalesforceResponse<TeamSuggestion[]>
     } = await salesforceApi.get('/services/apexrest/sked/teamResource/suggestion', {
-      params: omit(filterParams, 'resource')
+      params: {
+        ...omit(filterParams, 'resource'),
+        resourceId: filterParams.resource.id
+      }
     })
     return response.data.data.map(item => ({
       ...item,

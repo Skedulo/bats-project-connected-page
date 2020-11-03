@@ -50,6 +50,14 @@ export interface TeamAllocation {
   id?: string
   unavailabilities?: Period[]
   isPlanning?: boolean
+  isConflict?: boolean
+  conflicts?: Array<{
+    id: string
+    name: string
+    startDate: string
+    endDate: string
+    team: Team
+  }>
 }
 
 export interface Team {
@@ -81,4 +89,9 @@ export interface TeamSuggestionPeriod {
   startDate: Date
   endDate: Date
   resource: BaseModel
+}
+
+export interface TeamAllocationState extends TeamAllocation {
+  startDateObj: Date
+  endDateObj: Date
 }

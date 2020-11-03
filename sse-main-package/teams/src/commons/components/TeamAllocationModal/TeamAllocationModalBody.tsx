@@ -26,7 +26,7 @@ interface SelectorProps {
   selectedSlot: SelectedSlot | null
 }
 
-interface TeamAllocationState extends TeamAllocation {
+export interface TeamAllocationState extends TeamAllocation {
   startDateObj: Date
   endDateObj: Date
 }
@@ -130,10 +130,6 @@ const TeamAllocationModalBody: FC = () => {
 
   const onTeamLeaderChange = useCallback(value => {
     setTeamAllocation(prev => ({ ...prev, teamLeader: value.target.checked }))
-  }, [])
-
-  const onResourceChange = useCallback((resource: Resource) => {
-    setTeamAllocation(prev => ({ ...prev, resource: resource }))
   }, [])
 
   const onResourceSelectChange = useCallback((selectedResource: ISelectItem) => {
@@ -287,7 +283,7 @@ const TeamAllocationModalBody: FC = () => {
                 dateRange={dateRange}
                 teamRequirement={allocatedTeamRequirement}
                 teamAllocation={teamAllocation}
-                onSelectResource={onResourceChange}
+                setTeamAllocation={setTeamAllocation}
                 highlightDays={highlightDays}
                 isFirstRow
               />
@@ -301,11 +297,12 @@ const TeamAllocationModalBody: FC = () => {
               dateRange={dateRange}
               teamRequirement={allocatedTeamRequirement}
               teamAllocation={teamAllocation}
-              onSelectResource={onResourceChange}
+              setTeamAllocation={setTeamAllocation}
               highlightDays={highlightDays}
               isFirstRow={index === 0}
             />
           ))}
+          {!displayResources.length && <div className="cx-text-center cx-p-4">No matching resources found.</div>}
         </div>
       </div>
 

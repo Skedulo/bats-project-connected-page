@@ -26,8 +26,6 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
   const [suggestingResource, setSuggestingResource] = useState<string>('')
   const [displayResources, setDisplayResources] = useState<Resource[]>([])
 
-  // const [searchText, setSearchText] = useState<string>('')
-
   const getResources = useCallback(async (regionId: string) => {
     startGlobalLoading()
     const res = await fetchResourcesByRegion(regionId)
@@ -40,27 +38,35 @@ const ResourceSidebar: React.FC<ResourceSidebarProps> = ({ filterParams }) => {
   }, [storeResources])
 
   const onGetResourceSuggestion = useCallback(async (resource: Resource) => {
+    if (resource.id === suggestingResource) {
+      setSuggestingResource('')
+      dispatch(updateSuggestions({}))
+      return
+    }
     startGlobalLoading()
     const suggestions = await getTeamSuggestions({
       resource: resource,
       regionIds: filterParams.regionIds || '',
       startDate: format(filterParams.startDate, DATE_FORMAT),
       endDate: format(filterParams.endDate, DATE_FORMAT),
-      // tagIds: resource.tags?.map(tag => tag.id).join(',') || '',
       timezoneSid: resource.region?.timezoneSid || ''
     })
     endGlobalLoading()
     dispatch(updateSuggestions(keyBy(suggestions, 'id')))
     setSuggestingResource(resource.id)
-  }, [filterParams])
+  }, [filterParams, suggestingResource])
 
   useEffect(() => {
     getResources(filterParams.regionIds || '')
   }, [filterParams.regionIds])
 
   useEffect(() => {
+    setSuggestingResource('')
+    dispatch(updateSuggestions({}))
+  }, [filterParams.startDate, filterParams.endDate])
+
+  useEffect(() => {
     setDisplayResources(storeResources)
-    // setSearchText('')
   }, [storeResources])
 
   return (

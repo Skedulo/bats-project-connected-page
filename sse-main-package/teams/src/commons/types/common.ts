@@ -1,6 +1,6 @@
 import { BaseModel } from './BaseObject'
 import { ISelectItem } from '@skedulo/sked-ui'
-import { TeamAllocation, TeamRequirement, TeamSuggestion } from './Team'
+import { TeamAllocation, TeamRequirement, TeamSuggestion, TeamSuggestionPeriod } from './Team'
 
 export interface PicklistItem {
   value: string
@@ -130,6 +130,13 @@ export interface Unavailability {
   name: string
 }
 
+export interface Availability {
+  endDate: string
+  id: string
+  startDate: string
+  name: string
+}
+
 export interface Resource {
   id: string
   name: string
@@ -144,6 +151,7 @@ export interface Resource {
   }
   allocations?: TeamAllocation[]
   unavailabilities?: Unavailability[]
+  availabilities?: TeamSuggestionPeriod[]
 }
 
 export interface Period {
