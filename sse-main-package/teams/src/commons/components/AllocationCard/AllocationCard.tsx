@@ -43,7 +43,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
       return `Unavailability: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
     }) || []
     const conflicts = teamAllocation.conflicts?.map(period => {
-      return `Team ${period.team.name}: ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
+      return `Team: ${period.team.name} ${format(new Date(period.startDate), LEAVE_DATE_FORMAT)} - ${format(new Date(period.endDate), LEAVE_DATE_FORMAT)}`
     }) || []
     return {
       isConflict: teamAllocation.isAvailable === false || !!teamAllocation.isConflict,

@@ -18,6 +18,7 @@ interface IJobTemplateFormProps {
   totalJobTemplates: number
   projectId: string
   projectRegionId: string
+  onDelete: (id: string) => void
 }
 
 const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
@@ -26,48 +27,54 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
   onCancel,
   totalJobTemplates,
   projectId,
-  projectRegionId
+  projectRegionId,
+  onDelete
 }) => {
   const [jobConstraints, setJobConstraints] = React.useState<IJobConstraint[]>(jobTemplate?.jobConstraints || [])
+  const handleDelete = React.useCallback(() => {
+    if (jobTemplate?.id) {
+      onDelete(jobTemplate.id)
+    }
+  }, [jobTemplate])
 
   const handleSubmit = React.useCallback(
     async (form: SkedFormChildren<IJobTemplate>) => {
-      let hasError = false
-      let validatedJobConstraints: IJobConstraint[] = []
-      if (jobConstraints.length) {
-        validatedJobConstraints = jobConstraints.map((item, index) => {
-          const jobId = item.dependentJobId || item.dependentJob?.id
-          const duplicatedJobId = jobConstraints.find(
-            (jc, jcIndex) =>
-              (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index && !jc.action && !item.action
-          )
-          if (!item.constraintType || !item.dependencyType || !jobId) {
-            hasError = true
-            return {
-              ...item,
-              error: 'Constraint is invalid',
-            }
-          }
-          if (duplicatedJobId) {
-            hasError = true
-            return {
-              ...item,
-              error: 'Dependent job is duplicated',
-            }
-          }
-          return item
-        })
-      }
-      if (hasError) {
-        setJobConstraints(validatedJobConstraints)
-        return
-      }
+      // let hasError = false
+      // let validatedJobConstraints: IJobConstraint[] = []
+      // if (jobConstraints.length) {
+      //   validatedJobConstraints = jobConstraints.map((item, index) => {
+      //     const jobId = item.dependentJobId || item.dependentJob?.id
+      //     const duplicatedJobId = jobConstraints.find(
+      //       (jc, jcIndex) =>
+      //         (jc.dependentJobId || jc.dependentJob?.id) === jobId && jcIndex !== index && !jc.action && !item.action
+      //     )
+      //     if (!item.constraintType || !item.dependencyType || !jobId) {
+      //       hasError = true
+      //       return {
+      //         ...item,
+      //         error: 'Constraint is invalid',
+      //       }
+      //     }
+      //     if (duplicatedJobId) {
+      //       hasError = true
+      //       return {
+      //         ...item,
+      //         error: 'Dependent job is duplicated',
+      //       }
+      //     }
+      //     return item
+      //   })
+      // }
+      // if (hasError) {
+      //   setJobConstraints(validatedJobConstraints)
+      //   return
+      // }
       const submitData = {
         ...jobTemplate,
         ...form.fields,
-        jobConstraints: jobConstraints.map(item =>
-          omit(['tempId', 'error', 'sObjectType', 'projectJobTemplateId'], item)
-        ),
+        // jobConstraints: jobConstraints.map(item =>
+        //   omit(['tempId', 'error', 'sObjectType', 'projectJobTemplateId'], item)
+        // ),
       }
       onSubmit(submitData)
     },
@@ -86,11 +93,8 @@ const JobTemplateForm: React.FC<IJobTemplateFormProps> = ({
           formParams={formParams}
           onCancel={onCancel}
           jobTemplate={jobTemplate}
-          jobConstraints={jobConstraints}
-          setJobConstraints={setJobConstraints}
-          totalJobTemplates={totalJobTemplates}
-          projectId={projectId}
           projectRegionId={projectRegionId}
+          onDelete={handleDelete}
         />
       )}
     </SkedFormValidation>

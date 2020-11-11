@@ -10,6 +10,7 @@ interface IJobTemplateModalProp {
   totalJobTemplates: number
   projectId: string
   projectRegionId: string
+  onDelete: (id: string) => void
 }
 
 interface IModalHeaderProp {
@@ -32,7 +33,8 @@ const JobTemplateModal: React.FC<IJobTemplateModalProp> = ({
   jobTemplate,
   totalJobTemplates,
   projectId,
-  projectRegionId
+  projectRegionId,
+  onDelete
 }) => {
   return (
     <DynamicModal
@@ -46,6 +48,7 @@ const JobTemplateModal: React.FC<IJobTemplateModalProp> = ({
         totalJobTemplates={totalJobTemplates}
         projectId={projectId}
         projectRegionId={projectRegionId}
+        onDelete={onDelete}
       />
     </DynamicModal>
   )

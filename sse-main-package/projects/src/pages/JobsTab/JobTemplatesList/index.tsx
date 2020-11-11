@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, useContext } from 'react'
 import { debounce, uniq, keyBy, times } from 'lodash/fp'
-import { DynamicTable, IDynamicTable, Lozenge, Pagination, Button, LozengeColors, Avatar, GroupAvatars } from '@skedulo/sked-ui'
+import { DynamicTable, IDynamicTable, Pagination, Button, GroupAvatars, ActionMenu, ConfirmationModal } from '@skedulo/sked-ui'
 import JobFilter from './JobTemplateFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
 import {
@@ -16,7 +16,7 @@ import {
   IProjectDetail,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
-import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues } from '../../../Services/DataServices'
+import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues, deleteJobTemplate } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
 import JobTemplateModal from '../JobTemplateModal'
 import { AppContext } from '../../../App'
@@ -27,13 +27,16 @@ interface IJobTemplatesListProps {
   isTemplate: boolean
 }
 
-const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) => {
+const jobTemplatesTableColumns = (
+  onViewJobTemplate: (job: IJobTemplate) => void,
+  onDeleteJobTemplate: (id: string) => void
+) => {
   return [
     {
       Header: 'Name/Description',
       accessor: 'name',
       width: '30%',
-      Cell: ({ row }: { row: { original: IJobDetail } }) => {
+      Cell: ({ row }: { row: { original: IJobTemplate } }) => {
         const onClickCell = () => onViewJobTemplate(row.original)
         return (
           <div className="hover:cx-cursor-pointer" onClick={onClickCell}>
@@ -77,6 +80,24 @@ const jobTemplatesTableColumns = (onViewJobTemplate: (job: IJobDetail) => void) 
         )
       },
     },
+    {
+      Header: '',
+      accessor: 'id',
+      disableSortBy: true,
+      Cell: ({ cell, row }: { cell: { value: string }; row: { original: IJobTemplate } }) => {
+        const actionItems = [{ label: 'View/Edit', onClick: () => onViewJobTemplate(row.original) }]
+
+        if (onDeleteJobTemplate) {
+          actionItems.push({ label: 'Delete', onClick: () => onDeleteJobTemplate(cell.value) })
+        }
+
+        return (
+          <div className="cx-text-right">
+            <ActionMenu menuItems={actionItems} />
+          </div>
+        )
+      },
+    }
   ]
 }
 
@@ -97,6 +118,8 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
 
   const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
+
+  const [confirmJobTemplateId, setConfirmJobTemplateId] = useState<string | null>(null)
 
   const [openJobTemplateModal, setOpenJobTemplateModal] = useState<boolean>(false)
 
@@ -167,6 +190,31 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
     setOpenJobTemplateModal(true)
   }, [])
 
+  const closeConfirm = useCallback(() => {
+    setConfirmJobTemplateId(null)
+  }, [])
+
+  const onConfirmDelete = useCallback((jobId: string) => {
+    setConfirmJobTemplateId(jobId)
+  }, [])
+
+  const onDeleteJobTemplate = useCallback(async () => {
+    if (!confirmJobTemplateId) {
+      return
+    }
+    setIsLoading(true)
+    const success = await deleteJobTemplate(confirmJobTemplateId)
+    if (success) {
+      getJobTemplatesList({ ...filterParams, projectId })
+    }  else {
+      const errorMsg = 'Delete unsuccessfully!'
+      toastMessage.error(errorMsg)
+    }
+    setConfirmJobTemplateId(null)
+    onCloseJobTemplateModal()
+    setIsLoading(false)
+  }, [confirmJobTemplateId, filterParams, projectId])
+
   const onCreateJobTemplate = useCallback(() => {
     setOpenJobTemplateModal(true)
   }, [])
@@ -192,7 +240,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   const jobsTableConfig: IDynamicTable<IJobTemplate> = useMemo(
     () => ({
       data: jobTemplates.results,
-      columns: jobTemplatesTableColumns(onViewJobTemplate),
+      columns: jobTemplatesTableColumns(onViewJobTemplate, onConfirmDelete),
       stickyHeader: false,
       rowSelectControl: 'disabled',
       onSortBy: props => {
@@ -253,7 +301,17 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
           projectId={projectId}
           projectRegionId={region?.id || ''}
           totalJobTemplates={jobTemplates.totalItems}
+          onDelete={onConfirmDelete}
         />
+      )}
+      {!!confirmJobTemplateId && (
+        <ConfirmationModal
+          onCancel={closeConfirm}
+          onConfirm={onDeleteJobTemplate}
+          confirmButtonText="Ok"
+        >
+          {`Are you sure you want to delete this job template?`}
+        </ConfirmationModal>
       )}
     </div>
   )

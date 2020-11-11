@@ -236,6 +236,17 @@ export const createUpdateJobTemplate = async (requestData: IJobTemplate): Promis
   }
 }
 
+export const deleteJobTemplate = async (id: string): Promise<boolean> => {
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.delete('/services/apexrest/sked/projectJobTemplate', {  params: { ids: id } })
+    return response.data.success
+  } catch (error) {
+    return false
+  }
+}
+
 export const dispatchMutipleJobs = async (jobIds: string) => {
   try {
     const res = await salesforceApi.get('/services/apexrest/sked/job/dispatch', { params: { ids: jobIds } })
