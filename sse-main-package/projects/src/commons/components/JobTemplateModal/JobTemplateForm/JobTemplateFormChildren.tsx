@@ -8,10 +8,10 @@ import {
   ISelectItem,
   AsyncSearchSelect,
 } from '@skedulo/sked-ui'
-import WrappedFormInput from '../WrappedFormInput'
-import { AppContext } from '../../../App'
-import { IJobConstraint, IJobTemplate, IBaseModel } from '../../types'
-import { fetchGenericOptions } from '../../../Services/DataServices'
+import WrappedFormInput from '../../WrappedFormInput'
+import { AppContext } from '../../../../App'
+import { IJobConstraint, IJobTemplate, IBaseModel } from '../../../types'
+import { fetchGenericOptions } from '../../../../Services/DataServices'
 
 interface IJobTemplateFormChildrenProps {
   formParams: SkedFormChildren<IJobTemplate>

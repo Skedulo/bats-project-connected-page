@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useMemo, useContext } from 'react'
-import { debounce, uniq, keyBy, times } from 'lodash/fp'
+import { debounce, uniq, keyBy } from 'lodash/fp'
 import { DynamicTable, IDynamicTable, Pagination, Button, GroupAvatars, ActionMenu, ConfirmationModal } from '@skedulo/sked-ui'
 import JobFilter from './JobTemplateFilter'
 import LoadingTrigger from '../../../commons/components/GlobalLoading/LoadingTrigger'
@@ -7,18 +7,18 @@ import {
   IListResponse,
   IFilterParams,
   IJobFilterParams,
-  JobStatusKey,
-  IJobDetail,
   IJobTemplate,
   IJobTypeTemplate,
   IConfig,
   IJobConstraint,
   IProjectDetail,
+  IJobDependency,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
 import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues, deleteJobTemplate } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
-import JobTemplateModal from '../JobTemplateModal'
+import JobTemplateModal from '../../../commons/components/JobTemplateModal'
+import JobDependencyModal from '../../../commons/components/JobDependencyModal'
 import { AppContext } from '../../../App'
 import { toastMessage } from '../../../commons/utils'
 
@@ -29,7 +29,8 @@ interface IJobTemplatesListProps {
 
 const jobTemplatesTableColumns = (
   onViewJobTemplate: (job: IJobTemplate) => void,
-  onDeleteJobTemplate: (id: string) => void
+  onDeleteJobTemplate: (id: string) => void,
+  onOpenDependencyModal: (dependency: IJobDependency) => void
 ) => {
   return [
     {
@@ -52,16 +53,24 @@ const jobTemplatesTableColumns = (
       width: '30%',
     },
     {
-      Header: 'Constrains',
-      accessor: 'jobConstraints',
-      Cell: ({ cell }: { cell: { value: IJobConstraint[] } }) => {
-        if (!cell.value?.length) {
-          return 'No constraints'
-        }
-        const constraints = cell.value.map(item => {
-          return `${item.constraintType} ${item.dependencyType.toLowerCase()} ${item.dependentJob?.name}`
+      Header: 'Dependencies',
+      accessor: 'jobDependencies',
+      Cell: ({ cell, row }: { cell: { value: IJobDependency[] }, row: { original: IJobTemplate } }) => {
+        const onCreateDependency = () => onOpenDependencyModal({ jobTemplateId: row.original.id || '' })
+        const dependencies = cell.value.map(item => {
+          const onUpdateDependency = () => onOpenDependencyModal(item)
+          return (
+            <div key={item.id} onClick={onUpdateDependency}>{`${item.dependencyType} ${item.dependentJob?.name}`}</div>
+          )
         })
-        return <div className="sk-flex sk-items-center">{constraints.join(' and ')}</div>
+        return (
+          <div className="sk-flex sk-items-center">
+            {dependencies}
+            <Button buttonType="transparent" onClick={onCreateDependency}>
+              {dependencies.length ? 'Add another dependency' : 'Add dependency'}
+            </Button>
+          </div>
+        )
       },
     },
     {
@@ -85,7 +94,10 @@ const jobTemplatesTableColumns = (
       accessor: 'id',
       disableSortBy: true,
       Cell: ({ cell, row }: { cell: { value: string }; row: { original: IJobTemplate } }) => {
-        const actionItems = [{ label: 'View/Edit', onClick: () => onViewJobTemplate(row.original) }]
+        const actionItems = [
+          { label: 'View/Edit', onClick: () => onViewJobTemplate(row.original) },
+          { label: 'Add dependency', onClick: () => onOpenDependencyModal({ jobTemplateId: cell.value }) },
+        ]
 
         if (onDeleteJobTemplate) {
           actionItems.push({ label: 'Delete', onClick: () => onDeleteJobTemplate(cell.value) })
@@ -118,6 +130,8 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   const [jobTemplates, setJobTemplates] = useState<IListResponse<IJobTemplate>>(DEFAULT_LIST)
 
   const [selectedJobTemplate, setSelectedJobTemplate] = useState<IJobTemplate | null>(null)
+
+  const [selectedJobDependency, setSelectedJobDependency] = useState<IJobDependency | null>(null)
 
   const [confirmJobTemplateId, setConfirmJobTemplateId] = useState<string | null>(null)
 
@@ -185,7 +199,6 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   }, [])
 
   const onViewJobTemplate = useCallback((job: IJobTemplate) => {
-    // window.top.window.location.href = `${PROJECT_DETAIL_PATH}${projectId}`
     setSelectedJobTemplate(job)
     setOpenJobTemplateModal(true)
   }, [])
@@ -237,10 +250,18 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
     setIsLoading(false)
   }, [projectId, filterParams])
 
+  const onOpenDependencyModal = useCallback((jobDependency: IJobDependency) => {
+    setSelectedJobDependency(jobDependency)
+  }, [])
+
+  const onCloseDependencyModal = useCallback(() => {
+    setSelectedJobDependency(null)
+  }, [])
+
   const jobsTableConfig: IDynamicTable<IJobTemplate> = useMemo(
     () => ({
       data: jobTemplates.results,
-      columns: jobTemplatesTableColumns(onViewJobTemplate, onConfirmDelete),
+      columns: jobTemplatesTableColumns(onViewJobTemplate, onConfirmDelete, onOpenDependencyModal),
       stickyHeader: false,
       rowSelectControl: 'disabled',
       onSortBy: props => {
@@ -302,6 +323,14 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
           projectRegionId={region?.id || ''}
           totalJobTemplates={jobTemplates.totalItems}
           onDelete={onConfirmDelete}
+        />
+      )}
+      {selectedJobDependency && (
+        <JobDependencyModal
+          jobDependency={selectedJobDependency}
+          onSubmit={() => {}}
+          onClose={onCloseDependencyModal}
+          projectId={projectId}
         />
       )}
       {!!confirmJobTemplateId && (

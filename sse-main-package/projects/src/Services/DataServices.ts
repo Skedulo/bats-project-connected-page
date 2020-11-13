@@ -196,7 +196,10 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
 export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promise<IListResponse<IJobDetail>> => {
   try {
     const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
-    return res.data.data
+    return {
+      ...res.data.data,
+      results: res.data.data.results.map(item => ({ ...item, jobDependencies: [] }))
+    }
   } catch (error) {
     toastMessage.error('Something went wrong!')
     return {

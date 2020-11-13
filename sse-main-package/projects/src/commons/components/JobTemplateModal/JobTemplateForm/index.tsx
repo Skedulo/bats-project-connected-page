@@ -2,7 +2,7 @@ import * as React from 'react'
 import { omit } from 'lodash/fp'
 import { SkedFormChildren, SkedFormValidation, ISelectItem } from '@skedulo/sked-ui'
 import JobTemplateFormChildren from './JobTemplateFormChildren'
-import { IJobTemplate, IJobConstraint } from '../../types'
+import { IJobTemplate, IJobConstraint } from '../../../types'
 
 const JobTemplateFormConfig = {
   jobType: { isRequired: 'Job type is required' },

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { DynamicModal, Icon, ISelectItem } from '@skedulo/sked-ui'
-import JobTemplateForm from '../../../commons/components/JobTemplateForm'
+import { DynamicModal, Icon } from '@skedulo/sked-ui'
+import JobTemplateForm from './JobTemplateForm'
 import { IJobTemplate } from '../../../commons/types'
 
 interface IJobTemplateModalProp {

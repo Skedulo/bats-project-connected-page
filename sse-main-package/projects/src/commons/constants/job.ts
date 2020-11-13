@@ -1,5 +1,5 @@
 import { LozengeColors } from '@skedulo/sked-ui'
-import { JobStatusKey, ResourceSortType } from '../types'
+import { JobStatusKey, ResourceSortType, JobDependencyType } from '../types'
 
 export const JOB_STATUS_COLOR: Record<JobStatusKey, LozengeColors>  = {
   'Queued': 'neutral-light',
@@ -43,3 +43,11 @@ export const ALLOWED_DISPATCH_STATUS = ['Pending Dispatch']
 export const ALLOWED_UNSCHEDULE_STATUS = ['Pending Allocation']
 
 export const ALLOWED_ALLOCATE_STATUS = ['Pending Allocation']
+
+export const JOB_DEPENDENCY_OPTIONS = [
+  { label: JobDependencyType.AFTER_THE_END_OF, value: JobDependencyType.AFTER_THE_END_OF },
+  { label: JobDependencyType.AFTER_THE_START_OF, value: JobDependencyType.AFTER_THE_START_OF },
+  { label: JobDependencyType.WITHIN, value: JobDependencyType.WITHIN },
+  { label: JobDependencyType.AT_LEAST, value: JobDependencyType.AT_LEAST },
+  { label: JobDependencyType.BETWEEN, value: JobDependencyType.BETWEEN }
+]

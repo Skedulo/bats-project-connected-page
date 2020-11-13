@@ -21,6 +21,14 @@ export interface IJobAllocation {
   plannedTravelTime: number
 }
 
+export enum JobDependencyType {
+  AFTER_THE_END_OF = 'after the end of',
+  AFTER_THE_START_OF = 'after the start of',
+  WITHIN = 'within',
+  AT_LEAST = 'at least',
+  BETWEEN = 'between'
+}
+
 export interface IJobConstraint {
   id?: string
   tempId?: string
@@ -30,6 +38,14 @@ export interface IJobConstraint {
   dependentJobId?: string
   error?: string
   action?: string
+}
+
+export interface IJobDependency {
+  id?: string
+  jobTemplateId: string
+  dependencyType?: string
+  dependentJob?: IBaseModel | null
+  dependentJobId?: string
 }
 
 export declare type JobStatusKey = keyof typeof JobStatusColor
