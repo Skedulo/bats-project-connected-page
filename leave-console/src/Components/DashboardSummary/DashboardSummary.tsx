@@ -82,18 +82,19 @@ const DashboardSummary: React.FC = () => {
         Object.keys(availabilities).forEach(resourceId => {
           if (availabilities[resourceId].availability.records[0]?.length) {
             // const availabilityRecords = availabilities[resourceId].availability.records[0]
-            // const approvedUnavailability = unavailabilities.find(item => {
-            //   const startDate = format(parseISO(item.Start), DATE_FORMAT, { timeZone: region.timezoneSid })
-            //   const endDate = format(parseISO(item.Finish), DATE_FORMAT, { timeZone: region.timezoneSid })
-            //   return formattedDate >= startDate && formattedDate <= endDate && item.Status === 'Approved' && item.Resource.UID === resourceId
-            // })
+            const approvedUnavailability = unavailabilities.find(item => {
+              const startDate = format(utcToZonedTime(item.Start, region.timezoneSid), DATE_FORMAT, { timeZone: region.timezoneSid })
+              const endDate = format(utcToZonedTime(item.Finish, region.timezoneSid), DATE_FORMAT, { timeZone: region.timezoneSid })
+              return formattedDate >= startDate && formattedDate <= endDate && item.Status === 'Approved' && item.Resource.UID === resourceId
+            })
             const availabilityRecords = availabilities[resourceId].available
             const matchedRecord = availabilityRecords.find(item => {
-              const startDate = format(parseISO(item.start), DATE_FORMAT, { timeZone: region.timezoneSid })
-              const endDate = format(parseISO(item.end), DATE_FORMAT, { timeZone: region.timezoneSid })
+              const startDate = format(utcToZonedTime(item.start, region.timezoneSid), DATE_FORMAT, { timeZone: region.timezoneSid })
+              const endDate = format(utcToZonedTime(item.end, region.timezoneSid), DATE_FORMAT, { timeZone: region.timezoneSid })
               return formattedDate >= startDate && formattedDate <= endDate
             })
-            if (matchedRecord) {
+
+            if (matchedRecord && !approvedUnavailability) {
               resourcesCount += 1
               availabilityResources.push(resourcesKeyById[resourceId])
             }

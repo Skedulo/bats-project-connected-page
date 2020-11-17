@@ -87,8 +87,10 @@ export const updateAvailability = makeAsyncActionCreatorSimp(
 )
 
 const updateAvailabilityTransform = (newData: Partial<Availability>, store: State) => {
+  console.log('newData: ', newData);
   if (newData) {
     const storedAvailabilityIndex = store.availabilities!.findIndex(availability => availability.UID === newData.UID)
+    console.log('storedAvailabilityIndex: ', storedAvailabilityIndex);
     if (storedAvailabilityIndex < 0) {
       return store
     }
