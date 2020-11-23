@@ -66,6 +66,7 @@ export interface Team {
   region?: BaseModel
   regionId: string
   teamRequirements: TeamRequirement[]
+  teamColour?: string
 }
 
 export interface TeamSuggestionParams {

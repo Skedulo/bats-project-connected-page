@@ -22,6 +22,24 @@ interface TeamAllocationCardProps {
   timezoneSid?: string
 }
 
+const CrownIcon: React.FC = () => {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+    >
+      <path
+        d="M14.1284816,6.96147184 C14.3823279,6.50449353 14.2356012,5.90794248 13.7876195,5.64930438 C13.3294359,5.38087171 12.7542311,5.5403397 12.5003848,5.99731801 C12.2666422,6.40471126 12.36446,6.93239419 12.7056222,7.22041602 C12.0062718,7.5728408 11.1150391,7.95742805 10.0319239,8.37417777 L8.10458328,4.41943134 C8.60177394,4.38943544 8.98224331,3.97224761 8.98224331,3.46507208 C8.98224331,2.93769523 8.56306688,2.5 8.02656906,2.5 L7.9779602,2.5 C7.45196429,2.5 7.02288606,2.93769523 7.02288606,3.464766 C7.02288606,3.97194153 7.40275532,4.38943544 7.89994597,4.41912526 L6.05147572,8.37417777 C4.88891765,7.95742805 3.9682942,7.57273878 3.28960537,7.22010994 C3.65027113,6.93208811 3.74808896,6.40440518 3.51344618,5.99701193 C3.2502982,5.54003361 2.67539338,5.38087171 2.21720984,5.64930438 C1.77852985,5.9076364 1.61289965,6.50449353 1.87604763,6.96147184 C2.12959386,7.39916708 2.66579163,7.56842964 3.12367511,7.33948136 L4.00073503,12.5 L12.013396,12.5 L12.8907559,7.33948136 C13.3393377,7.56842964 13.8752354,7.398861 14.1284816,6.96147184 Z"
+        strokeLinejoin="round"
+        fill="#FFFFFF"
+        fillRule="evenodd"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
 const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   const {
     teamAllocation,
@@ -158,6 +176,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
           </div>
           {!selectedSlot && <div className="cx-text-xxs cx-mt-2px">{teamAllocation.resource?.category}</div>}
         </div>
+        {teamAllocation.teamLeader && <div className="cx-ml-1"><CrownIcon /></div>}
         {isConflict && conflictContent && (
           <Tooltip content={conflictContent} position="top" className="cx-absolute cx-right-1 cx-top-1 cx-z-10">
             <StatusIcon status="error" />

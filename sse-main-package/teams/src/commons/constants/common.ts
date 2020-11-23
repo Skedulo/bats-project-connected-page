@@ -36,3 +36,16 @@ export const DEFAULT_SWIMLANE_SETTING = {
 export const STORAGE_KEY = {
   TEAM_SWIMLANE_SETTING: 'TEAM_SWIMLANE_SETTING'
 }
+
+export const DEFAULT_PALETTE_COLORS = [
+  '#e6194B',
+  '#f58231',
+  '#ffe119',
+  '#bfef45',
+  '#3cb44b',
+  '#42d4f4',
+  '#4363d8',
+  '#911eb4',
+  '#f032e6',
+  '#000'
+]

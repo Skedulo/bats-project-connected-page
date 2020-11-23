@@ -7,7 +7,6 @@ import TeamForm from './TeamForm'
 
 interface CreateTeamModalProp {
   onClose: () => void
-  onSubmit: (data: Team) => void
   team?: Team
 }
 
@@ -26,7 +25,7 @@ const ModalHeader: React.FC<IModalHeaderProp> = ({ onClose, team }) => {
 }
 
 const CreateTeamModal: React.FC<CreateTeamModalProp> = (props) => {
-  const { onClose, onSubmit, team } = props
+  const { onClose, team } = props
 
   return (
     <DynamicModal
@@ -34,7 +33,6 @@ const CreateTeamModal: React.FC<CreateTeamModalProp> = (props) => {
       className="cx-w-2/4"
     >
       <TeamForm
-        onSubmit={onSubmit}
         onCancel={onClose}
         team={team}
       />

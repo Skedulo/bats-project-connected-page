@@ -306,7 +306,7 @@ const TeamAllocationModalBody: FC = () => {
         </div>
       </div>
 
-      <div className="cx-flex cx-justify-end cx-p-4 cx-border-t  cx-bg-white cx-bottom-0 cx-fixed cx-w-full">
+      <div className="cx-flex cx-justify-end cx-p-4 cx-border-t cx-z-1 cx-bg-white cx-bottom-0 cx-fixed cx-w-full">
         <Button buttonType="secondary" onClick={onCancel}>Cancel</Button>
         <Button buttonType="primary" className="cx-ml-2" type="submit" disabled={!teamAllocation.isAvailable} onClick={onSubmit}>
           Save

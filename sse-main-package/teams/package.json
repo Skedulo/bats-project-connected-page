@@ -48,6 +48,7 @@
   },
   "dependencies": {
     "@skedulo/sked-ui": "^19.1.0",
+    "@types/react-color": "^3.0.4",
     "@types/react-redux": "^7.1.9",
     "@types/react-router-dom": "^5.1.5",
     "@types/recharts": "^1.8.16",
@@ -57,6 +58,7 @@
     "date-fns-tz": "^1.0.10",
     "lodash": "^4.17.15",
     "react": "^16.13.1",
+    "react-color": "^2.19.3",
     "react-dom": "^16.13.1",
     "react-draggable": "^4.4.3",
     "react-redux": "^7.2.1",

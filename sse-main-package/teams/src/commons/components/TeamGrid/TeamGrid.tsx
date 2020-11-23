@@ -13,6 +13,8 @@ import TeamAllocationModal from '../TeamAllocationModal'
 import SearchBox from '../SearchBox'
 import RowTimeslots from '../RowTimeslots'
 
+import TeamModal from '../TeamModal'
+
 import TeamRow from './TeamRow'
 
 interface TeamGridProps {
@@ -30,6 +32,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
 
   const [teams, setTeams] = useState<{ totalCount: number, data: Team[]}>({ totalCount: 0, data: [] })
+  const [editingTeam, setEditingTeam] = useState<Team | null>(null)
 
   const dateRange = useMemo(() => {
     let range = eachDayOfInterval({
@@ -44,6 +47,14 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
     }
     return range
   }, [filterParams, swimlaneSetting])
+
+  const onOpenTeamModal = useCallback((team: Team) => {
+    setEditingTeam(team)
+  }, [])
+
+  const onCloseTeamModal = useCallback(() => {
+    setEditingTeam(null)
+  }, [])
 
   const getTeams = useCallback(async (filterParams) => {
     startGlobalLoading()
@@ -97,6 +108,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
             key={team.id}
             team={team}
             dateRange={dateRange}
+            onOpenTeamModal={onOpenTeamModal}
           />
         ))}
         {!teams.data.length && <div className="cx-text-center cx-p-4">No data found.</div>}
@@ -108,6 +120,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
         itemsTotal={teams.totalCount}
       />
       {allocatedTeamRequirement && <TeamAllocationModal onClose={onCloseAllocationModal} />}
+      {editingTeam && <TeamModal onClose={onCloseTeamModal} team={editingTeam} />}
     </div>
   )
 }

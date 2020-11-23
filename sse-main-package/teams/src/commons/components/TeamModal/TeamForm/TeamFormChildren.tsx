@@ -7,14 +7,18 @@ import {
   NumberInput,
   AsyncSearchSelect,
   ISelectItem,
-  AsyncMultiSearchSelect
+  AsyncMultiSearchSelect,
+  ButtonGroup
 } from '@skedulo/sked-ui'
 import { toNumber, times } from 'lodash'
+import classnames from 'classnames'
 
 import { Team, TeamRequirement } from '../../../types'
 import { fetchGenericOptions } from '../../../../Services/DataServices'
+import { DEFAULT_PALETTE_COLORS } from '../../../constants'
 
 import WrappedFormInput from '../../WrappedFormInput'
+import ColorPicker from '../../ColorPicker'
 
 interface TeamChildrenProps {
   formParams: SkedFormChildren<Team>
@@ -22,17 +26,20 @@ interface TeamChildrenProps {
   team?: Team
   teamRequirements: TeamRequirement[]
   setTeamRequirements: React.Dispatch<React.SetStateAction<TeamRequirement[]>>
+  toggleConfirmModal: () => void
 }
 
 const TeamChildren: React.FC<TeamChildrenProps> = ({
   formParams,
   onCancel,
+  team,
   teamRequirements,
-  setTeamRequirements
+  setTeamRequirements,
+  toggleConfirmModal
 }) => {
   const { fields, resetFieldsToInitialValues, errors, submitted, customFieldUpdate } = formParams
-  const [requiredPeople, setRequiredPeople] = useState<number>(2)
-
+  const [requiredPeople, setRequiredPeople] = useState<number>(teamRequirements.length)
+  const [paletteColors, setPaletteColors] = useState(DEFAULT_PALETTE_COLORS)
   const isReadonly = false
   const { selectedRequiredTags, selectedPreferredResource } = useMemo(() => {
     const tags: string[] = []
@@ -119,6 +126,19 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
     }))
   }, [teamRequirements, setTeamRequirements])
 
+  const onNewColor = useCallback(
+    (color: string | null) => {
+      if (color && !paletteColors.includes(color)) {
+        setPaletteColors([...paletteColors, color])
+      }
+    },
+    [paletteColors]
+  )
+
+  const onSelectColor = useCallback((color: string) => {
+    customFieldUpdate('teamColour')(color)
+  }, [])
+
   return (
     <>
       <div className="cx-p-4">
@@ -148,6 +168,9 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
               onSelectedItemChange={onRegionSelect}
               useCache={true}
               icon="chevronDown"
+              initialSelectedItem={
+                team?.region ? { value: team.region.id, label: team.region.name } : undefined
+              }
             />
           </FormElementWrapper>
         </div>
@@ -159,8 +182,22 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
             readOnlyValue={requiredPeople.toString()}
             isReadOnly={isReadonly}
           >
-            <NumberInput value={requiredPeople} onValueChange={handleChangeRequiredPeople} min={2} />
+            <NumberInput
+              value={requiredPeople}
+              onValueChange={handleChangeRequiredPeople}
+              min={team?.teamRequirements?.length || 2}
+            />
           </FormElementWrapper>
+        </div>
+
+        <div className="cx-mb-4">
+          <FormLabel>Team Colour</FormLabel>
+          <ColorPicker
+            onColorSelect={onSelectColor}
+            onNewColor={onNewColor}
+            colors={paletteColors}
+            selectedColor={fields.teamColour || DEFAULT_PALETTE_COLORS[0]}
+          />
         </div>
 
         <h3 className="cx-font-semibold cx-mb-4">Team members</h3>
@@ -201,18 +238,30 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
           )
         })}
       </div>
-      <div className="cx-flex cx-justify-end cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky">
-        <Button buttonType="secondary" onClick={handleCancel}>
-          Cancel
-        </Button>
-        <Button
-          buttonType="primary"
-          className="cx-ml-2"
-          type="submit"
-          disabled={isReadonly}
-        >
-          Save
-        </Button>
+      <div
+        className={classnames('cx-flex cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky', {
+          'cx-justify-end': !team?.id,
+          'cx-justify-between': team?.id
+        })}
+      >
+        {team?.id && (
+          <Button buttonType="secondary" onClick={toggleConfirmModal}>
+            Deactivate
+          </Button>
+        )}
+        <ButtonGroup>
+          <Button buttonType="secondary" onClick={handleCancel}>
+            Cancel
+          </Button>
+          <Button
+            buttonType="primary"
+            className="cx-ml-2"
+            type="submit"
+            disabled={isReadonly}
+          >
+            Save
+          </Button>
+        </ButtonGroup>
       </div>
     </>
   )

@@ -13,6 +13,7 @@ import { SelectedSlot, State } from '../../types'
 interface TeamRowProps {
   team: Team
   dateRange: Date[]
+  onOpenTeamModal: (team: Team) => void
 }
 
 interface TeamRequirementRowProps {
@@ -90,12 +91,23 @@ const TeamRequirementRow: React.FC<TeamRequirementRowProps> = ({ teamRequirement
 const TeamRow: React.FC<TeamRowProps> = props => {
   const {
     team,
-    dateRange
+    dateRange,
+    onOpenTeamModal
   } = props
+
+  const onEditTeam = useCallback(() => onOpenTeamModal(team), [team])
 
   return (
     <div key={team.id}>
-      <div className="cx-w-full cx-p-2 cx-font-semibold">{team.name}</div>
+      <div className="cx-w-full cx-p-2 cx-font-semibold cx-cursor-pointer cx-flex cx-items-center" onClick={onEditTeam}>
+        {team.teamColour && (
+          <div
+            className="cx-w-3 cx-h-3 cx-rounded-full cx-mr-2"
+            style={{ backgroundColor: team.teamColour }}
+          />
+        )}
+        <span>{team.name}</span>
+      </div>
       {team.teamRequirements.map((teamRequirement, index) => (
         <TeamRequirementRow key={teamRequirement.id} teamRequirement={teamRequirement} dateRange={dateRange} isFirstRow={index === 0} />
       ))}

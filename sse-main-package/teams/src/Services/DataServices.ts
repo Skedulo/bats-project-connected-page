@@ -145,6 +145,19 @@ export const createUpdateTeam = async (saveData: Team): Promise<boolean> => {
   }
 }
 
+export const deactivateTeam = async (teamId: string): Promise<boolean> => {
+  // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
+
+  try {
+    const response: {
+      data: SalesforceResponse<{}>
+    } = await salesforceApi.delete('/services/apexrest/sked/team', { params: { id: teamId } })
+    return response.data.success
+  } catch (error) {
+    return false
+  }
+}
+
 export const getTeamSuggestions = async (filterParams: TeamSuggestionParams): Promise<TeamSuggestion[]> => {
   // const formattedPayload = mapValues(value => (value === '' ? null : value), saveData)
 
