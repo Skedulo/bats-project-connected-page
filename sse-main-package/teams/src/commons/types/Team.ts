@@ -67,6 +67,7 @@ export interface Team {
   regionId: string
   teamRequirements: TeamRequirement[]
   teamColour?: string
+  isActive?: boolean
 }
 
 export interface TeamSuggestionParams {

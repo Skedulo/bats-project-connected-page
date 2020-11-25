@@ -151,7 +151,7 @@ export const deactivateTeam = async (teamId: string): Promise<boolean> => {
   try {
     const response: {
       data: SalesforceResponse<{}>
-    } = await salesforceApi.delete('/services/apexrest/sked/team', { params: { id: teamId } })
+    } = await salesforceApi.post('/services/apexrest/sked/team', { id: teamId, isActive: false })
     return response.data.success
   } catch (error) {
     return false

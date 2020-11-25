@@ -29,6 +29,7 @@ export interface SelectedSlot {
   endDate: Date
   resource?: Resource
   id?: string
+  teamLeader?: boolean
 }
 
 export interface State {

@@ -2,7 +2,9 @@ import React, { FC, memo, useMemo, useCallback, useState, useEffect } from 'reac
 import { FormLabel, SearchSelect, Datepicker, FormInputElement, Button, Lozenge, ISelectItem } from '@skedulo/sked-ui'
 import { useSelector, useDispatch } from 'react-redux'
 import { format, startOfDay, endOfDay, eachDayOfInterval, min, max, isSameDay } from 'date-fns'
-import { omit, pickBy } from 'lodash'
+import omit from 'lodash/omit'
+import pickBy from 'lodash/pickBy'
+import debounce from 'lodash/debounce'
 
 import { DATE_FORMAT } from '../../constants'
 import { updateAllocatedTeamRequirement, updateSelectedSlot, updateReloadTeamsFlag, updateSuggestions } from '../../../Store/action'
@@ -46,6 +48,7 @@ const TeamAllocationModalBody: FC = () => {
     return null
   }
 
+  const [searchText, setSearchText] = useState<string>('')
   const [allocationPeriod, setAllocationPeriod] = useState(selectedPeriod)
 
   const dateRange = useMemo(() => {
@@ -69,22 +72,27 @@ const TeamAllocationModalBody: FC = () => {
     endDate: '',
     startDateObj: selectedSlot?.startDate || allocationPeriod.startDate,
     endDateObj: selectedSlot?.endDate || allocationPeriod.endDate,
-    teamLeader: false
+    teamLeader: !!selectedSlot?.teamLeader
   })
   const [matchingResources, setMatchingResources] = useState<Resource[]>([])
 
   const resourceOptions = useMemo(() => matchingResources.map(item => ({ ...item, value: item.id, label: item.name })), [matchingResources])
+
   const { displayResources, preferredResource } = useMemo(() => {
     return {
-      displayResources: matchingResources.filter(item => item.id !== allocatedTeamRequirement.preferredResource?.id),
-      preferredResource: matchingResources.find(item => item.id === allocatedTeamRequirement.preferredResource?.id)
+      displayResources: matchingResources.filter(item => item.id !== allocatedTeamRequirement.preferredResource?.id && item.name.toLowerCase().includes(searchText.toLowerCase())),
+      preferredResource: matchingResources.find(item => item.id === allocatedTeamRequirement.preferredResource?.id && item.name.toLowerCase().includes(searchText.toLowerCase()))
     }
-  }, [matchingResources, allocatedTeamRequirement])
+  }, [matchingResources, allocatedTeamRequirement, searchText])
 
   const highlightDays = useMemo(() => ({
     startDate: startOfDay(teamAllocation.startDateObj),
     endDate: endOfDay(teamAllocation.endDateObj)
   }), [teamAllocation.startDateObj, teamAllocation.endDateObj])
+
+  const onSearchTextChange = debounce(useCallback((value: string) => {
+    setSearchText(value)
+  }, []), 700)
 
   const getMatchingResources = useCallback(async (startDate: Date, endDate: Date) => {
     startGlobalLoading()
@@ -267,7 +275,7 @@ const TeamAllocationModalBody: FC = () => {
               <SearchBox
                 className="cx-border-t-0 cx-border-r-0 cx-border-l-0"
                 placeholder="teams"
-                onChange={() => {}}
+                onChange={onSearchTextChange}
                 autoFocus={false}
               />
             </div>

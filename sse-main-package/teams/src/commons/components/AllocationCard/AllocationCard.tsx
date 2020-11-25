@@ -94,7 +94,13 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   const onCardClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.stopPropagation()
     if (typeof onSelectSlot === 'function') {
-      onSelectSlot({ startDate, endDate, id: teamAllocation.id, resource: teamAllocation.resource })
+      onSelectSlot({
+        startDate,
+        endDate,
+        id: teamAllocation.id,
+        resource: teamAllocation.resource,
+        teamLeader: teamAllocation.teamLeader
+      })
     }
   }, [startDate, endDate, teamAllocation])
 

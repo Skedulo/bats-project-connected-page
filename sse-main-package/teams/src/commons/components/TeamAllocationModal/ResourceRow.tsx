@@ -63,7 +63,12 @@ const ResourceRow: React.FC<ResourceRowProps> = ({
   }, [resource, highlightDays])
 
   const onSelectSlot = useCallback((selectedSlot: SelectedSlot) => {
-    setTeamAllocation(prev => ({ ...prev, startDateObj: selectedSlot.startDate, endDateObj: selectedSlot.endDate, resource }))
+    setTeamAllocation(prev => ({
+      ...prev,
+      startDateObj: selectedSlot.startDate,
+      endDateObj: selectedSlot.endDate,
+      resource
+    }))
   }, [])
 
   return (
