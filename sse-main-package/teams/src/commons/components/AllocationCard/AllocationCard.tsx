@@ -1,7 +1,8 @@
 import React, { memo, useMemo, useState, useCallback } from 'react'
 import { Rnd } from 'react-rnd'
 import classnames from 'classnames'
-import { differenceInCalendarDays, add, format, isSameDay, isAfter, isBefore } from 'date-fns'
+import get from 'lodash/get'
+import { add, format, isSameDay, isAfter, isBefore, eachDayOfInterval } from 'date-fns'
 import { Avatar, StatusIcon, Tooltip } from '@skedulo/sked-ui'
 import { useSelector, useDispatch } from 'react-redux'
 
@@ -10,7 +11,7 @@ import { allocateTeamMember } from '../../../Services/DataServices'
 import { LEAVE_DATE_FORMAT, DATE_FORMAT } from '../../constants'
 import { useGlobalLoading } from '../GlobalLoading'
 import { toastMessage } from '../../utils'
-import { SelectedSlot, State, Period } from '../../types'
+import { SelectedSlot, State, Period, SwimlaneSetting } from '../../types'
 import { updateReloadTeamsFlag } from '../../../Store/action'
 
 interface TeamAllocationCardProps {
@@ -51,10 +52,28 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
   } = props
   const dispatch = useDispatch()
   const { startGlobalLoading, endGlobalLoading } = useGlobalLoading()
+
   const selectedSlot = useSelector<State, SelectedSlot | null>(state => state.selectedSlot)
   const selectedPeriod = useSelector<State, Period>(state => state.selectedPeriod)
+  const swimlaneSetting = useSelector<State, SwimlaneSetting>(state => state.swimlaneSetting)
+
   const { startDate, endDate } = useMemo(() => ({ startDate: new Date(teamAllocation.startDate), endDate: new Date(teamAllocation.endDate) }), [teamAllocation])
-  const duration = useMemo(() => differenceInCalendarDays(endDate, startDate) + 1, [startDate, endDate])
+
+  const duration = useMemo(() => {
+    if (isSameDay(startDate, endDate)) {
+      return 1
+    }
+    let d = 0
+    const intervalDays = eachDayOfInterval({ start: startDate, end: endDate })
+    intervalDays.forEach(day => {
+      const weekDay = format(day, 'iiii').toLowerCase()
+      if (get(swimlaneSetting, `workingHours.days[${weekDay}]`)) {
+        d += 1
+      }
+    })
+
+    return d
+  }, [startDate, endDate, swimlaneSetting])
 
   const { isConflict, conflictContent } = useMemo(() => {
     const unavailabilities = teamAllocation.unavailabilities?.map(period => {
@@ -170,7 +189,7 @@ const TeamAllocationCard: React.FC<TeamAllocationCardProps> = props => {
         onClick={onCardClick}
         style={{
           height: 'calc(100% - 4px)',
-          backgroundColor: isConflict ? 'white' : teamAllocation.isPlanning ? '#008CFF' : '#4A556A',
+          backgroundColor: isConflict ? 'white' : (teamAllocation.isPlanning ? '#008CFF' : '#4A556A'),
           border: `1px solid ${isConflict ? 'red' : 'white'}`,
           color: isConflict ? '#4A556A' : 'white'
         }}
