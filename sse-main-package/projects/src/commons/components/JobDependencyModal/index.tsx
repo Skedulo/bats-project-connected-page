@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { DynamicModal, Icon, ISelectItem } from '@skedulo/sked-ui'
+import { DynamicModal, Icon } from '@skedulo/sked-ui'
 import JobDependencyForm from './JobDependencyForm'
 import { IJobDependency } from '../../types'
 
 interface IJobDependencyModalProp {
   onClose: () => void
-  onSubmit: (data: IJobDependency) => void
-  jobDependency: IJobDependency | null
+  jobDependency: IJobDependency
   projectId: string
+  forceUpdateJobTemplateList: () => void
 }
 
 interface IModalHeaderProp {
@@ -26,9 +26,9 @@ const ModalHeader: React.FC<IModalHeaderProp> = ({ onClose, title }) => {
 
 const JobDependencyModal: React.FC<IJobDependencyModalProp> = ({
   onClose,
-  onSubmit,
   jobDependency,
   projectId,
+  forceUpdateJobTemplateList
 }) => {
   return (
     <DynamicModal
@@ -41,10 +41,10 @@ const JobDependencyModal: React.FC<IJobDependencyModalProp> = ({
       className="cx-w-2/4"
     >
       <JobDependencyForm
-        onSubmit={onSubmit}
         onCancel={onClose}
         jobDependency={jobDependency}
         projectId={projectId}
+        forceUpdateJobTemplateList={forceUpdateJobTemplateList}
       />
     </DynamicModal>
   )

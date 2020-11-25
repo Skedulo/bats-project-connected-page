@@ -17,7 +17,8 @@ import {
   IBaseModel,
   IGenericOptionParams,
   IResource,
-  IJobTime
+  IJobTime,
+  IJobDependency
 } from '../commons/types'
 
 import { DEFAULT_FILTER, TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
@@ -198,7 +199,7 @@ export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promis
     const res = await salesforceApi.get(`/services/apexrest/sked/projectJobTemplate`, { params: { ...filterObj } })
     return {
       ...res.data.data,
-      results: res.data.data.results.map(item => ({ ...item, jobDependencies: [] }))
+      results: res.data.data.results
     }
   } catch (error) {
     toastMessage.error('Something went wrong!')
@@ -244,6 +245,19 @@ export const deleteJobTemplate = async (id: string): Promise<boolean> => {
     const response: {
       data: ISalesforceResponse
     } = await salesforceApi.delete('/services/apexrest/sked/projectJobTemplate', {  params: { ids: id } })
+    return response.data.success
+  } catch (error) {
+    return false
+  }
+}
+
+export const createUpdateJobDependency = async (requestData: IJobDependency): Promise<boolean> => {
+  const formattedPayload = mapValues(value => (value === '' ? null : value), requestData)
+
+  try {
+    const response: {
+      data: ISalesforceResponse
+    } = await salesforceApi.post('/services/apexrest/sked/projectJobDependency', formattedPayload)
     return response.data.success
   } catch (error) {
     return false

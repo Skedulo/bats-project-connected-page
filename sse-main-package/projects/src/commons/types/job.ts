@@ -1,4 +1,5 @@
 import { IBaseModel, ITag } from './common'
+import { BaseOptions } from 'vm'
 
 export enum JobStatusColor {
   'Queued',
@@ -42,10 +43,15 @@ export interface IJobConstraint {
 
 export interface IJobDependency {
   id?: string
-  jobTemplateId: string
-  dependencyType?: string
-  dependentJob?: IBaseModel | null
-  dependentJobId?: string
+  projectJobTemplateId: string
+  fromJobTemplateId?: string,
+  toJobTemplateId?: string,
+  fromAnchor?: string,
+  toAnchor?: string,
+  toAnchorMinOffsetMins?: number,
+  toAnchorMaxOffsetMins?: number,
+  fromJobTemplate?: IBaseModel
+  toJobTemplate?: IBaseModel
 }
 
 export declare type JobStatusKey = keyof typeof JobStatusColor
@@ -60,6 +66,8 @@ export interface IJobTemplate {
   projectId?: string
   resourceRequirement?: number
   resource?: IBaseModel
+  fromProjectJobDependencies?: IJobDependency[]
+  toProjectJobDependencies?: IJobDependency[]
 }
 
 export interface IJobDetail {

@@ -10,17 +10,16 @@ import {
   IJobTemplate,
   IJobTypeTemplate,
   IConfig,
-  IJobConstraint,
   IProjectDetail,
   IJobDependency,
 } from '../../../commons/types'
-import { DEFAULT_FILTER, DEFAULT_LIST, JOB_STATUS_COLOR } from '../../../commons/constants'
+import { DEFAULT_FILTER, DEFAULT_LIST } from '../../../commons/constants'
 import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues, deleteJobTemplate } from '../../../Services/DataServices'
 import SearchBox from '../../../commons/components/SearchBox'
 import JobTemplateModal from '../../../commons/components/JobTemplateModal'
 import JobDependencyModal from '../../../commons/components/JobDependencyModal'
 import { AppContext } from '../../../App'
-import { toastMessage } from '../../../commons/utils'
+import { toastMessage, getDependencyType, parseMinutes } from '../../../commons/utils'
 
 interface IJobTemplatesListProps {
   project: IProjectDetail
@@ -54,20 +53,66 @@ const jobTemplatesTableColumns = (
     },
     {
       Header: 'Dependencies',
-      accessor: 'jobDependencies',
-      Cell: ({ cell, row }: { cell: { value: IJobDependency[] }, row: { original: IJobTemplate } }) => {
-        const onCreateDependency = () => onOpenDependencyModal({ jobTemplateId: row.original.id || '' })
-        const dependencies = cell.value.map(item => {
+      accessor: 'projectId',
+      Cell: ({ row }: { row: { original: IJobTemplate } }) => {
+        const onCreateDependency = () => onOpenDependencyModal({
+          projectJobTemplateId: row.original.id || '',
+          fromAnchor: 'Start',
+          toAnchor: 'End'
+        })
+        const fromDependencies = row.original.fromProjectJobDependencies?.map(item => {
           const onUpdateDependency = () => onOpenDependencyModal(item)
+          const dependencyType = getDependencyType(item)
+          const minOffset = item.toAnchorMinOffsetMins ? `${parseMinutes(item.toAnchorMinOffsetMins, 'hours')} hours` : ''
+          const maxOffset = item.toAnchorMaxOffsetMins ? `${parseMinutes(item.toAnchorMaxOffsetMins, 'hours')} hours` : ''
+          const offsets = []
+          if (minOffset) {
+            offsets.push(minOffset)
+          }
+          if (maxOffset) {
+            offsets.push(maxOffset)
+          }
+          const strings = offsets.length > 0 ? `${offsets.length > 1 ? offsets.join(' and ') : offsets[0]} after the end of` : ''
+
           return (
-            <div key={item.id} onClick={onUpdateDependency}>{`${item.dependencyType} ${item.dependentJob?.name}`}</div>
+            <div
+              className="cx-cursor-pointer hover:cx-bg-neutral-300 cx-p-2"
+              key={item.id}
+              onClick={onUpdateDependency}
+            >
+              {`${item.toJobTemplate?.name} must start ${dependencyType} ${strings} this job`}
+            </div>
+          )
+        })
+        const toDependencies = row.original.toProjectJobDependencies?.map(item => {
+          const onUpdateDependency = () => onOpenDependencyModal(item)
+          const dependencyType = getDependencyType(item)
+          const minOffset = item.toAnchorMinOffsetMins ? `${parseMinutes(item.toAnchorMinOffsetMins, 'hours')} hours` : ''
+          const maxOffset = item.toAnchorMaxOffsetMins ? `${parseMinutes(item.toAnchorMaxOffsetMins, 'hours')} hours` : ''
+          const offsets = []
+          if (minOffset) {
+            offsets.push(minOffset)
+          }
+          if (maxOffset) {
+            offsets.push(maxOffset)
+          }
+          const strings = offsets.length > 0 ? `${offsets.length > 1 ? offsets.join(' and ') : offsets[0]} after the end of` : ''
+          return (
+            <div
+              className="cx-cursor-pointer hover:cx-bg-neutral-300 cx-p-2"
+              key={item.id}
+              onClick={onUpdateDependency}
+            >
+              {`Must start ${dependencyType} ${strings} job ${item.fromJobTemplate?.name}`}
+            </div>
           )
         })
         return (
-          <div className="sk-flex sk-items-center">
-            {dependencies}
-            <Button buttonType="transparent" onClick={onCreateDependency}>
-              {dependencies.length ? 'Add another dependency' : 'Add dependency'}
+          <div className="cx-flex cx-items-start cx-flex-col">
+            {fromDependencies}
+            {toDependencies}
+            <Button buttonType="transparent" onClick={onCreateDependency} icon="plus" className="cx-text-xs cx-text-neutral-700">
+              {(fromDependencies?.length || toDependencies?.length) ? 'Add another dependency' : 'Add dependency'}
             </Button>
           </div>
         )
@@ -96,7 +141,6 @@ const jobTemplatesTableColumns = (
       Cell: ({ cell, row }: { cell: { value: string }; row: { original: IJobTemplate } }) => {
         const actionItems = [
           { label: 'View/Edit', onClick: () => onViewJobTemplate(row.original) },
-          { label: 'Add dependency', onClick: () => onOpenDependencyModal({ jobTemplateId: cell.value }) },
         ]
 
         if (onDeleteJobTemplate) {
@@ -275,6 +319,10 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
     [jobTemplates.results, jobTemplatesTableColumns]
   )
 
+  const forceUpdateJobTemplateList = useCallback(() => {
+    getJobTemplatesList({ ...filterParams, projectId })
+  }, [filterParams, projectId])
+
   useEffect(() => {
     if (!isLoading) {
       debounceGetJobTemplatesList({ ...filterParams, projectId })
@@ -328,9 +376,9 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
       {selectedJobDependency && (
         <JobDependencyModal
           jobDependency={selectedJobDependency}
-          onSubmit={() => {}}
           onClose={onCloseDependencyModal}
           projectId={projectId}
+          forceUpdateJobTemplateList={forceUpdateJobTemplateList}
         />
       )}
       {!!confirmJobTemplateId && (
