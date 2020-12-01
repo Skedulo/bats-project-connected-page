@@ -88,12 +88,15 @@ export const fetchProjectById = async (projectId: string): Promise<IProjectDetai
 }
 
 export const updateProject = async (requestData: IProjectDetail): Promise<IProjectDetail> => {
-  const formattedPayload = mapValues(value => (value === '' ? null : value), requestData)
-  const response: {
-    data: ISalesforceResponse
-  } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
+  try {
+    const formattedPayload = mapValues(value => (value === '' ? null : value), requestData)
+    await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
 
-  return fetchProjectById(requestData.id)
+    return fetchProjectById(requestData.id)
+  } catch (error) {
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
+    return fetchProjectById(requestData.id)
+  }
 }
 
 export const createProject = async (createInput: IProjectDetail): Promise<string> => {
@@ -103,10 +106,9 @@ export const createProject = async (createInput: IProjectDetail): Promise<string
     const response: {
       data: ISalesforceResponse
     } = await salesforceApi.post('/services/apexrest/sked/project', formattedPayload)
-
     return response.data.data.id
   } catch (error) {
-    toastMessage.error('Created unsuccessfully!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Created unsuccessfully!')
     return ''
   }
 }
@@ -184,7 +186,7 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
     }
     return res.data.data
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return {
       totalItems: 0,
       pageSize: filterObj.pageSize,
@@ -202,7 +204,7 @@ export const fetchListJobTemplates = async (filterObj: IJobFilterParams): Promis
       results: res.data.data.results
     }
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return {
       totalItems: 0,
       pageSize: filterObj.pageSize,
@@ -269,7 +271,7 @@ export const dispatchMutipleJobs = async (jobIds: string) => {
     const res = await salesforceApi.get('/services/apexrest/sked/job/dispatch', { params: { ids: jobIds } })
     return res.data.success
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return false
   }
 }
@@ -279,7 +281,7 @@ export const deallocateMutipleJobs = async (jobIds: string): Promise<boolean> =>
     const res = await salesforceApi.get('/services/apexrest/sked/job/deallocate', { params: { ids: jobIds } })
     return res.data.success
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return false
   }
 }
@@ -289,7 +291,7 @@ export const unscheduleMutipleJobs = async (jobIds: string): Promise<boolean> =>
     const res = await salesforceApi.get('/services/apexrest/sked/job/unschedule', { params: { ids: jobIds } })
     return res.data.success
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return false
   }
 }
@@ -300,7 +302,7 @@ export const allocateMutipleJobs = async (jobIds: string[], resourceIds: string[
     const res = await salesforceApi.post('/services/apexrest/sked/job/allocate', data)
     return res.data.success
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return false
   }
 }
@@ -310,7 +312,7 @@ export const updateJobTime = async (job: IJobTime): Promise<boolean> => {
     const res = await salesforceApi.post(`/services/apexrest/sked/job`, job)
     return res.data.success
   } catch (error) {
-    toastMessage.error('Something went wrong!')
+    toastMessage.error(error.response?.data?.errorMessage || 'Something went wrong!')
     return false
   }
 }

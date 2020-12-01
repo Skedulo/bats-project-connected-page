@@ -7,10 +7,11 @@ import {
   SearchSelect,
   ISelectItem,
   AsyncSearchSelect,
+  NumberInput,
 } from '@skedulo/sked-ui'
 import WrappedFormInput from '../../WrappedFormInput'
 import { AppContext } from '../../../../App'
-import { IJobConstraint, IJobTemplate, IBaseModel } from '../../../types'
+import { IJobTemplate, IBaseModel } from '../../../types'
 import { fetchGenericOptions } from '../../../../Services/DataServices'
 
 interface IJobTemplateFormChildrenProps {
@@ -50,6 +51,10 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
     customFieldUpdate('jobType')(jobType?.value || '')
   }, [])
 
+  const handleDuration = React.useCallback((duration: React.ReactText) => {
+    customFieldUpdate('duration')(duration)
+  }, [])
+
   const handleFetchResources = React.useCallback((searchTerm: string) => {
     return fetchGenericOptions({
       name: searchTerm,
@@ -60,7 +65,7 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
   [projectRegionId])
 
   const handleSelectResource = React.useCallback((item: ISelectItem) => {
-    customFieldUpdate('resourceId')(item.value)
+    customFieldUpdate('resourceId')(item?.value)
   }, [])
 
   return (
@@ -81,6 +86,15 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
               icon="chevronDown"
               name="jobType"
             />
+          </FormElementWrapper>
+        </div>
+        <div className="cx-mb-4 cx-w-200px">
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Duration (mins)</span>
+          <FormElementWrapper
+            name="duration"
+            validation={{ isValid: submitted ? !errors.duration : true, error: submitted ? errors.duration : '' }}
+          >
+            <NumberInput value={fields.duration} onValueChange={handleDuration} min={1} step={15} />
           </FormElementWrapper>
         </div>
         <WrappedFormInput

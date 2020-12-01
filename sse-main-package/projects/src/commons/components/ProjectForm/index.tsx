@@ -29,7 +29,10 @@ const ProjectFormConfig = {
   account: {},
   contact: {},
   region: { isRequired: 'Region is required' },
-  location: {}
+  location: {},
+  promisCode: { isRequired: 'Promis code is required' },
+  simsCode: { isRequired: 'Sims code is required' },
+  projectCode: { isRequired: 'Project code is required' }
 }
 
 interface IProjectFormProps {

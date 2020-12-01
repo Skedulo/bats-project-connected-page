@@ -1,3 +1,4 @@
+import isNull from 'lodash/isNull'
 import { LOCAL_STORAGE_KEY } from '../constants'
 import { toast } from 'react-toastify'
 import { JobDependencyType, IJobDependency } from '../types'
@@ -26,16 +27,13 @@ export const toastMessage = {
 }
 
 export const getDependencyType = (jobDependency: IJobDependency) => {
-  if (!jobDependency.id) {
-    return JobDependencyType.AFTER_THE_END_OF
-  }
   if (jobDependency.fromAnchor === 'Start' && jobDependency.toAnchor === 'Start') {
     return JobDependencyType.AFTER_THE_START_OF
   }
-  if (!jobDependency.toAnchorMinOffsetMins && jobDependency.toAnchorMaxOffsetMins) {
+  if (jobDependency.toAnchorMinOffsetMins && isNull(jobDependency.toAnchorMaxOffsetMins)) {
     return JobDependencyType.AT_LEAST
   }
-  if (jobDependency.toAnchorMinOffsetMins && !jobDependency.toAnchorMaxOffsetMins) {
+  if (jobDependency.toAnchorMinOffsetMins === 0 && jobDependency.toAnchorMaxOffsetMins) {
     return JobDependencyType.WITHIN
   }
   if (jobDependency.toAnchorMinOffsetMins && jobDependency.toAnchorMaxOffsetMins) {
@@ -47,7 +45,7 @@ export const getDependencyType = (jobDependency: IJobDependency) => {
 /**
  * get minute value from day or hour
  */
-export const getMinutes = (n: number, unit: string) => {
+export const getMinutes = (n: number, unit: 'days' | 'hours') => {
   switch (unit) {
     case 'days':
       return n * 1440
@@ -60,16 +58,60 @@ export const getMinutes = (n: number, unit: string) => {
 }
 
 /**
- * get day or hour value from minutes
+ * get day or hour value from minutes with unit label
  */
 export const parseMinutes = (n: number, unit: string) => {
   switch (unit) {
     case 'days':
-      return n / 1440
+      const days = Math.round(n / 1440)
+      return `${days} ${days > 1 ? 'days' : 'day'}`
 
     case 'hours':
-      return n / 60
+      const hours = Math.round(n / 60)
+      return `${hours} ${hours > 1 ? 'hours' : 'hour'}`
     default:
       return n
   }
+}
+
+export type JobDependencyConflictMinimum = Pick<
+JobDependencies,
+'FromAnchor' | 'ToAnchor' | 'ToAnchorMinOffsetMinutes' | 'ToAnchorMaxOffsetMinutes'
+> & { FromJob: Pick<Jobs, 'Start' | 'End'> }
+
+function getConflicts<T extends JobDependencyConflictMinimum>(
+test: { Start: Date | string; End: Date | string },
+jobDependencies: T[]
+) {
+const toJob = {
+  Start: new Date(test.Start),
+  End: new Date(test.End)
+}
+return jobDependencies.map(dependency => {
+  const baseToTime = toJob[dependency.ToAnchor] && new Date(toJob[dependency.ToAnchor])
+  const baseFromTime = dependency.FromJob[dependency.FromAnchor] && new Date(dependency.FromJob[dependency.FromAnchor])
+  if (!baseFromTime || !baseToTime) {
+    return {
+      dependency,
+      inViolation: false
+    }
+  }
+  const window = {
+    lowerBound:
+      !dependency.ToAnchorMinOffsetMinutes && dependency.ToAnchorMinOffsetMinutes !== 0
+        ? null
+        : new Date(baseFromTime.valueOf() + (dependency.ToAnchorMinOffsetMinutes || 0) * 60 * 1000),
+    upperBound:
+      !dependency.ToAnchorMaxOffsetMinutes && dependency.ToAnchorMaxOffsetMinutes !== 0
+        ? null
+        : new Date(baseFromTime.valueOf() + (dependency.ToAnchorMaxOffsetMinutes || 0) * 60 * 1000)
+  }
+  return {
+    dependency,
+    inViolation:
+      (window.lowerBound && baseToTime.valueOf() < window.lowerBound.valueOf()) ||
+      (window.upperBound && baseToTime.valueOf() > window.upperBound.valueOf()) ||
+      false
+  }
+})
 }

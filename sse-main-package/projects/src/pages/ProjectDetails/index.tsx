@@ -32,15 +32,10 @@ const ProjectDetail: React.FC = () => {
   const onChangeTab = useCallback((tab: string) => setActiveTab(tab), [])
 
   const onSaveProject = useCallback(async (data: any) => {
-    try {
-      startGlobalLoading()
-      const res = await updateProject(data)
-      setProject({ ...res })
-    } catch (error) {
-      throw error
-    } finally {
-      endGlobalLoading()
-    }
+    startGlobalLoading()
+    const res = await updateProject(data)
+    setProject({ ...res })
+    endGlobalLoading()
   }, [])
 
   useEffect(() => {

@@ -48,8 +48,8 @@ export interface IJobDependency {
   toJobTemplateId?: string,
   fromAnchor?: string,
   toAnchor?: string,
-  toAnchorMinOffsetMins?: number,
-  toAnchorMaxOffsetMins?: number,
+  toAnchorMinOffsetMins?: number | null,
+  toAnchorMaxOffsetMins?: number | null,
   fromJobTemplate?: IBaseModel
   toJobTemplate?: IBaseModel
 }

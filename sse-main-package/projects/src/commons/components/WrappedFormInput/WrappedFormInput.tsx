@@ -1,6 +1,6 @@
 import * as React from 'react'
 import classNames from 'classnames'
-import { FormElementWrapper, FormInputElement, TextArea } from '@skedulo/sked-ui'
+import { FormElementWrapper, FormInputElement, FormLabel, TextArea } from '@skedulo/sked-ui'
 
 interface IWrappedFormInputProps {
   size?: number

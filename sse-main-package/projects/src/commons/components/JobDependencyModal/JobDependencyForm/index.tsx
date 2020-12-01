@@ -41,8 +41,8 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
   const [dependencyType, setDependencyType] = React.useState<JobDependencyType>(getDependencyType(jobDependency))
   const [errors, setErrors] = React.useState<any>({})
   const [offsetUnit, setOffsetUnit] = React.useState<{
-    toAnchorMinOffsetMins: string
-    toAnchorMaxOffsetMins: string
+    toAnchorMinOffsetMins: 'days' | 'hours'
+    toAnchorMaxOffsetMins: 'days' | 'hours'
   }>({
     toAnchorMinOffsetMins: 'days',
     toAnchorMaxOffsetMins: 'days'
@@ -76,10 +76,10 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
       setDependencyType(selectedOption.value)
       setJobDependencyState(prev => ({
         ...prev,
-        fromAnchor: 'Start',
-        toAnchor: selectedOption.value === 'after the start of' ? 'Start' : 'End',
-        toAnchorMinOffsetMins: 0,
-        toAnchorMaxOffsetMins: 0
+        toAnchor: 'Start',
+        fromAnchor: selectedOption.value === 'after the start of' ? 'Start' : 'End',
+        toAnchorMinOffsetMins: getMinutes(1, 'days'),
+        toAnchorMaxOffsetMins: getMinutes(1, 'days')
       }))
     },
     []
@@ -146,17 +146,28 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
         fromJobTemplateId: jobDependencyState.fromJobTemplateId || jobDependencyState.fromJobTemplate?.id
       }, ['fromJobTemplate', 'toJobTemplate'])
       if (dependencyType === JobDependencyType.WITHIN) {
-        submitData = omit(submitData, 'toAnchorMaxOffsetMins')
+        submitData = {
+          ...submitData,
+          toAnchorMinOffsetMins: 0
+        }
       }
 
       if (dependencyType === JobDependencyType.AT_LEAST) {
-        submitData = omit(submitData, 'toAnchorMinOffsetMins')
+        submitData = {
+          ...submitData,
+          toAnchorMaxOffsetMins: null
+        }
       }
 
       if (dependencyType === JobDependencyType.AFTER_THE_END_OF ||
         dependencyType === JobDependencyType.AFTER_THE_START_OF) {
-        submitData = omit(submitData, ['toAnchorMinOffsetMins', 'toAnchorMaxOffsetMins'])
+        submitData = {
+          ...submitData,
+          toAnchorMinOffsetMins: 0,
+          toAnchorMaxOffsetMins: null
+        }
       }
+
       const success = await createUpdateJobDependency(submitData)
       if (success) {
         forceUpdateJobTemplateList()
@@ -179,12 +190,12 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
           name="dependencyType"
         />
       </FormElementWrapper>
-      {dependencyType === JobDependencyType.WITHIN && (
+      {dependencyType === JobDependencyType.AT_LEAST && (
         <div className="cx-mb-4 cx-flex cx-items-center cx-justify-start">
           <NumberInput
             value={parseMinutes(toNumber(jobDependencyState.toAnchorMinOffsetMins), offsetUnit.toAnchorMinOffsetMins)}
             onValueChange={onChangeMinOffset}
-            min={0}
+            min={1}
           />
           <SearchSelect
             className="cx-mx-4"
@@ -197,12 +208,12 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
           <span>at the end of</span>
         </div>
       )}
-      {dependencyType === JobDependencyType.AT_LEAST && (
+      {dependencyType === JobDependencyType.WITHIN && (
         <div className="cx-mb-4 cx-flex cx-items-center cx-justify-start">
           <NumberInput
             value={parseMinutes(toNumber(jobDependencyState.toAnchorMaxOffsetMins), offsetUnit.toAnchorMaxOffsetMins)}
             onValueChange={onChangeMaxOffset}
-            min={0}
+            min={1}
           />
           <SearchSelect
             className="cx-mx-4"
@@ -221,7 +232,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
             <NumberInput
               value={parseMinutes(toNumber(jobDependencyState.toAnchorMinOffsetMins), offsetUnit.toAnchorMinOffsetMins)}
               onValueChange={onChangeMinOffset}
-              min={0}
+              min={1}
             />
             <SearchSelect
               className="cx-mx-4"
@@ -237,7 +248,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
             <NumberInput
               value={parseMinutes(toNumber(jobDependencyState.toAnchorMaxOffsetMins), offsetUnit.toAnchorMaxOffsetMins)}
               onValueChange={onChangeMaxOffset}
-              min={0}
+              min={1}
             />
             <SearchSelect
               className="cx-mx-4"

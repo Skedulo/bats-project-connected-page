@@ -189,6 +189,40 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             isRequired={false}
           />
         </div>
+        {fields.isTemplate && (
+          <>
+            <WrappedFormInput
+              className="click-to-edit-custom"
+              name="promisCode"
+              isReadOnly={shouldReadonly}
+              label="Promis Code"
+              value={fields.promisCode}
+              error={submitted ? errors.promisCode : ''}
+              isRequired={true}
+              maxLength={80}
+            />
+            <WrappedFormInput
+              className="click-to-edit-custom"
+              name="simsCode"
+              isReadOnly={shouldReadonly}
+              label="Sims Code"
+              value={fields.simsCode}
+              error={submitted ? errors.simsCode : ''}
+              isRequired={true}
+              maxLength={80}
+            />
+            <WrappedFormInput
+              className="click-to-edit-custom"
+              name="projectCode"
+              isReadOnly={shouldReadonly}
+              label="Project Code"
+              value={fields.projectCode}
+              error={submitted ? errors.projectCode : ''}
+              isRequired={true}
+              maxLength={80}
+            />
+          </>
+        )}
         {isUpdate && (
           <>
             <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">
