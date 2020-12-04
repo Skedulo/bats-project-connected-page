@@ -21,11 +21,11 @@ import {
   IJobDependency
 } from '../commons/types'
 
-import { DEFAULT_FILTER, TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
+import { TIME_FORMAT, DATE_FORMAT } from '../commons/constants'
 import { parseTimeValue, toastMessage, parseTimeString } from '../commons/utils'
 import { ISelectItem, } from '@skedulo/sked-ui'
 import { format, utcToZonedTime, zonedTimeToUtc} from 'date-fns-tz'
-import { parseISO, add, parse, addMinutes } from 'date-fns'
+import { add, parse, addMinutes } from 'date-fns'
 
 const httpApi = axios.create({
   baseURL: credentials.apiServer,
@@ -177,11 +177,13 @@ export const fetchListJobs = async (filterObj: IJobFilterParams): Promise<IListR
     if (res.data?.data?.results?.length > 0) {
       return {
         ...res.data.data,
-        results: res.data.data.results.map((item: IJobDetail) => ({
-          ...item,
-          startTimeString: parseTimeValue(item.startTime),
-          endTimeString: parseTimeValue(item.endTime),
-        })),
+        results: res.data.data.results.map((item: IJobDetail) => {
+          return {
+            ...item,
+            startTimeString: parseTimeValue(item.startTime),
+            endTimeString: parseTimeValue(item.endTime),
+          }
+        }),
       }
     }
     return res.data.data

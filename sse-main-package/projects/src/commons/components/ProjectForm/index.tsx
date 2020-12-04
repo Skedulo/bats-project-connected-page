@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { format, isDate } from 'date-fns'
-import { isEmpty } from 'lodash'
+import { isEmpty, omit } from 'lodash'
 import { SkedFormChildren, SkedFormValidation } from '@skedulo/sked-ui'
 import { IProjectDetail } from '../../../commons/types'
 import ProjectFormChildren from './ProjectFormChildren'
@@ -30,9 +30,10 @@ const ProjectFormConfig = {
   contact: {},
   region: { isRequired: 'Region is required' },
   location: {},
-  promisCode: { isRequired: 'Promis code is required' },
-  simsCode: { isRequired: 'Sims code is required' },
-  projectCode: { isRequired: 'Project code is required' }
+  promisCode: {},
+  simsCode: {},
+  projectCode: {},
+  jobRequestor: {}
 }
 
 interface IProjectFormProps {
@@ -42,12 +43,27 @@ interface IProjectFormProps {
 }
 
 const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel }) => {
-  const [timeError, setTimeError] = React.useState<string>('')
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({})
   const handleSubmit = React.useCallback(
     async (form: SkedFormChildren<IProjectDetail>) => {
-      if (timeError) {
-        return
+      if (form.fields.isTemplate) {
+        const errors: Record<string, string> = {}
+
+        if (!form.fields.jobRequestor?.value) {
+          errors.jobRequestor = 'Job Requestor is required.'
+        }
+
+        if (!form.fields.projectCode) {
+          errors.projectCode = 'Project Code is required.'
+        }
+
+        setValidationErrors(errors)
+
+        if (!isEmpty(errors)) {
+          return
+        }
       }
+
       const submitData = {
         ...project,
         ...form.fields,
@@ -61,6 +77,7 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
         contact: { id: form.fields.contact?.id, name: form.fields.contact?.name },
         region: { id: form.fields.region?.id, name: form.fields.region?.name },
         location: { id: form.fields.location?.id, name: form.fields.location?.name },
+        jobRequestor: form.fields.jobRequestor.value,
         applyAccountForAllJob: !!form.fields.applyAccountForAllJob,
         applyContactForAllJob: !!form.fields.applyContactForAllJob,
         applyRegionForAllJob: !!form.fields.applyRegionForAllJob,
@@ -88,6 +105,7 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
           formParams={formParams}
           onCancel={onCancel}
           project={project}
+          validationErrors={validationErrors}
         />
       )}
     </SkedFormValidation>

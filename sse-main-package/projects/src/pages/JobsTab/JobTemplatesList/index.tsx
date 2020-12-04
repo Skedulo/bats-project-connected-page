@@ -19,8 +19,8 @@ import SearchBox from '../../../commons/components/SearchBox'
 import JobTemplateModal from '../../../commons/components/JobTemplateModal'
 import JobDependencyModal from '../../../commons/components/JobDependencyModal'
 import { AppContext } from '../../../App'
-import { toastMessage, getDependencyType, parseMinutes } from '../../../commons/utils'
-import { add, isBefore } from 'date-fns'
+import { toastMessage, getDependencyType, parseMinutes, getDependencyMessage } from '../../../commons/utils'
+
 interface IJobTemplatesListProps {
   project: IProjectDetail
   isTemplate: boolean
@@ -57,42 +57,26 @@ const jobTemplatesTableColumns = (
       Cell: ({ row }: { row: { original: IJobTemplate } }) => {
         const onCreateDependency = () => onOpenDependencyModal({
           projectJobTemplateId: row.original.id || '',
-          fromAnchor: 'Start',
-          toAnchor: 'End'
+          fromAnchor: 'End',
+          toAnchor: 'Start'
         })
-        const getDependencyMessage = (dependency: IJobDependency, isFromProject: boolean) => {
-          const onUpdateDependency = () => onOpenDependencyModal(dependency)
-          const dependencyType = getDependencyType(dependency)
-          const minOffset = dependency.toAnchorMinOffsetMins ? `${parseMinutes(dependency.toAnchorMinOffsetMins, 'hours')}` : ''
-          const maxOffset = dependency.toAnchorMaxOffsetMins ? `${parseMinutes(dependency.toAnchorMaxOffsetMins, 'hours')}` : ''
-          const offsets = []
-          if (minOffset) {
-            offsets.push(minOffset)
-          }
-          if (maxOffset) {
-            offsets.push(maxOffset)
-          }
-          const strings = offsets.length > 0 ? `${offsets.length > 1 ? offsets.join(' and ') : offsets[0]} after the end of` : ''
-          return (
-            <div
-              className="cx-cursor-pointer hover:cx-bg-neutral-300 cx-p-2"
-              key={dependency.id}
-              onClick={onUpdateDependency}
-            >
-              {!isFromProject && `Must start ${dependencyType} ${strings} job ${dependency.fromJobTemplate?.name}`}
-              {isFromProject && `The job ${dependency.toJobTemplate?.name} must start ${dependencyType} ${strings} this job`}
-            </div>
-          )
-        }
-        const fromDependencies = row.original.fromProjectJobDependencies?.map(item => getDependencyMessage(item, true))
-        const toDependencies = row.original.toProjectJobDependencies?.map(item => getDependencyMessage(item, false))
 
         return (
           <div className="cx-flex cx-items-start cx-flex-col">
-            {fromDependencies}
-            {toDependencies}
+            {row.original.toProjectJobDependencies?.map(item => {
+              const onUpdateDependency = () => onOpenDependencyModal(item)
+              return (
+                <div
+                  className="cx-cursor-pointer hover:cx-bg-neutral-300 cx-p-2"
+                  key={item.id}
+                  onClick={onUpdateDependency}
+                >
+                  {getDependencyMessage(item, false)}
+                </div>
+              )
+            })}
             <Button buttonType="transparent" onClick={onCreateDependency} icon="plus" className="cx-text-xs cx-text-neutral-700">
-              {(fromDependencies?.length || toDependencies?.length) ? 'Add another dependency' : 'Add dependency'}
+              {(row.original.toProjectJobDependencies?.length) ? 'Add another dependency' : 'Add dependency'}
             </Button>
           </div>
         )

@@ -1,12 +1,12 @@
-import React, { memo } from 'react'
+import React, { memo, useCallback, useMemo } from 'react'
 import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
-import { times, toNumber } from 'lodash/fp'
+import { toNumber } from 'lodash/fp'
 import classnames from 'classnames'
 
-import { Avatar, GroupAvatars } from '@skedulo/sked-ui'
-import { parseDurationValue, parseTimeString, addTimeValue } from '../../commons/utils'
+import { GroupAvatars, StatusIcon, Tooltip } from '@skedulo/sked-ui'
+import { parseDurationValue, parseTimeString, addTimeValue, getDependencyConflicts } from '../../commons/utils'
 import { IJobDetail, ITimeOption } from '../../commons/types'
-import { DraggableItemTypes, DATE_FORMAT, TIME_FORMAT } from '../../commons/constants'
+import { DATE_FORMAT, TIME_FORMAT } from '../../commons/constants'
 import { addMinutes, format, parse, add } from 'date-fns'
 
 interface IScheduledCardProps {
@@ -48,11 +48,11 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
   const [jobPos, setJobPos] = React.useState<number>(cardPosition)
   const dragGrid = widthPerMin * toNumber(snapUnit)
 
-  const onStartDrag = (e: DraggableEvent) => {
+  const onStartDrag = useCallback((e: DraggableEvent) => {
     setJobPos(prev => ++prev)
-  }
+  }, [])
 
-  const onStopDrag = (e: DraggableEvent, data: DraggableData) => {
+  const onStopDrag = useCallback((e: DraggableEvent, data: DraggableData) => {
     setJobPos(prev => --prev)
     if (typeof handleDrag === 'function' && snapUnit && job) {
       const draggedMinutes = (Math.round(data.lastX / dragGrid)) * snapUnit
@@ -82,18 +82,25 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
         handleDrag(newDate, newTime)
       }
     }
-  }
+  }, [])
 
-  const onCardClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const onCardClick = useCallback((e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (typeof handleAllocation === 'function' && job.status === 'Pending Allocation') {
       handleAllocation()
     }
-  }
+  }, [])
 
-  const totalResources = job ? Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement)) : 0
-  const avatarInfo = job.allocations?.length > 0 ?
-    job.allocations.map(item => ({ name: item.resource?.name || '', tooltipText: item.resource?.name || '' })) :
-    []
+  const { totalResources, avatarInfo, conflictMessage } = useMemo(() => {
+    const dependencyConflicts = getDependencyConflicts(job, job.toJobDependencies || [])
+
+    return {
+      totalResources: job ? Math.max(job.allocations?.length || 0, toNumber(job.resourceRequirement)) : 0,
+      avatarInfo: job.allocations?.length > 0 ?
+        job.allocations.map(item => ({ name: item.resource?.name || '', tooltipText: item.resource?.name || '' })) :
+        [],
+      conflictMessage: dependencyConflicts.length > 0 ? dependencyConflicts.map(c => c.message).join('\n') : '',
+    }
+  }, [job])
 
   return (
     <Draggable
@@ -118,7 +125,22 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
             style={travelTimeStyle}
           />
         )}
-        <span className="cx-h-full" style={durationStyle} onDoubleClick={onCardClick} />
+        <span
+          className="cx-h-full cx-rounded"
+          style={!conflictMessage ? durationStyle : {
+            ...durationStyle,
+            backgroundColor: 'white',
+            border: '1px solid #DD6359',
+            position: 'relative'
+          }}
+          onDoubleClick={onCardClick}
+        >
+          {conflictMessage && (
+            <Tooltip position="top" content={conflictMessage}>
+              <StatusIcon className="cx-absolute cx-m-2px cx-text-xs cx-w-4 cx-h-4" status="error" />
+            </Tooltip>
+          )}
+        </span>
         <span className="cx-flex">
           <GroupAvatars
             totalSlots={totalResources > 0 ? totalResources : 1}

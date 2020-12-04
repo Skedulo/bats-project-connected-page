@@ -1,6 +1,6 @@
 import * as React from 'react'
 import classnames from 'classnames'
-import { SkedFormChildren, Button, FormElementWrapper, AsyncSearchSelect } from '@skedulo/sked-ui'
+import { SkedFormChildren, Button, FormElementWrapper, AsyncSearchSelect, SearchSelect } from '@skedulo/sked-ui'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
 import {
   fetchTemplates,
@@ -13,18 +13,24 @@ interface IProjectFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
   project?: IProjectDetail
+  validationErrors: Record<string, string>
 }
 
 const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
   formParams,
   onCancel,
-  project
+  project,
+  validationErrors
 }) => {
   const appContext = React.useContext(AppContext)
-  const { objPermissions } = React.useMemo(() => appContext?.config || {}, [appContext])
+  const { objPermissions, jobRequestors } = React.useMemo(() => appContext?.config || {}, [appContext])
   const isUpdate = React.useMemo(() => !!project?.id, [project?.id])
   const { fields, isFormReadonly, resetFieldsToInitialValues, customFieldUpdate, errors, submitted } = formParams
   const shouldReadonly = isUpdate && project?.canEdit === false ? true : isFormReadonly
+
+  const jobRequestorOptions = React.useMemo(() => {
+    return jobRequestors?.map(item => ({ value: item.id, label: item.name })) || []
+  }, [jobRequestors])
 
   const [selectedOption, setSelectedOption] = React.useState<IGenericSelectItem | null>(null)
 
@@ -198,7 +204,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               label="Promis Code"
               value={fields.promisCode}
               error={submitted ? errors.promisCode : ''}
-              isRequired={true}
+              isRequired={false}
               maxLength={80}
             />
             <WrappedFormInput
@@ -208,8 +214,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               label="Sims Code"
               value={fields.simsCode}
               error={submitted ? errors.simsCode : ''}
-              isRequired={true}
-              maxLength={80}
+              isRequired={false}
             />
             <WrappedFormInput
               className="click-to-edit-custom"
@@ -217,10 +222,35 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
               isReadOnly={shouldReadonly}
               label="Project Code"
               value={fields.projectCode}
-              error={submitted ? errors.projectCode : ''}
+              error={validationErrors.projectCode}
               isRequired={true}
               maxLength={80}
             />
+            <div className="cx-mb-4 click-to-edit-custom">
+              <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
+                Job Requestor
+                <span className="cx-text-red-600"> *</span>
+              </span>
+              <FormElementWrapper
+                name="jobRequestor"
+                validation={{
+                  isValid: !validationErrors.jobRequestor ,
+                  error: validationErrors.jobRequestor
+                }}
+                readOnlyValue={fields.jobRequestor || ''}
+                isReadOnly={shouldReadonly}
+              >
+                <SearchSelect
+                  name="jobRequestor"
+                  items={jobRequestorOptions}
+                  selectedItem={fields?.jobRequestor ?
+                    { value: fields.jobRequestor.id, label: fields.jobRequestor.name } :
+                    undefined}
+                  onSelectedItemChange={onSelectLookupField('jobRequestor')}
+                  icon="chevronDown"
+                />
+              </FormElementWrapper>
+            </div>
           </>
         )}
         {isUpdate && (

@@ -46,12 +46,14 @@ export interface IJobDependency {
   projectJobTemplateId: string
   fromJobTemplateId?: string,
   toJobTemplateId?: string,
-  fromAnchor?: string,
-  toAnchor?: string,
+  fromAnchor: string,
+  toAnchor: string,
   toAnchorMinOffsetMins?: number | null,
   toAnchorMaxOffsetMins?: number | null,
   fromJobTemplate?: IBaseModel
   toJobTemplate?: IBaseModel
+  fromJob?: IJobDetail
+  toJob?: IBaseModel
 }
 
 export declare type JobStatusKey = keyof typeof JobStatusColor
@@ -61,7 +63,6 @@ export interface IJobTemplate {
   name: string
   description: string
   jobType: string
-  jobConstraints: IJobConstraint[]
   project: IBaseModel
   projectId?: string
   resourceRequirement?: number
@@ -81,7 +82,7 @@ export interface IJobDetail {
   jobType: string
   status: JobStatusKey
   allocations: IJobAllocation[]
-  jobConstraints: IJobConstraint[]
+  toJobDependencies: IJobDependency[]
   project: IBaseModel
   projectId?: string
   resourceRequirement?: number
@@ -93,6 +94,7 @@ export interface IJobDetail {
   region: IBaseModel
   timezoneSid: string
   tags?: ITag[]
+  dependencyConflicts: IJobDependencyConflict[]
 }
 
 export interface IJobSuggestion {
@@ -122,4 +124,9 @@ export enum ResourceSortType {
   TravelDistanceFromHome = 'travelDistanceFromHome',
   TravelDurationFromHome = 'travelDurationFromHome',
   Utilised = 'utilized'
+}
+
+export interface IJobDependencyConflict {
+  dependency: IJobDependency
+  inViolation: boolean
 }

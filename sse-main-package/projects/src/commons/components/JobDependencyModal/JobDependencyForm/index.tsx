@@ -272,8 +272,8 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
         fetchItems={handleGetDependentJobs}
         debounceTime={300}
         onSelectedItemChange={onSelectJob}
-        selectedItem={jobDependency.toJobTemplate ?
-          { value: jobDependency.toJobTemplate.id, label: jobDependency.toJobTemplate.name } :
+        selectedItem={jobDependency.fromJobTemplate ?
+          { value: jobDependency.fromJobTemplate.id, label: jobDependency.fromJobTemplate.name } :
           undefined
         }
         useCache={false}
