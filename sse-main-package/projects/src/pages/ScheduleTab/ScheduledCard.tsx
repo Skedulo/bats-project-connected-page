@@ -98,7 +98,9 @@ const ScheduledCard: React.FC<IScheduledCardProps> = props => {
       avatarInfo: job.allocations?.length > 0 ?
         job.allocations.map(item => ({ name: item.resource?.name || '', tooltipText: item.resource?.name || '' })) :
         [],
-      conflictMessage: dependencyConflicts.length > 0 ? dependencyConflicts.map(c => c.message).join('\n') : '',
+      conflictMessage: dependencyConflicts.length > 0
+        ? <span className="cx-whitespace-pre-line">{dependencyConflicts.map(c => c.message).join('\n')}</span>
+        : null,
     }
   }, [job])
 

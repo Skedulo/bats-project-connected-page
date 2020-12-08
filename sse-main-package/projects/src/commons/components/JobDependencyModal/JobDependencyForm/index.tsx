@@ -44,21 +44,21 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
     toAnchorMinOffsetMins: 'days' | 'hours'
     toAnchorMaxOffsetMins: 'days' | 'hours'
   }>({
-    toAnchorMinOffsetMins: 'days',
-    toAnchorMaxOffsetMins: 'days'
+    toAnchorMinOffsetMins: jobDependency.id ? 'hours' : 'days',
+    toAnchorMaxOffsetMins: jobDependency.id ? 'hours' : 'days'
   })
 
   const [jobDependencyState, setJobDependencyState] = React.useState<IJobDependency>(
     jobDependency || DEFAULT_JOB_DEPENDENCY
   )
 
-  const ignoreIdsString = jobDependency?.projectJobTemplateId
+  const ignoreIdsString = jobDependency?.projectJobTemplateId || jobDependency?.toJobTemplate?.id
 
   const handleGetDependentJobs = React.useCallback(
     (searchTerm: string) => {
       return fetchJobTemplateOptions(
         { searchText: searchTerm, pageNumber: 1, pageSize: 20, projectId },
-        jobDependency?.projectJobTemplateId
+        ignoreIdsString
       )
     },
     [projectId, ignoreIdsString]
@@ -201,7 +201,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
             className="cx-mx-4"
             items={OFFSET_UNIT_OPTIONS}
             onSelectedItemChange={onChangeOffsetUnit('toAnchorMinOffsetMins')}
-            initialSelectedItem={OFFSET_UNIT_OPTIONS[0]}
+            initialSelectedItem={{ label: offsetUnit.toAnchorMinOffsetMins, value: offsetUnit.toAnchorMinOffsetMins }}
             icon="chevronDown"
             name="offsetUnit"
           />
@@ -219,7 +219,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
             className="cx-mx-4"
             items={OFFSET_UNIT_OPTIONS}
             onSelectedItemChange={onChangeOffsetUnit('toAnchorMaxOffsetMins')}
-            initialSelectedItem={OFFSET_UNIT_OPTIONS[0]}
+            initialSelectedItem={{ label: offsetUnit.toAnchorMaxOffsetMins, value: offsetUnit.toAnchorMaxOffsetMins }}
             icon="chevronDown"
             name="offsetUnit"
           />
@@ -238,7 +238,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
               className="cx-mx-4"
               items={OFFSET_UNIT_OPTIONS}
               onSelectedItemChange={onChangeOffsetUnit('toAnchorMinOffsetMins')}
-              initialSelectedItem={OFFSET_UNIT_OPTIONS[0]}
+              initialSelectedItem={{ label: offsetUnit.toAnchorMinOffsetMins, value: offsetUnit.toAnchorMinOffsetMins }}
               icon="chevronDown"
               name="offsetUnit"
             />
@@ -254,7 +254,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
               className="cx-mx-4"
               items={OFFSET_UNIT_OPTIONS}
               onSelectedItemChange={onChangeOffsetUnit('toAnchorMaxOffsetMins')}
-              initialSelectedItem={OFFSET_UNIT_OPTIONS[0]}
+              initialSelectedItem={{ label: offsetUnit.toAnchorMaxOffsetMins, value: offsetUnit.toAnchorMaxOffsetMins }}
               icon="chevronDown"
               name="offsetUnit"
             />
