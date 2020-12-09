@@ -203,11 +203,10 @@ const AllocationModal: React.FC<IAllocationModalProps> = ({
         <div>
           <div className="cx-py-4 cx-w-1/2">
             <SearchBox
-              className="searchbox cx-mb-0 cx-border cx-mr-2"
+              className="cx-mb-0 cx-border-b cx-mr-2"
               onChange={onSearchTextChange}
               placeholder="resources"
               clearable={!!searchText}
-              value={searchText}
               autoFocus={false}
             />
           </div>

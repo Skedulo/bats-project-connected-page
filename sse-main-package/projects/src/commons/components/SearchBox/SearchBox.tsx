@@ -2,6 +2,7 @@ import * as React from 'react'
 import classnames from 'classnames'
 
 import { Icon, FormInputElement } from '@skedulo/sked-ui'
+import { debounce, toNumber } from 'lodash'
 
 interface ISearchBoxProps {
   onChange: (value: string) => void
@@ -9,7 +10,9 @@ interface ISearchBoxProps {
   autoFocus?: boolean
   placeholder: string
   clearable?: boolean
-  value?: string
+  loading?: boolean
+  clearInput?: boolean
+  debounceTime?: number
 }
 
 const SearchBox: React.FC<ISearchBoxProps> = ({
@@ -17,35 +20,55 @@ const SearchBox: React.FC<ISearchBoxProps> = ({
   className,
   autoFocus = true,
   placeholder,
-  value,
   clearable,
+  loading,
+  clearInput,
+  debounceTime
 }) => {
+  const [value, setValue] = React.useState<string>('')
+
+  const deboundChange = React.useMemo(() => {
+    return debounceTime ? debounce(onChange, toNumber(debounceTime) || 0) : onChange
+  }, [debounceTime, onChange])
+
   const handleChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      onChange(e.target.value)
+      if (!loading) {
+        deboundChange(e.target.value)
+        setValue(e.target.value)
+      }
     },
-    [onChange]
+    [deboundChange, loading]
   )
 
   const handleClear = React.useCallback(() => {
-    onChange('')
-  }, [onChange])
+    if (!loading) {
+      onChange('')
+      setValue('')
+    }
+  }, [onChange, loading])
+
+  React.useEffect(() => {
+    if (clearInput) {
+      handleClear()
+    }
+  }, [clearInput])
 
   return (
     <div
       className={classnames(
-        'sk-bg-white sk-border sk-border-b-0 sk-border-neutral-350 sk-text-neutral-650 sk-text-sm sk-flex sk-items-center sk-px-3 sk-py-1',
+        'cx-bg-white cx-border cx-border-b-0 cx-border-neutral-350 cx-text-neutral-650 cx-text-sm cx-flex cx-items-center cx-px-3',
         className
       )}
     >
-      <Icon name="search" className="sk-text-neutral-550" />
+      <Icon name="search" className="cx-text-neutral-550" />
       <FormInputElement
         autoFocus={autoFocus}
-        data-sk-name="sk-filter-search-input"
+        data-cx-name="cx-filter-search-input"
         type="text"
         placeholder={`Search ${placeholder ? placeholder.toLowerCase() : ''}...`}
         onChange={handleChange}
-        className="sk-truncate sk-border-0 focus:sk-border-0"
+        className="cx-truncate cx-border-0 focus:cx-border-0"
         value={value}
       />
       {clearable && (

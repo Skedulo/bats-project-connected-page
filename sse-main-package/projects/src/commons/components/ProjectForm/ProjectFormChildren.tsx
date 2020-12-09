@@ -8,6 +8,7 @@ import {
 } from '../../../Services/DataServices'
 import { IProjectDetail, IGenericSelectItem } from '../../../commons/types'
 import { AppContext } from '../../../App'
+import { isEmpty } from 'lodash'
 
 interface IProjectFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
@@ -104,6 +105,12 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
       setSelectedOption({ ...selectedItem, fieldName })
     },
     [customFieldUpdate, fields]
+  )
+
+  const onSelectJobRequestor = React.useCallback((selectedItem: IGenericSelectItem) => {
+    customFieldUpdate('jobRequestor')(selectedItem?.value || '')
+    },
+    [customFieldUpdate]
   )
 
   React.useEffect(() => {
@@ -244,9 +251,9 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                   name="jobRequestor"
                   items={jobRequestorOptions}
                   selectedItem={fields?.jobRequestor ?
-                    { value: fields.jobRequestor.id, label: fields.jobRequestor.name } :
+                    { value: fields.jobRequestor, label: fields.jobRequestor } :
                     undefined}
-                  onSelectedItemChange={onSelectLookupField('jobRequestor')}
+                  onSelectedItemChange={onSelectJobRequestor}
                   icon="chevronDown"
                 />
               </FormElementWrapper>
@@ -287,7 +294,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 name="accountId"
                 fetchItems={handleFetchAccounts}
                 debounceTime={300}
-                selectedItem={fields?.account ? { value: fields.account.id, label: fields.account.name } : undefined}
+                selectedItem={fields.account?.id ? { value: fields.account.id, label: fields.account.name } : undefined}
                 onSelectedItemChange={onSelectLookupField('account')}
                 // initialSelectedItem={
                 //   project?.account ? { value: project.account.id, label: project.account.name } : undefined
@@ -327,7 +334,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 debounceTime={300}
                 key={`${fields.account?.id}${fields.contact?.id}`}
                 onSelectedItemChange={onSelectLookupField('contact')}
-                selectedItem={fields?.contact ? { value: fields.contact.id, label: fields.contact.name } : undefined}
+                selectedItem={fields.contact?.id ? { value: fields.contact.id, label: fields.contact.name } : undefined}
                 useCache={false}
                 placeholder="Search contacts..."
                 icon="chevronDown"
@@ -365,7 +372,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 fetchItems={handleFetchRegions}
                 debounceTime={300}
                 onSelectedItemChange={onSelectLookupField('region')}
-                selectedItem={fields?.region ? { value: fields.region.id, label: fields.region.name } : undefined}
+                selectedItem={fields.region?.id ? { value: fields.region.id, label: fields.region.name } : undefined}
                 useCache={true}
                 placeholder="Search regions..."
                 icon="chevronDown"
@@ -401,7 +408,10 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
                 key={`${fields.account?.id}${fields.region?.id}${fields.location?.id}`}
                 debounceTime={300}
                 onSelectedItemChange={onSelectLookupField('location')}
-                selectedItem={fields?.location ? { value: fields.location.id, label: fields.location.name } : undefined}
+                selectedItem={fields.location?.id
+                  ? { value: fields.location.id, label: fields.location.name }
+                  : undefined
+                }
                 useCache={false}
                 placeholder="Search locations..."
                 icon="chevronDown"

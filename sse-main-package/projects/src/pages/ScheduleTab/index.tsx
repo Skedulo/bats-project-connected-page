@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, truncate, xor, fill, pickBy } from 'lodash/fp'
+import { uniq, keyBy, fill, pickBy } from 'lodash/fp'
 import { format, zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz'
 import { getDaysInMonth, add, isAfter, set, eachDayOfInterval } from 'date-fns'
 import {
@@ -237,8 +237,6 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
     setIsLoading(false)
   }, [project, dateRange, suggestions, swimlaneSettings.workingHours])
 
-  const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
-
   const onPageChange = useCallback((page: number) => {
     setFilterParams((prev: IJobFilterParams) => ({ ...prev, pageNumber: page }))
   }, [])
@@ -454,7 +452,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
 
   useEffect(() => {
     if (!isLoading && project.id) {
-      debounceGetJobList({...filterParams, projectId: project.id })
+      getJobsList({...filterParams, projectId: project.id })
     }
   }, [filterParams, project])
 
@@ -542,11 +540,11 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
         <div className="schedule-general-info cx-text-neutral-700">
           <div className="general-info-item">
             <SearchBox
-              className="cx-h-full cx-px-4 cx-py-0 cx-mb-0 cx-border-0"
+              className="cx-h-full cx-px-4 cx-py-0 cx-mb-0 cx-border-t-0 cx-border-l-0 cx-border-r-0"
               onChange={onSearchTextChange}
               placeholder="jobs"
               clearable={!!filterParams.searchText}
-              value={filterParams.searchText || ''}
+              debounceTime={700}
               autoFocus={false}
             />
           </div>

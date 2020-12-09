@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, memo, useMemo } from 'react'
-import { debounce, uniq, keyBy, times, toNumber } from 'lodash/fp'
+import { uniq, keyBy, times, toNumber } from 'lodash/fp'
 import { Dictionary } from 'lodash'
 import {
   DynamicTable,
@@ -190,8 +190,6 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
     setIsLoading(false)
   }, [])
 
-  const debounceGetJobList = useMemo(() => debounce(700, getJobsList), [getJobsList])
-
   const onRowSelect = useCallback(
     (rowIds: string[], isAllRowsSelected: boolean | undefined, rowData: Dictionary<IJobDetail> | undefined) => {
       const selectedItems: IJobDetail[] = []
@@ -331,7 +329,7 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
 
   useEffect(() => {
     if (!isLoading) {
-      debounceGetJobList({...filterParams, projectId})
+      getJobsList({...filterParams, projectId})
     }
   }, [filterParams, projectId])
 
@@ -378,12 +376,12 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
               </ButtonGroup>
             )}
             <SearchBox
-              className="cx-px-4 cx-py-0 cx-mb-0 cx-border cx-mr-2"
+              className="cx-px-4 cx-py-0 cx-mb-0 cx-border-b cx-mr-2"
               onChange={onSearchTextChange}
               placeholder="jobs"
               clearable={!!filterParams.searchText}
-              value={filterParams.searchText}
               autoFocus={false}
+              debounceTime={700}
             />
           </div>
         </div>

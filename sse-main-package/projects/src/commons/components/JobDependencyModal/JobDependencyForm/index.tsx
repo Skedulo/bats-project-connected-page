@@ -190,6 +190,7 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
           name="dependencyType"
         />
       </FormElementWrapper>
+
       {dependencyType === JobDependencyType.AT_LEAST && (
         <div className="cx-mb-4 cx-flex cx-items-center cx-justify-start">
           <NumberInput
@@ -265,14 +266,15 @@ const JobDependencyForm: React.FC<IJobDependencyFormProps> = ({
           )}
         </>
       )}
+
       <AsyncSearchSelect
         className="cx-mb-4"
-        name="toJobId"
+        name="fromJobId"
         key={ignoreIdsString}
         fetchItems={handleGetDependentJobs}
         debounceTime={300}
         onSelectedItemChange={onSelectJob}
-        selectedItem={jobDependency.fromJobTemplate ?
+        initialSelectedItem={jobDependency.fromJobTemplate ?
           { value: jobDependency.fromJobTemplate.id, label: jobDependency.fromJobTemplate.name } :
           undefined
         }

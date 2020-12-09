@@ -19,7 +19,7 @@ import SearchBox from '../../../commons/components/SearchBox'
 import JobTemplateModal from '../../../commons/components/JobTemplateModal'
 import JobDependencyModal from '../../../commons/components/JobDependencyModal'
 import { AppContext } from '../../../App'
-import { toastMessage, getDependencyType, parseMinutes, getDependencyMessage } from '../../../commons/utils'
+import { toastMessage, getDependencyMessage } from '../../../commons/utils'
 
 interface IJobTemplatesListProps {
   project: IProjectDetail
@@ -188,8 +188,6 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
     [jobTypeTemplateValueKeys, jobTypeTemplateValues]
   )
 
-  const debounceGetJobTemplatesList = useMemo(() => debounce(700, getJobTemplatesList), [getJobTemplatesList])
-
   const onPageChange = useCallback((page: number) => {
     setFilterParams((prev: IJobFilterParams) => ({ ...prev, pageNumber: page }))
   }, [])
@@ -289,7 +287,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
 
   useEffect(() => {
     if (!isLoading) {
-      debounceGetJobTemplatesList({ ...filterParams, projectId })
+      getJobTemplatesList({ ...filterParams, projectId })
     }
   }, [filterParams, projectId])
 
@@ -307,11 +305,11 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
             New Job
           </Button>
           <SearchBox
-            className="cx-px-4 cx-py-0 cx-mb-0 cx-border cx-mr-2"
+            className="cx-px-4 cx-py-0 cx-mb-0 cx-border-b cx-mr-2"
             onChange={onSearchTextChange}
             placeholder="jobs"
             clearable={!!filterParams.searchText}
-            value={filterParams.searchText}
+            debounceTime={700}
             autoFocus={false}
           />
         </div>

@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useCallback, memo, useMemo, ChangeEvent, useContext } from 'react'
-import { debounce, replace } from 'lodash/fp'
+import React, { useEffect, useState, useCallback, memo, useMemo, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import {
   DynamicTable,
@@ -8,9 +7,7 @@ import {
   Pagination,
   ActionMenu,
   Button,
-  ConfirmationModal,
-  Icon,
-  LozengeColors,
+  ConfirmationModal
 } from '@skedulo/sked-ui'
 import ProjectFilter from './ProjectFilter'
 import CreateProjectModal from './CreateProjectModal'
@@ -123,8 +120,6 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
     }
   }, [])
 
-  const debounceGetProjectList = useMemo(() => debounce(700, getProjectsList), [getProjectsList])
-
   const onRowSelect = useCallback((selectedRowIds: string[]) => {
     // console.log('selectedRowIds: ', selectedRowIds)
   }, [])
@@ -134,7 +129,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
   }, [])
 
   const onSearchTextChange = useCallback((value: string) => {
-    onFilterChange({ searchText: value })
+    return onFilterChange({ searchText: value })
   }, [])
 
   const onResetFilter = useCallback(() => {
@@ -233,7 +228,7 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
 
   useEffect(() => {
     if (!isLoading) {
-      debounceGetProjectList(filterParams)
+      getProjectsList(filterParams)
     }
   }, [filterParams])
 
@@ -246,12 +241,12 @@ const ProjectsList: React.FC<IProjectsListProps> = () => {
           <ul className="cx-flex">
             <li className="cx-pr-4">
               <SearchBox
-                className="cx-px-4 cx-py-0 cx-mb-0 cx-border"
+                className="cx-px-4 cx-py-0 cx-mb-0 cx-border-b"
                 onChange={onSearchTextChange}
                 placeholder="projects"
                 clearable={!!filterParams.searchText}
-                value={filterParams.searchText || ''}
                 autoFocus={false}
+                debounceTime={700}
               />
             </li>
             {objPermissions?.Project.allowCreate && (
