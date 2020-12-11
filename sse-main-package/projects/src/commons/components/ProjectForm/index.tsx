@@ -49,7 +49,7 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
       if (form.fields.isTemplate) {
         const errors: Record<string, string> = {}
 
-        if (!form.fields.jobRequestor?.value && !project?.jobRequestor) {
+        if (!form.fields.jobRequestor && !project?.jobRequestor) {
           errors.jobRequestor = 'Job Requestor is required.'
         }
 
@@ -77,7 +77,7 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
         contact: { id: form.fields.contact?.id, name: form.fields.contact?.name },
         region: { id: form.fields.region?.id, name: form.fields.region?.name },
         location: { id: form.fields.location?.id, name: form.fields.location?.name },
-        jobRequestor: form.fields.jobRequestor.value || project?.jobRequestor,
+        jobRequestor: form.fields.jobRequestor || project?.jobRequestor,
         applyAccountForAllJob: !!form.fields.applyAccountForAllJob,
         applyContactForAllJob: !!form.fields.applyContactForAllJob,
         applyRegionForAllJob: !!form.fields.applyRegionForAllJob,
