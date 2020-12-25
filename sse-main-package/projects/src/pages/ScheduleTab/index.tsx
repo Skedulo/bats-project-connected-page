@@ -536,7 +536,7 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
           </div>
         </div>
       </div>
-      <div className="cx-p-4">
+      <div>
         <div className="schedule-general-info cx-text-neutral-700">
           <div className="general-info-item">
             <SearchBox

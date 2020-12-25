@@ -233,6 +233,18 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
     if (project.location?.id && project.applyLocationForAllJob) {
       preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
     }
+    if (project.promisCode) {
+      preFillStr = preFillStr + `&form.PromisCode=${encodeURI(project.promisCode.toString())}`
+    }
+    if (project.simsCode) {
+      preFillStr = preFillStr + `&form.SimsCode=${project.simsCode.toString()}`
+    }
+    if (project.projectCode) {
+      preFillStr = preFillStr + `&form.ProjectCode=${project.projectCode.toString()}`
+    }
+    if (project.jobRequestor) {
+      preFillStr = preFillStr + `&form.JobRequestor=${project.jobRequestor}`
+    }
     window.top.window.location.href = `${createJobPath()}?${preFillStr}`
   }, [project, projectId])
 

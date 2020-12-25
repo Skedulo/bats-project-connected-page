@@ -202,64 +202,60 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             isRequired={false}
           />
         </div>
-        {fields.isTemplate && (
-          <>
-            <WrappedFormInput
-              className="click-to-edit-custom"
-              name="promisCode"
-              isReadOnly={shouldReadonly}
-              label="Promis Code"
-              value={fields.promisCode}
-              error={submitted ? errors.promisCode : ''}
-              isRequired={false}
-              maxLength={80}
+        <WrappedFormInput
+          className="click-to-edit-custom"
+          name="promisCode"
+          isReadOnly={shouldReadonly}
+          label="Promis Code"
+          value={fields.promisCode}
+          error={submitted ? errors.promisCode : ''}
+          isRequired={false}
+          maxLength={80}
+        />
+        <WrappedFormInput
+          className="click-to-edit-custom"
+          name="simsCode"
+          isReadOnly={shouldReadonly}
+          label="Sims Code"
+          value={fields.simsCode}
+          error={submitted ? errors.simsCode : ''}
+          isRequired={false}
+        />
+        <WrappedFormInput
+          className="click-to-edit-custom"
+          name="projectCode"
+          isReadOnly={shouldReadonly}
+          label="Project Code"
+          value={fields.projectCode}
+          error={validationErrors.projectCode}
+          isRequired={true}
+          maxLength={80}
+        />
+        <div className="cx-mb-4 click-to-edit-custom">
+          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
+            Job Requestor
+            <span className="cx-text-red-600"> *</span>
+          </span>
+          <FormElementWrapper
+            name="jobRequestor"
+            validation={{
+              isValid: !validationErrors.jobRequestor ,
+              error: validationErrors.jobRequestor
+            }}
+            readOnlyValue={fields.jobRequestor || ''}
+            isReadOnly={shouldReadonly}
+          >
+            <SearchSelect
+              name="jobRequestor"
+              items={jobRequestorOptions}
+              selectedItem={fields?.jobRequestor ?
+                { value: fields.jobRequestor, label: fields.jobRequestor } :
+                undefined}
+              onSelectedItemChange={onSelectJobRequestor}
+              icon="chevronDown"
             />
-            <WrappedFormInput
-              className="click-to-edit-custom"
-              name="simsCode"
-              isReadOnly={shouldReadonly}
-              label="Sims Code"
-              value={fields.simsCode}
-              error={submitted ? errors.simsCode : ''}
-              isRequired={false}
-            />
-            <WrappedFormInput
-              className="click-to-edit-custom"
-              name="projectCode"
-              isReadOnly={shouldReadonly}
-              label="Project Code"
-              value={fields.projectCode}
-              error={validationErrors.projectCode}
-              isRequired={true}
-              maxLength={80}
-            />
-            <div className="cx-mb-4 click-to-edit-custom">
-              <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
-                Job Requestor
-                <span className="cx-text-red-600"> *</span>
-              </span>
-              <FormElementWrapper
-                name="jobRequestor"
-                validation={{
-                  isValid: !validationErrors.jobRequestor ,
-                  error: validationErrors.jobRequestor
-                }}
-                readOnlyValue={fields.jobRequestor || ''}
-                isReadOnly={shouldReadonly}
-              >
-                <SearchSelect
-                  name="jobRequestor"
-                  items={jobRequestorOptions}
-                  selectedItem={fields?.jobRequestor ?
-                    { value: fields.jobRequestor, label: fields.jobRequestor } :
-                    undefined}
-                  onSelectedItemChange={onSelectJobRequestor}
-                  icon="chevronDown"
-                />
-              </FormElementWrapper>
-            </div>
-          </>
-        )}
+          </FormElementWrapper>
+        </div>
         {isUpdate && (
           <>
             <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">

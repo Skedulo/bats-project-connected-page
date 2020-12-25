@@ -48,7 +48,10 @@ export interface IProjectDetail extends IProjectListItem {
   // address: string
   canEdit?: boolean
   timezoneSid: string
+  promisCode: string
+  simsCode: string
   jobRequestor: string
+  projectCode: string
 }
 
 export interface IListResponse<T> {

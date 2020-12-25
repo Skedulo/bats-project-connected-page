@@ -174,7 +174,7 @@ const generateScheduleDataCell = (
                 slotTime={item}
                 slotUnit={SLOT_WIDTH_UNIT}
                 snapUnit={snapUnitConsole}
-                cardPosition={parseDurationFromTimeRange(item.numberValue, job.startTime) * widthPerMin}
+                cardPosition={parseDurationFromTimeRange(item.numberValue, job.startTime) * widthPerMin - 1}
                 travelTime={maxTravelTime}
                 travelTimeStyle={{
                   height: '2px',
@@ -182,7 +182,7 @@ const generateScheduleDataCell = (
                   marginLeft: `-${(maxTravelTime / minutesPerBlock) * slotWidth}${SLOT_WIDTH_UNIT}`
                 }}
                 durationStyle={{
-                  width: `${(job.duration / minutesPerBlock) * slotWidth}${SLOT_WIDTH_UNIT}`,
+                  width: `${(job.duration / minutesPerBlock) * slotWidth + 1}${SLOT_WIDTH_UNIT}`,
                   backgroundColor: SCHEDULE_JOB_STATUS_COLOR[job.status],
                 }}
                 draggable={DRAGGABLE_JOB_STATUS.includes(job.status)}
