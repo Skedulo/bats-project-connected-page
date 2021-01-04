@@ -8,7 +8,7 @@ import { DATE_FORMAT } from '../../constants'
 import { parseTimeValue, parseTimeString } from '../../utils'
 
 const ProjectFormConfig = {
-  templateId: {},
+  template: {},
   projectName: {
     isRequired: 'Name is required'
   },
