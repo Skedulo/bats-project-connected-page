@@ -14,14 +14,12 @@ interface IProjectFormChildrenProps {
   formParams: SkedFormChildren<IProjectDetail>
   onCancel?: () => void
   project?: IProjectDetail
-  validationErrors: Record<string, string>
 }
 
 const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
   formParams,
   onCancel,
-  project,
-  validationErrors
+  project
 }) => {
   const appContext = React.useContext(AppContext)
   const { objPermissions, jobRequestors } = React.useMemo(() => appContext?.config || {}, [appContext])
@@ -227,21 +225,15 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
           isReadOnly={shouldReadonly}
           label="Project Code"
           value={fields.projectCode}
-          error={validationErrors.projectCode}
-          isRequired={true}
+          isRequired={false}
           maxLength={80}
         />
         <div className="cx-mb-4 click-to-edit-custom">
           <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
             Job Requestor
-            <span className="cx-text-red-600"> *</span>
           </span>
           <FormElementWrapper
             name="jobRequestor"
-            validation={{
-              isValid: !validationErrors.jobRequestor ,
-              error: validationErrors.jobRequestor
-            }}
             readOnlyValue={fields.jobRequestor || ''}
             isReadOnly={shouldReadonly}
           >

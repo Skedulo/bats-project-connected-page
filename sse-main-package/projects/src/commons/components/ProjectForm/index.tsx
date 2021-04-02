@@ -43,27 +43,8 @@ interface IProjectFormProps {
 }
 
 const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel }) => {
-  const [validationErrors, setValidationErrors] = React.useState<Record<string, string>>({})
   const handleSubmit = React.useCallback(
     async (form: SkedFormChildren<IProjectDetail>) => {
-      if (form.fields.isTemplate) {
-        const errors: Record<string, string> = {}
-
-        if (!form.fields.jobRequestor && !project?.jobRequestor) {
-          errors.jobRequestor = 'Job Requestor is required.'
-        }
-
-        if (!form.fields.projectCode) {
-          errors.projectCode = 'Project Code is required.'
-        }
-
-        setValidationErrors(errors)
-
-        if (!isEmpty(errors)) {
-          return
-        }
-      }
-
       const submitData = {
         ...project,
         ...form.fields,
@@ -105,7 +86,6 @@ const ProjectForm: React.FC<IProjectFormProps> = ({ project, onSubmit, onCancel 
           formParams={formParams}
           onCancel={onCancel}
           project={project}
-          validationErrors={validationErrors}
         />
       )}
     </SkedFormValidation>
