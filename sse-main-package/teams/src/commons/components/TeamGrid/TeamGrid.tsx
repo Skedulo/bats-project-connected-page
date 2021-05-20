@@ -88,7 +88,7 @@ const TeamGrid: React.FC<TeamGridProps> = ({ filterParams, onFilterChange }) => 
   }, [filterParams.startDate, filterParams.endDate])
 
   return (
-    <div className="cx-flex-1">
+    <div className="cx-flex-1 cx-h-full cx-overflow-y-scroll">
       <div className="cx-overflow-x-scroll team-allocation-wrapper cx-relative">
         <div className="cx-grid cx-grid-cols-2/8">
           <div className="cx-font-medium cx-border-r cx-border-b">

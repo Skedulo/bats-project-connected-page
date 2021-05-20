@@ -10,7 +10,7 @@ import {
   AsyncMultiSearchSelect,
   ButtonGroup
 } from '@skedulo/sked-ui'
-import { toNumber, times } from 'lodash'
+import { toNumber, times, uniqBy } from 'lodash'
 import classnames from 'classnames'
 
 import { Team, TeamRequirement } from '../../../types'
@@ -41,6 +41,7 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
   const [requiredPeople, setRequiredPeople] = useState<number>(teamRequirements.length)
   const [paletteColors, setPaletteColors] = useState(DEFAULT_PALETTE_COLORS)
   const isReadonly = false
+
   const { selectedRequiredTags, selectedPreferredResource } = useMemo(() => {
     const tags: string[] = []
     let resources: string[] = []
@@ -66,11 +67,13 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
 
   const handleChangeRequiredPeople = useCallback((value: ReactText) => {
     const numOfPeople = toNumber(value)
-    setRequiredPeople(numOfPeople)
     const newTeamRequirements = teamRequirements.length > numOfPeople
       ? teamRequirements.slice(0, numOfPeople)
-      : [...teamRequirements, { tags: [], preferredResourceId: '' }]
-    setTeamRequirements(newTeamRequirements)
+      : [...teamRequirements, ...Array(numOfPeople - teamRequirements.length).fill({ tags: [], preferredResourceId: '' })]
+    setRequiredPeople(numOfPeople)
+    setTeamRequirements(() => {
+      return newTeamRequirements
+    })
   }, [teamRequirements, setTeamRequirements])
 
   const fetchRegions = useCallback(async (input: string) => {
@@ -96,7 +99,8 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
     setTeamRequirements(prev => prev.map(item => ({ ...item, preferredResource: undefined, preferredResourceId: '' })))
   }, [])
 
-  const onTagsSelect = useCallback((index: number) => (selectedTags: ISelectItem[]) => {
+  const onTagsSelect = useCallback((index: number) => (selectedItems: ISelectItem[]) => {
+    const selectedTags = uniqBy(selectedItems, item => item.value)
     setTeamRequirements((prev: TeamRequirement[]) => prev.map((item, arrIndex) => {
       if (index !== arrIndex) {
         return item
@@ -186,6 +190,7 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
               value={requiredPeople}
               onValueChange={handleChangeRequiredPeople}
               min={team?.teamRequirements?.length || 2}
+              max={20}
             />
           </FormElementWrapper>
         </div>
@@ -202,6 +207,9 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
 
         <h3 className="cx-font-semibold cx-mb-4">Team members</h3>
         {times(requiredPeople, index => {
+          // if (![teamRequirements[index]]) {
+          //   return <div key={`team-member-${index}`} />
+          // }
           return (
             <div className="cx-flex cx-items-center" key={`team-member-${index}`}>
               <span className="cx-mx-4">{index + 1}</span>
@@ -215,7 +223,7 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
                     debounceTime={300}
                     onSelectedItemsChange={onTagsSelect(index)}
                     key={selectedRequiredTags.join(',')}
-                    initialSelectedItems={teamRequirements[index].tags?.map(item => ({ value: item.tagId || '', label: item.name || '' }))}
+                    initialSelectedItems={teamRequirements[index]?.tags?.map(item => ({ value: item.tagId || '', label: item.name || '' }))}
                     useCache={false}
                   />
                 </FormElementWrapper>
@@ -228,7 +236,7 @@ const TeamChildren: React.FC<TeamChildrenProps> = ({
                     name="preferredResource"
                     fetchItems={fetchResources(index)}
                     key={`${selectedPreferredResource.join(',')}-${fields.regionId}-${selectedRequiredTags.join(',')}`}
-                    initialSelectedItem={teamRequirements[index].preferredResource ? { value: teamRequirements[index].preferredResource?.id || '', label: teamRequirements[index].preferredResource?.name || '' } : undefined}
+                    initialSelectedItem={teamRequirements[index]?.preferredResource ? { value: teamRequirements[index]?.preferredResource?.id || '', label: teamRequirements[index]?.preferredResource?.name || '' } : undefined}
                     onSelectedItemChange={onResourceSelect(index)}
                     useCache={false}
                   />
