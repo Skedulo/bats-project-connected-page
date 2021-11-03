@@ -5,9 +5,7 @@ import { IJobTemplate } from '../../../types'
 
 const JobTemplateFormConfig = {
   jobType: { isRequired: 'Job type is required' },
-  duration: { isRequired: 'Duration is required' },
   description: {},
-  resourceId: {}
 }
 
 interface IJobTemplateFormProps {

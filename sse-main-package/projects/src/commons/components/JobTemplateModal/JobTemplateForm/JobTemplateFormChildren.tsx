@@ -88,15 +88,6 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
             />
           </FormElementWrapper>
         </div>
-        <div className="cx-mb-4 cx-w-200px">
-          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Duration (mins)</span>
-          <FormElementWrapper
-            name="duration"
-            validation={{ isValid: submitted ? !errors.duration : true, error: submitted ? errors.duration : '' }}
-          >
-            <NumberInput value={fields.duration} onValueChange={handleDuration} min={1} step={15} />
-          </FormElementWrapper>
-        </div>
         <WrappedFormInput
           name="description"
           type="textarea"
@@ -107,21 +98,6 @@ const JobTemplateFormChildren: React.FC<IJobTemplateFormChildrenProps> = ({
           maxLength={255}
           isRequired={false}
         />
-        <div className="cx-mb-4">
-          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">Resources</span>
-          <AsyncSearchSelect
-            name="resourceId"
-            fetchItems={handleFetchResources}
-            debounceTime={300}
-            placeholder="Select a resource"
-            onSelectedItemChange={handleSelectResource}
-            initialSelectedItem={
-              jobTemplate?.resource ? { value: jobTemplate.resource.id, label: jobTemplate.resource.name } : undefined
-            }
-            useCache={true}
-            icon="chevronDown"
-          />
-        </div>
       </div>
       <div
         className={classnames('cx-flex cx-p-4 border-top cx-bg-white cx-bottom-0 cx-sticky', {

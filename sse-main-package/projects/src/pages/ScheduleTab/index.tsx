@@ -254,19 +254,19 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
   }, [])
 
   const onCreateJob = useCallback(() => {
-    let preFillStr = `form.ProjectId=${project?.id}`
-    if (project.account?.id && project.applyAccountForAllJob) {
-      preFillStr = preFillStr + `&form.AccountId=${project.account?.id}`
-    }
-    if (project.contact?.id && project.applyContactForAllJob) {
-      preFillStr = preFillStr + `&form.ContactId=${project.contact?.id}`
-    }
-    if (project.region?.id && project.applyRegionForAllJob) {
-      preFillStr = preFillStr + `&form.RegionId=${project.region?.id}`
-    }
-    if (project.location?.id && project.applyLocationForAllJob) {
-      preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
-    }
+    let preFillStr = `projectId=${project?.id}`
+    // if (project.account?.id && project.applyAccountForAllJob) {
+    //   preFillStr = preFillStr + `&accountId=${project.account?.id}`
+    // }
+    // if (project.contact?.id && project.applyContactForAllJob) {
+    //   preFillStr = preFillStr + `&contactId=${project.contact?.id}`
+    // }
+    // if (project.region?.id && project.applyRegionForAllJob) {
+    //   preFillStr = preFillStr + `&regionId=${project.region?.id}`
+    // }
+    // if (project.location?.id && project.applyLocationForAllJob) {
+    //   preFillStr = preFillStr + `&locationId=${project.location?.id}`
+    // }
     window.top.window.location.href = `${createJobPath()}?${preFillStr}`
   }, [project])
 
@@ -499,12 +499,12 @@ const ScheduleTab: React.FC<IScheduleTabProps> = ({ project }) => {
                 <Button buttonType="secondary" disabled={!canAction.canUnschedule} onClick={handleUnschedule}>
                   Unschedule
                 </Button>
-                <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={handleDeallocate}>
+                {/* <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={handleDeallocate}>
                   Deallocate
                 </Button>
                 <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openMultiAllocationModal}>
                   Allocate
-                </Button>
+                </Button> */}
                 <Button buttonType="primary" disabled={!canAction.canDispatch} onClick={handleDispatchResource}>
                   Dispatch
                 </Button>

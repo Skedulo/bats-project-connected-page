@@ -1,12 +1,11 @@
 {
   "version": "1",
-  "name": "sse-connected-page",
+  "name": "project-connected-page",
   "summary": "Package contains connected pages of SSE project",
   "components": {
     "webpages": {
       "items": [
-        "projects",
-        "teams"
+        "projects"
       ]
     },
     "functions": {

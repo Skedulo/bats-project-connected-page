@@ -12,6 +12,7 @@ import {
   IConfig,
   IProjectDetail,
   IJobDependency,
+  IObjPermission,
 } from '../../../commons/types'
 import { DEFAULT_FILTER, DEFAULT_LIST } from '../../../commons/constants'
 import { fetchListJobTemplates, createUpdateJobTemplate, fetchJobTypeTemplateValues, deleteJobTemplate } from '../../../Services/DataServices'
@@ -26,10 +27,12 @@ interface IJobTemplatesListProps {
   isTemplate: boolean
 }
 
+
 const jobTemplatesTableColumns = (
   onViewJobTemplate: (job: IJobTemplate) => void,
   onDeleteJobTemplate: (id: string) => void,
-  onOpenDependencyModal: (dependency: IJobDependency) => void
+  onOpenDependencyModal: (dependency: IJobDependency) => void,
+  objPermissions: any
 ) => {
   return [
     {
@@ -106,8 +109,7 @@ const jobTemplatesTableColumns = (
         const actionItems = [
           { label: 'View/Edit', onClick: () => onViewJobTemplate(row.original) },
         ]
-
-        if (onDeleteJobTemplate) {
+        if (onDeleteJobTemplate && objPermissions?.Project.allowDelete) {
           actionItems.push({ label: 'Delete', onClick: () => onDeleteJobTemplate(cell.value) })
         }
 
@@ -124,6 +126,7 @@ const jobTemplatesTableColumns = (
 const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   const { id: projectId, region } = project
   const appContext = useContext(AppContext)
+  const { objPermissions } = useMemo(() => appContext?.config || {}, [appContext])
 
   const { jobTypeTemplates = [], jobTypeTemplateValues = {} } = useMemo(() => appContext?.config || {}, [appContext])
 
@@ -214,7 +217,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   }, [])
 
   const onConfirmDelete = useCallback((jobId: string) => {
-    setConfirmJobTemplateId(jobId)
+      setConfirmJobTemplateId(jobId)
   }, [])
 
   const onDeleteJobTemplate = useCallback(async () => {
@@ -267,7 +270,7 @@ const JobTemplatesList: React.FC<IJobTemplatesListProps> = ({ project }) => {
   const jobsTableConfig: IDynamicTable<IJobTemplate> = useMemo(
     () => ({
       data: jobTemplates.results,
-      columns: jobTemplatesTableColumns(onViewJobTemplate, onConfirmDelete, onOpenDependencyModal),
+      columns: jobTemplatesTableColumns(onViewJobTemplate, onConfirmDelete, onOpenDependencyModal, objPermissions),
       stickyHeader: false,
       rowSelectControl: 'disabled',
       onSortBy: props => {

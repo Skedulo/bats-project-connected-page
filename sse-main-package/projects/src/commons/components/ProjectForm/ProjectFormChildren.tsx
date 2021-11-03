@@ -1,7 +1,8 @@
 import * as React from 'react'
 import classnames from 'classnames'
-import { SkedFormChildren, Button, FormElementWrapper, AsyncSearchSelect, SearchSelect } from '@skedulo/sked-ui'
+import { SkedFormChildren,PopOut, Datepicker, Button, FormElementWrapper, AsyncSearchSelect, SearchSelect } from '@skedulo/sked-ui'
 import WrappedFormInput from '../../../commons/components/WrappedFormInput'
+import { DATE_FORMAT } from '../../../commons/constants'
 import {
   fetchTemplates,
   fetchGenericOptions,
@@ -46,7 +47,19 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
     },
     [project]
   )
-
+  const filterEndDateTrigger = React.useCallback(() => {
+    // if (!filterParams.endDate) {
+    //   return <></>
+    // }
+    return (
+      <div className="cx-leading-normal cx-flex cx-h-8 cx-max-w-xs cx-rounded cx-items-center cx-mx-2 sk-cursor-pointer sk-px-3 sk-text-neutral-750 hover:sk-bg-blue-100 sk-bg-neutral-200">
+        <span>
+          End date:
+          <span className="cx-font-semibold cx-ml-2">344444</span>
+        </span>
+      </div>
+    )
+  }, ['3333'])
   const handleFetchAccounts = React.useCallback(
     (searchTerm: string) => {
       return fetchGenericOptions({
@@ -110,6 +123,29 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
     },
     [customFieldUpdate]
   )
+  // const onSelectDate = React.useCallback(
+  //   (fieldName: string, callback?: () => void) => (value: Date) => {
+  //     if (fieldName === 'startDate') {
+  //       const endDate = isValid(filterDates.endDate) ? filterDates.endDate : add(value, { days: 7 })
+  //       setFilterDates(prev => ({ ...prev, [fieldName]: value, endDate }))
+  //       onFilterChange({
+  //         [fieldName]: format(value, DATE_FORMAT),
+  //         endDate: format(endDate, DATE_FORMAT),
+  //       })
+  //     }
+  //     if (fieldName === 'endDate') {
+  //       setFilterDates(prev => ({ ...prev, [fieldName]: value }))
+  //       onFilterChange({ [fieldName]: format(value, DATE_FORMAT) })
+  //     }
+  //     if (selectedFilterSet) {
+  //       setSelectedFilterSet(null)
+  //     }
+  //     if (typeof callback === 'function') {
+  //       callback()
+  //     }
+  //   },
+  //   [filterDates.endDate]
+  // )
 
   React.useEffect(() => {
     if (selectedOption?.account && selectedOption?.account !== fields.account && !fields.account) {
@@ -193,32 +229,12 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             name="isTemplate"
             className="click-to-edit-custom"
             type="checkbox"
-            isReadOnly={false}
-            disabled={isUpdate}
+            isReadOnly={shouldReadonly}
             label="Is Template"
             value={fields.isTemplate}
             isRequired={false}
           />
         </div>
-        <WrappedFormInput
-          className="click-to-edit-custom"
-          name="promisCode"
-          isReadOnly={shouldReadonly}
-          label="Promis Code"
-          value={fields.promisCode}
-          error={submitted ? errors.promisCode : ''}
-          isRequired={false}
-          maxLength={80}
-        />
-        <WrappedFormInput
-          className="click-to-edit-custom"
-          name="simsCode"
-          isReadOnly={shouldReadonly}
-          label="Sims Code"
-          value={fields.simsCode}
-          error={submitted ? errors.simsCode : ''}
-          isRequired={false}
-        />
         <WrappedFormInput
           className="click-to-edit-custom"
           name="projectCode"
@@ -228,26 +244,23 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
           isRequired={false}
           maxLength={80}
         />
-        <div className="cx-mb-4 click-to-edit-custom">
-          <span className="cx-block cx-mb-1 cx-text-neutral-650 cx-leading-relaxed">
-            Job Requestor
-          </span>
-          <FormElementWrapper
-            name="jobRequestor"
-            readOnlyValue={fields.jobRequestor || ''}
-            isReadOnly={shouldReadonly}
-          >
-            <SearchSelect
-              name="jobRequestor"
-              items={jobRequestorOptions}
-              selectedItem={fields?.jobRequestor ?
-                { value: fields.jobRequestor, label: fields.jobRequestor } :
-                undefined}
-              onSelectedItemChange={onSelectJobRequestor}
-              icon="chevronDown"
-            />
-          </FormElementWrapper>
-        </div>
+        {/* <div className="cx-flex cx-items-center">
+            <PopOut
+              placement="bottom"
+              closeOnOuterClick={true}
+              closeOnScroll={true}
+              trigger={filterEndDateTrigger}
+            >
+              {togglePopout => (
+                <Datepicker
+                  selected={fields.endDate}
+                  onChange={() => {}}
+                  dateFormat={DATE_FORMAT}
+                  inline={true}
+                />
+              )}
+            </PopOut>
+          </div> */}
         {isUpdate && (
           <>
             <div className="cx-mb-4 click-to-edit-custom cx-w-2/4">

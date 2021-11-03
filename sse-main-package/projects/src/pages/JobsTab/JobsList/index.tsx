@@ -179,13 +179,15 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
           ? res.results.map((item: IJobDetail) => {
               return {
                 ...item,
-                resourceRequirement: newJobTypeTemplateValues[item.jobType]
+                resourceRequirement: newJobTypeTemplateValues[item.jobType] && newJobTypeTemplateValues[item.jobType].totalQty
                   ? newJobTypeTemplateValues[item.jobType].totalQty
                   : 1,
               }
             })
           : []
       setJobs({ ...res, results: jobsWithResourceRequirement })
+      console.log("jobs",newJobTypeTemplateValues, { ...res, results: jobsWithResourceRequirement },res);
+      
     }
     setIsLoading(false)
   }, [])
@@ -220,31 +222,31 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
   }, [])
 
   const onCreateJob = useCallback(() => {
-    let preFillStr = `form.ProjectId=${projectId}`
-    if (project.account?.id && project.applyAccountForAllJob) {
-      preFillStr = preFillStr + `&form.AccountId=${project.account?.id}`
-    }
-    if (project.contact?.id && project.applyContactForAllJob) {
-      preFillStr = preFillStr + `&form.ContactId=${project.contact?.id}`
-    }
-    if (project.region?.id && project.applyRegionForAllJob) {
-      preFillStr = preFillStr + `&form.RegionId=${project.region?.id}`
-    }
-    if (project.location?.id && project.applyLocationForAllJob) {
-      preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
-    }
-    if (project.promisCode) {
-      preFillStr = preFillStr + `&form.PromisCode=${encodeURI(project.promisCode.toString())}`
-    }
-    if (project.simsCode) {
-      preFillStr = preFillStr + `&form.SimsCode=${project.simsCode.toString()}`
-    }
-    if (project.projectCode) {
-      preFillStr = preFillStr + `&form.ProjectCode=${project.projectCode.toString()}`
-    }
-    if (project.jobRequestor) {
-      preFillStr = preFillStr + `&form.JobRequestor=${project.jobRequestor}`
-    }
+    let preFillStr = `projectId=${projectId}`
+    // if (project.account?.id && project.applyAccountForAllJob) {
+    //   preFillStr = preFillStr + `&form.AccountId=${project.account?.id}`
+    // }
+    // if (project.contact?.id && project.applyContactForAllJob) {
+    //   preFillStr = preFillStr + `&form.ContactId=${project.contact?.id}`
+    // }
+    // if (project.region?.id && project.applyRegionForAllJob) {
+    //   preFillStr = preFillStr + `&form.RegionId=${project.region?.id}`
+    // }
+    // if (project.location?.id && project.applyLocationForAllJob) {
+    //   preFillStr = preFillStr + `&form.LocationId=${project.location?.id}`
+    // }
+    // if (project.promisCode) {
+    //   preFillStr = preFillStr + `&form.PromisCode=${encodeURI(project.promisCode.toString())}`
+    // }
+    // if (project.simsCode) {
+    //   preFillStr = preFillStr + `&form.SimsCode=${project.simsCode.toString()}`
+    // }
+    // if (project.projectCode) {
+    //   preFillStr = preFillStr + `&form.ProjectCode=${project.projectCode.toString()}`
+    // }
+    // if (project.jobRequestor) {
+    //   preFillStr = preFillStr + `&form.JobRequestor=${project.jobRequestor}`
+    // }
     window.top.window.location.href = `${createJobPath()}?${preFillStr}`
   }, [project, projectId])
 
@@ -376,12 +378,12 @@ const JobsList: React.FC<IJobsListProps> = ({ project }) => {
                 <Button buttonType="secondary" disabled={!canAction.canUnschedule} onClick={onUnschedule}>
                   Unschedule
                 </Button>
-                <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={onDeallocate}>
+                {/* <Button buttonType="secondary" disabled={!canAction.canDeallocate} onClick={onDeallocate}>
                   Deallocate
                 </Button>
                 <Button buttonType="secondary" disabled={!canAction.canAllocate} onClick={openAllocationModal}>
                   Allocate
-                </Button>
+                </Button> */}
                 <Button buttonType="primary" disabled={!canAction.canDispatch} onClick={onDispatchResource}>
                   Dispatch
                 </Button>
