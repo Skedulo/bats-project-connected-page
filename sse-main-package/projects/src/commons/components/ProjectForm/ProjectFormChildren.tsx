@@ -189,7 +189,7 @@ const ProjectFormChildren: React.FC<IProjectFormChildrenProps> = ({
             isReadOnly={shouldReadonly}
           >
             <AsyncSearchSelect
-              name="template"
+              name="templateSearching"
               fetchItems={handleFetchTemplate}
               debounceTime={300}
               onSelectedItemChange={onSelectLookupField('template')}
